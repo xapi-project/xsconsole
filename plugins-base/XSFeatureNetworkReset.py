@@ -53,8 +53,8 @@ class NetworkResetDialogue(Dialogue):
 
 		# Determine pool role
 		self.master_ip = None
+		f = open(pool_conf, 'r')
 		try:
-			f = open(pool_conf, 'r')
 			l = f.readline()
 			ls = l.split(':')
 			if ls[0] == 'slave':
@@ -301,8 +301,8 @@ class NetworkResetDialogue(Dialogue):
 	def Commit(self):
 		# Update master's IP, if needed and given
 		if self.master_ip != None:
+			f = open(pool_conf, 'w')
 			try:
-				f = open(pool_conf, 'w')
 				f.write('slave:' + self.master_ip)
 			finally:
 				f.close()
@@ -336,8 +336,8 @@ class NetworkResetDialogue(Dialogue):
 		write_inventory(inventory)
 
 		# Rewrite firstboot management.conf file, which will be picked it by xcp-networkd on restart (if used)
+		f = open(management_conf, 'w')
 		try:
-			f = file(management_conf, 'w')
 			f.write("LABEL='" + self.device + "'\n")
 			f.write("MODE='" + self.mode + "'\n")
 			if self.mode == 'static':
@@ -351,8 +351,8 @@ class NetworkResetDialogue(Dialogue):
 			f.close()
 
 		# Write trigger file for XAPI to continue the network reset on startup
+		f = open(network_reset, 'w')
 		try:
-			f = file(network_reset, 'w')
 			f.write('DEVICE=' + self.device + '\n')
 			f.write('MODE=' + self.mode + '\n')
 			if self.mode == 'static':
