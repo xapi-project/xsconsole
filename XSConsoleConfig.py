@@ -31,11 +31,7 @@ class Config:
         
         self.ftpserver = ''
 
-        self.xcpconfigdir = ''
-        for path in ["/etc/xcp", "/etc/xensource"]:
-            if os.path.exists(path):
-                self.xcpconfigdir = path
-                break
+        self.xcpconfigdir = '/etc/xensource'
 
         self.xecli = '/usr/bin/xe'
         for path in ["/usr/bin/xe", "/opt/xensource/bin/xe"]:
