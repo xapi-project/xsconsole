@@ -153,7 +153,7 @@ class XMLRPCRemoteTest:
         self.WrapProcedure(lambda: Layout.Inst().Reset())
         data = Data.Inst()
         retVal = "\nTest:          "+inTestname
-        retVal += "\nHost Version:  "+data.derived.fullversion()
+        retVal += "\nHost Version:  "+data.derived.coreversion()
         retVal += "\nHostname:      "+data.host.hostname()
         retVal += "\nManufacturer:  "+data.dmi.system_manufacturer()
         retVal += "\nProduct Name:  "+data.dmi.system_product_name()

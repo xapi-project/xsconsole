@@ -44,6 +44,7 @@
     <Source>plugins-base/XSFeatureTimezone.py</Source>
     <Source>plugins-base/XSFeatureDNS.py</Source>
     <Source>plugins-base/XSFeatureSaveBugReport.py</Source>
+    <Source>plugins-base/XSFeatureFullVersion.py</Source>
     <Source>plugins-base/XSFeatureSuspendSR.py</Source>
     <Source>plugins-base/XSFeatureNTP.py</Source>
     <Source>plugins-oem/XSFeatureManagementHelp.py</Source>

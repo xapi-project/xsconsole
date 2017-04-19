@@ -74,6 +74,7 @@ PLUGINS_BASE += XSFeatureSRCommon.py
 PLUGINS_BASE += XSFeatureSRCreate.py
 PLUGINS_BASE += XSFeatureSRInfo.py
 PLUGINS_BASE += XSFeatureSaveBugReport.py
+PLUGINS_BASE += XSFeatureFullVersion.py
 PLUGINS_BASE += XSFeatureShutdown.py
 PLUGINS_BASE += XSFeatureStatus.py
 PLUGINS_BASE += XSFeatureSuspendSR.py

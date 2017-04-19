@@ -376,16 +376,25 @@ class Data:
                 if 'domid' in vm and vm['domid'] == '0':
                     self.data['derived']['dom0_vm'] = vm
      
-        # Calculate the full version string
+        # get the version number
         version = self.host.software_version.product_version(self.host.software_version.platform_version())
-        version += '-' + self.host.software_version.build_number('')
 
-        oemBuildNumber = self.host.software_version.oem_build_number('')
-        if oemBuildNumber != '':
-            version += '-'+oemBuildNumber
+        # if we have a - at the start of the version number everything is unknown
         if version.startswith('-'):
             version = Lang("<Unknown>")
-        self.data['derived']['fullversion'] = version
+            fullversion = version
+        else:
+            # build known version 
+            fullversion = version + '-' + self.host.software_version.build_number('')
+
+            # if we have an OEM build number then add it on
+            oemBuildNumber = self.host.software_version.oem_build_number('')
+            if oemBuildNumber != '':
+                fullversion += '-' + oemBuildNumber
+
+        # put version information into the map for lookup later
+        self.data['derived']['fullversion'] = fullversion
+        self.data['derived']['coreversion'] = version
 
         # Calculate the branding string
         brand = self.host.software_version.product_brand(self.host.software_version.platform_name())
