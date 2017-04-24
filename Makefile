@@ -90,6 +90,7 @@ PLUGINS_BASE += XSMenuLayout.py
 
 PLUGINS_OEM :=
 PLUGINS_OEM += XSFeatureClaimSR.py
+PLUGINS_OEM += XSFeatureLicenseNag.py
 PLUGINS_OEM += XSFeatureManagementHelp.py
 PLUGINS_OEM += XSFeatureOEMBackup.py
 PLUGINS_OEM += XSFeatureOEMRestore.py
