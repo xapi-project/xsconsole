@@ -28,8 +28,8 @@ def read_dict_file(fname):
 	f = open(fname, 'r')
 	d = {}
 	for l in f.readlines():
-		kv = l.split('=')
-		d[kv[0]] = kv[1][1:-2]
+		k, v = l.split('=', 1)
+		d[k.strip()] = v.strip(" \n'")
 	return d
 
 def read_inventory():
