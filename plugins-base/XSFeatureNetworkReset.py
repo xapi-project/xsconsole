@@ -371,7 +371,7 @@ class NetworkResetDialogue(Dialogue):
 			f.write("LABEL='" + self.device + "'\n")
 			f.write("MODE='" + self.mode + "'\n")
 			if self.vlan != '':
-				f.write("VLAN='" + self.vlan + "'\n'")
+				f.write("VLAN='" + self.vlan + "'\n")
 			if self.mode == 'static':
 				f.write("IP='" + self.IP + "'\n")
 				f.write("NETMASK='" + self.netmask + "'\n")
