@@ -34,7 +34,10 @@ class InterfaceDialogue(Dialogue):
             if currentPIF is None and pif['management']:
                 self.nic = i # Record this as best guess of current NIC
                 currentPIF = pif
-            choiceName = pif['device']+": "+pif['metrics']['device_name']+" "
+            vlanStr = ""
+            if int(pif['VLAN']) >= 0:
+                vlanStr = "."+pif['VLAN']
+            choiceName = pif['device']+vlanStr+": "+pif['metrics']['device_name']+" "
             if pif['metrics']['carrier']:
                 choiceName += '('+Lang("connected")+')'
             else:

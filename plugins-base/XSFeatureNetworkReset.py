@@ -28,8 +28,8 @@ def read_dict_file(fname):
 	f = open(fname, 'r')
 	d = {}
 	for l in f.readlines():
-		kv = l.split('=')
-		d[kv[0]] = kv[1][1:-2]
+		k, v = l.split('=', 1)
+		d[k.strip()] = v.strip(" \n'")
 	return d
 
 def read_inventory():
@@ -43,6 +43,13 @@ def write_inventory(inventory):
 	for k in inventory:
 		f.write(k + "='" + inventory[k] + "'\n")
 	f.close()
+
+def valid_vlan(vlan):
+	if not re.match('\d+$', vlan):
+		return False
+	if int(vlan)<0 or int(vlan)>=4095:
+		return False
+	return True
 
 class NetworkResetDialogue(Dialogue):
 	def __init__(self):
@@ -67,6 +74,12 @@ class NetworkResetDialogue(Dialogue):
 			self.device = conf['LABEL']
 		except:
 			self.device = "eth0"
+
+		try:
+			conf = read_management_conf()
+			self.vlan = conf['VLAN']
+		except:
+			self.vlan = ''
 
 		self.modeMenu = Menu(self, None, Lang("Select IP Address Configuration Mode"), [
 			ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP') ),
@@ -106,7 +119,8 @@ class NetworkResetDialogue(Dialogue):
 		pane.ResetFields()
 		
 		pane.AddTitleField(Lang("Enter the Primary Management Interface to be used after reset"))
-		pane.AddInputField(Lang("Device name",  14),  self.device, 'device')
+		pane.AddInputField(Lang("Device name",  18),  self.device, 'device')
+		pane.AddInputField(Lang("VLAN (Optional)",  18),  self.vlan, 'vlan')
 		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 		if pane.InputIndex() is None:
 			pane.InputIndexSet(0) # Activate first field for input
@@ -153,6 +167,8 @@ class NetworkResetDialogue(Dialogue):
 
 		pane.AddWrappedTextField(Lang("The Primary Management Interface will be reconfigured with the following settings:"))
 		pane.AddStatusField(Lang("NIC",  16),  self.device)
+		if self.vlan != '':
+			pane.AddStatusField(Lang("VLAN",  16),  self.vlan)
 		pane.AddStatusField(Lang("IP Mode",  16),  self.mode)
 		if self.mode == 'static':
 			pane.AddStatusField(Lang("IP Address",  16),  self.IP)
@@ -186,13 +202,24 @@ class NetworkResetDialogue(Dialogue):
 		handled = True
 		pane = self.Pane()
 		if inKey == 'KEY_ENTER':
-			inputValues = pane.GetFieldValues()
-			self.device = inputValues['device']
-			if self.device == "":
-				pane.InputIndexSet(None)
-				Layout.Inst().PushDialogue(InfoDialogue(Lang('Invalid device name')))
+			if pane.IsLastInput():
+				inputValues = pane.GetFieldValues()
+				self.device = inputValues['device']
+				self.vlan = inputValues['vlan']
+				if self.device == "":
+					pane.InputIndexSet(None)
+					Layout.Inst().PushDialogue(InfoDialogue(Lang('Invalid device name')))
+				elif (self.vlan != '') and not valid_vlan(self.vlan):
+					pane.InputIndexSet(None)
+					Layout.Inst().PushDialogue(InfoDialogue(Lang('VLAN tag must be between 0 and 4094')))
+				else:
+					self.ChangeState('MODE')
 			else:
-				self.ChangeState('MODE')
+				pane.ActivateNextInput()
+		elif inKey == 'KEY_TAB':
+			pane.ActivateNextInput()
+		elif inKey == 'KEY_BTAB':
+			pane.ActivatePreviousInput()
 		elif pane.CurrentInput().HandleKey(inKey):
 			pass # Leave handled as True
 		else:
@@ -331,7 +358,10 @@ class NetworkResetDialogue(Dialogue):
 
 		# Update interfaces in inventory file
 		inventory = read_inventory()
-		inventory['MANAGEMENT_INTERFACE'] = bridge
+		if self.vlan != None:
+			inventory['MANAGEMENT_INTERFACE'] = 'xentemp'
+		else:
+			inventory['MANAGEMENT_INTERFACE'] = bridge
 		inventory['CURRENT_INTERFACES'] = ''
 		write_inventory(inventory)
 
@@ -340,6 +370,8 @@ class NetworkResetDialogue(Dialogue):
 		try:
 			f.write("LABEL='" + self.device + "'\n")
 			f.write("MODE='" + self.mode + "'\n")
+			if self.vlan != '':
+				f.write("VLAN='" + self.vlan + "'\n")
 			if self.mode == 'static':
 				f.write("IP='" + self.IP + "'\n")
 				f.write("NETMASK='" + self.netmask + "'\n")
@@ -355,6 +387,8 @@ class NetworkResetDialogue(Dialogue):
 		try:
 			f.write('DEVICE=' + self.device + '\n')
 			f.write('MODE=' + self.mode + '\n')
+			if self.vlan != '':
+				f.write('VLAN=' + self.vlan + '\n')
 			if self.mode == 'static':
 				f.write('IP=' + self.IP + '\n')
 				f.write('NETMASK=' + self.netmask + '\n')
