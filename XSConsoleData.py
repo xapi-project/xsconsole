@@ -14,7 +14,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import XenAPI
-
+import datetime
 import commands, re, shutil, sys, tempfile, socket, os
 from pprint import pprint
 from simpleconfig import SimpleConfigFile
@@ -435,7 +435,7 @@ class Data:
         self.session.xenapi.host.syslog_reconfigure(self.host.opaqueref())
     
     def UpdateFromResolveConf(self):
-        (status, output) = commands.getstatusoutput("/bin/cat /etc/resolv.conf")
+        (status, output) = commands.getstatusoutput("/usr/bin/grep -v \"^;\" /etc/resolv.conf")
         if status == 0:
             self.ScanResolvConf(output.split("\n"))
     
@@ -498,6 +498,24 @@ class Data:
         finally:
             if file is not None: file.close()
             self.UpdateFromNTPConf()
+
+    def SaveToResolveConf(self):
+        # Double-check authentication
+        Auth.Inst().AssertAuthenticated()
+        
+        file = None
+        try:
+            file = open("/etc/resolv.conf", "w")
+            now = datetime.datetime.now().strftime("; created by xsconsole %I:%M%p on %B %d, %Y\n")
+            file.write(now)
+            for other in self.dns.othercontents([]):
+                file.write(other+"\n")
+            for server in self.dns.nameservers([]):
+                file.write("nameserver "+server+"\n")
+        finally:
+            if file is not None: file.close()
+            self.UpdateFromResolveConf()
+    
     
     def ScanDmiDecode(self, inLines):
         STATE_NEXT_ELEMENT = 2
