@@ -377,15 +377,20 @@ class Data:
                     self.data['derived']['dom0_vm'] = vm
      
         # get the version number
-        version = self.host.software_version.product_version(self.host.software_version.platform_version())
+        version = self.data['inventory'].get('PRODUCT_VERSION')
+        if version is None:
+            version = self.host.software_version.product_version(self.host.software_version.platform_version(''))
 
         # if we have a - at the start of the version number everything is unknown
         if version.startswith('-'):
             version = Lang("<Unknown>")
             fullversion = version
         else:
-            # build known version 
-            fullversion = version + '-' + self.host.software_version.build_number('')
+            # build known version
+            build_number = self.data['inventory'].get('BUILD_NUMBER')
+            if build_number is None:
+                build_number = self.host.software_version.build_number('')
+            fullversion = version + '-' + build_number
 
             # if we have an OEM build number then add it on
             oemBuildNumber = self.host.software_version.oem_build_number('')
@@ -397,7 +402,9 @@ class Data:
         self.data['derived']['coreversion'] = version
 
         # Calculate the branding string
-        brand = self.host.software_version.product_brand(self.host.software_version.platform_name())
+        brand = self.host['inventory'].get('PRODUCT_BRAND')
+        if brand is None:
+            brand = self.host.software_version.product_brand(self.host.software_version.platform_name())
         self.data['derived']['brand'] = brand
 
     def Dump(self):
