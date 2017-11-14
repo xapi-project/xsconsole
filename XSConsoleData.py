@@ -402,7 +402,7 @@ class Data:
         self.data['derived']['coreversion'] = version
 
         # Calculate the branding string
-        brand = self.host['inventory'].get('PRODUCT_BRAND')
+        brand = self.data['inventory'].get('PRODUCT_BRAND')
         if brand is None:
             brand = self.host.software_version.product_brand(self.host.software_version.platform_name())
         self.data['derived']['brand'] = brand
