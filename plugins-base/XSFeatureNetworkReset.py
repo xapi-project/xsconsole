@@ -358,7 +358,7 @@ class NetworkResetDialogue(Dialogue):
 
 		# Update interfaces in inventory file
 		inventory = read_inventory()
-		if self.vlan != None:
+		if self.vlan:
 			inventory['MANAGEMENT_INTERFACE'] = 'xentemp'
 		else:
 			inventory['MANAGEMENT_INTERFACE'] = bridge
