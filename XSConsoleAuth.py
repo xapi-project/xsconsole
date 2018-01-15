@@ -176,7 +176,10 @@ class Auth:
             try:
                 # Try the local Unix domain socket first
                 session = XenAPI.xapi_local()
-                session.login_with_password('root','','','XSConsole')
+                if not session is None:
+                    session.login_with_password('root','','','XSConsole')
+                    if session._session is None:
+                        session = None
             except socket.timeout:
                 session = None
                 self.masterConnectionBroken = True
