@@ -211,7 +211,11 @@ class Auth:
         return self.OpenSession()
         
     def CloseSession(self, inSession):
-        inSession.logout()
+        if inSession._session is not None:
+            try:
+                inSession.logout()
+            except XenAPI.Failure, e:
+                XSLog('XAPI Failed to logout exception was ', e)
         return None
 
     def IsPasswordSet(self):
