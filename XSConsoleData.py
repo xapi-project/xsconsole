@@ -331,6 +331,7 @@ class Data:
 
         self.UpdateFromResolveConf()
         self.UpdateFromSysconfig()
+        self.UpdateFromHostname()
         self.UpdateFromNTPConf()
         self.UpdateFromTimezone()
         self.UpdateFromKeymap()
@@ -451,6 +452,11 @@ class Data:
         if status == 0:
             self.ScanSysconfigNetwork(output.split("\n"))
     
+    def UpdateFromHostname(self):
+        (status, output) = commands.getstatusoutput("/bin/cat /etc/hostname")
+        if status == 0:
+            self.ScanHostname(output.split("\n"))
+    
     def UpdateFromNTPConf(self):
         (status, output) = commands.getstatusoutput("/bin/cat /etc/ntp.conf")
         if status == 0:
@@ -486,7 +492,6 @@ class Data:
             file = open("/etc/sysconfig/network", "w")
             for other in self.sysconfig.network.othercontents([]):
                 file.write(other+"\n")
-            file.write("HOSTNAME="+self.sysconfig.network.hostname('')+"\n")
         finally:
             if file is not None: file.close()
             self.UpdateFromSysconfig()
@@ -688,6 +693,9 @@ class Data:
                 self.data['sysconfig']['network']['hostname'] = match.group(1)
             else:
                 self.data['sysconfig']['network']['othercontents'].append(line)
+    
+    def ScanHostname(self, inLines):
+        self.data['sysconfig']['network']['hostname'] = inLines[0]
     
     def ScanNTPConf(self, inLines):
         if not 'ntp' in self.data:
