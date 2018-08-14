@@ -270,8 +270,8 @@ class App:
             if self.layout.ExitCommand() is not None:
                 doQuit = True
             
-            brand = Language.Inst().Branding(data.host.software_version.product_brand(data.host.software_version.platform_name('')))
-            version = data.host.software_version.product_version_text_short(data.host.software_version.platform_version(''))
+            brand = Language.Inst().Branding(data.derived.brand())
+            version = data.derived.shortversion()
 
             bannerStr = brand + ' ' + version
             

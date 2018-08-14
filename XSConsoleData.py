@@ -382,10 +382,16 @@ class Data:
         if version is None:
             version = self.host.software_version.product_version(self.host.software_version.platform_version(''))
 
+        # get the short version number
+        shortversion = self.data['inventory'].get('PRODUCT_VERSION_TEXT_SHORT')
+        if shortversion is None:
+            shortversion = self.host.software_version.product_version_text_short(self.host.software_version.platform_version(''))
+
         # if we have a - at the start of the version number everything is unknown
         if version.startswith('-'):
             version = Lang("<Unknown>")
             fullversion = version
+            shortversion = version
         else:
             # build known version
             build_number = self.data['inventory'].get('BUILD_NUMBER')
@@ -401,6 +407,7 @@ class Data:
         # put version information into the map for lookup later
         self.data['derived']['fullversion'] = fullversion
         self.data['derived']['coreversion'] = version
+        self.data['derived']['shortversion'] = shortversion
 
         # Calculate the branding string
         brand = self.data['inventory'].get('PRODUCT_BRAND')
