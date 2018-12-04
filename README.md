@@ -1,6 +1,8 @@
 What is this repository ?
 ==========================
 
+[![Build Status](https://travis-ci.org/xenserver/xsconsole.svg?branch=master)](https://travis-ci.org/xenserver/xsconsole)
+
 This is the repository of XenServer-specific commits to the Xen project
 xsconsole.
 

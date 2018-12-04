@@ -14,7 +14,11 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import os, spwd, re, sys, time, socket
-import PAM # From PyPAM module
+
+try:
+    import PAM # From PyPAM RPM
+except ImportError:
+    import pam as PAM # From pip install python-pam
 
 from XSConsoleBases import *
 from XSConsoleLang import *

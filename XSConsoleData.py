@@ -343,12 +343,18 @@ class Data:
         self.DeriveData()
         
     def DeriveData(self):
-        self.data.update({
-            'derived' : {
+        try:
+            derived = {
                 'app_name' : Lang(self.data['inventory']['BRAND_CONSOLE']),
                 'full_app_name' : Lang(self.data['inventory']['COMPANY_NAME_SHORT'] + " " + self.data['inventory']['BRAND_CONSOLE']),
                 'cpu_name_summary' : {}
             }
+        except KeyError:
+            #In case self.data['inventory'] is not assigned due to '/etc/xensource-inventory' file being inaccessible.
+            derived = {}
+
+        self.data.update({
+            'derived' : derived
         })
         
         # Gather up the CPU model names into a more convenient form
