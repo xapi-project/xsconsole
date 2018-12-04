@@ -12,7 +12,7 @@ Follow these steps to build an RPM.
 
 1. Clone the xsconsole git repository to /some/path/xsconsole
 
-2. To obtain a tarballs of source for both the base and the plugin-oem run
+2. To obtain tarballs of source for both the base and the plugin-oem run
    the following commands:
 
     git archive --prefix=xsconsole/ HEAD  Makefile  xsconsole LICENSE '*.py' \
