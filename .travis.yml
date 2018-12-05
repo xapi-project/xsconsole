@@ -1,0 +1,12 @@
+language: python
+
+python:
+  - 2.7
+
+install:
+  pip install -r requirements.txt
+
+before-script:
+  sudo bash -c 'echo -e "BRAND_CONSOLE=Test\nCOMPANY_NAME_SHORT=Test\n" > /etc/xensource-inventory'
+
+script: nosetests
