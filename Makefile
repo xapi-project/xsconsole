@@ -57,7 +57,6 @@ PLUGINS_BASE += XSFeatureEULA.py
 PLUGINS_BASE += XSFeatureHostCommon.py
 PLUGINS_BASE += XSFeatureHostEvacuate.py
 PLUGINS_BASE += XSFeatureHostInfo.py
-PLUGINS_BASE += XSFeatureInstallLicence.py
 PLUGINS_BASE += XSFeatureInterface.py
 PLUGINS_BASE += XSFeatureKeyboard.py
 PLUGINS_BASE += XSFeatureLocalShell.py
