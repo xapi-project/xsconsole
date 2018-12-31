@@ -7,12 +7,11 @@ install:
   pip install -r requirements.txt
   pip install flake8
 
-script:
-  flake8 --select W291,W292 .
-
 before-script:
   sudo bash -c 'echo -e "BRAND_CONSOLE=Test\nCOMPANY_NAME_SHORT=Test" > /etc/xensource-inventory'
   sudo mkdir -p /etc/sysconfig
   sudo bash -c 'echo -e "NETWORKING=yes\nNETWORKING_IPV6=no\nIPV6_AUTOCONF=no\nHOSTNAME=localhost.localdomain" > /etc/sysconfig/network'
 
-script: nosetests
+script:
+  flake8 --select W291,W292 .
+  nosetests
