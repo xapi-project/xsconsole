@@ -32,13 +32,13 @@ from XSConsoleState import *
 
 class App:
     __instance = None
-    
+
     @classmethod
     def Inst(cls):
         if cls.__instance is None:
             cls.__instance = App()
         return cls.__instance
-        
+
     def __init__(self):
         self.cursesScreen = None
 
@@ -51,15 +51,15 @@ class App:
         Importer.Reset()
         for dir in inDirs:
             Importer.ImportRelativeDir(dir)
-    
+
     def Enter(self):
         startTime = time.time()
         Data.Inst().Update()
         elapsedTime = time.time() - startTime
         XSLog('Loaded initial xapi and system data in %.3f seconds' % elapsedTime)
-        
+
         doQuit = False
-        
+
         if '--dump' in sys.argv:
             # Testing - dump data and exit
             Data.Inst().Dump()
@@ -73,13 +73,13 @@ class App:
                 HotAccessor().pool()
             HotData.Inst().Dump()
             doQuit = True
-        
+
         RemoteTest.Inst().SetApp(self)
-        
+
         # Reinstate keymap
         if State.Inst().Keymap() is not None:
             Data.Inst().KeymapSet(State.Inst().Keymap())
-        
+
         while not doQuit:
             try:
                 try:
@@ -92,7 +92,7 @@ class App:
                         os.system('/bin/stty stop ^-') # Disable Ctrl-S as suspend
 
                     os.environ["ESCDELAY"] = "50" # Speed up processing of the escape key
-                    
+
                     self.cursesScreen = CursesScreen()
                     self.renderer = Renderer()
                     self.layout = Layout.NewInst()
@@ -102,22 +102,22 @@ class App:
                     self.layout.ParentSet(self.layout.Window(self.layout.WIN_MAIN))
                     self.layout.CreateRootDialogue(RootDialogue(self.layout, self.layout.Window(self.layout.WIN_MAIN)))
                     self.layout.TransientBannerHandlerSet(App.TransientBannerHandler)
-                    
+
                     if State.Inst().WeStoppedXAPI():
                         # Restart XAPI if we crashed after stopping it
                         Data.Inst().StartXAPI()
                         Data.Inst().Update()
-                        
+
                     Importer.CallReadyHandlers()
-            
+
                     self.layout.Clear()
                     if not '--dryrun' in sys.argv:
                         self.MainLoop()
-                    
+
                 finally:
                     if self.cursesScreen is not None:
                         self.cursesScreen.Exit()
-            
+
                 if self.layout.ExitCommand() is None:
                     doQuit = True
                 else:
@@ -147,15 +147,15 @@ class App:
                     time.sleep(0.5) # Prevent flicker
                 except Exception, e:
                     pass # Catch repeated Ctrl-C
-            
+
             except Exception, e:
                 sys.stderr.write(Lang(e)+"\n")
                 doQuit = True
                 raise
-    
+
     def NeedsRefresh(self):
         self.needsRefresh = True
-    
+
     def HandleKeypress(self, inKeypress):
         handled = True
         Auth.Inst().KeepAlive()
@@ -176,9 +176,9 @@ class App:
             self.needsRefresh = True
         else:
             handled = False
-        
+
         return handled
-        
+
     def MainLoop(self):
         doQuit= False
         startSeconds = time.time()
@@ -189,7 +189,7 @@ class App:
         resized = False
         data = Data.Inst()
         errorCount = 0
-        
+
         self.layout.DoUpdate()
         while not doQuit:
             self.needsRefresh = False
@@ -211,7 +211,7 @@ class App:
                     Layout.Inst().PopDialogue()
                 else:
                     gotKey = self.layout.Window(Layout.WIN_MAIN).GetKey()
-                    
+
             except Exception, e:
                 gotKey = None # Catch timeout
 
@@ -228,14 +228,14 @@ class App:
             elif resized and gotKey is not None:
                 if os.path.isfile("/bin/setfont"): os.system("/bin/setfont") # Restore the default font
                 resized = False
-            
+
             # Screen out non-ASCII and unusual characters
             for char in FirstValue(gotKey, ''):
                 if char >="\177": # Characters 128 and greater
                     gotKey = None
                     break
-                    
-            secondsNow = time.time()    
+
+            secondsNow = time.time()
             secondsRunning = secondsNow - startSeconds
 
             if data.host.address('') == '' or len(data.derived.managementpifs([])) == 0:
@@ -247,16 +247,16 @@ class App:
                     data.Update()
                     self.layout.UpdateRootFields()
                     self.needsRefresh = True
-    
+
             if secondsNow - lastScreenUpdateSeconds >= 4:
                 lastScreenUpdateSeconds = secondsNow
                 self.layout.UpdateRootFields()
                 self.needsRefresh = True
-                
+
             if gotKey is not None:
                 try:
                     self.HandleKeypress(gotKey)
-                        
+
                 except Exception, e:
                     if Auth.Inst().IsTestMode():
                         raise
@@ -269,21 +269,21 @@ class App:
 
             if self.layout.ExitCommand() is not None:
                 doQuit = True
-            
+
             brand = Language.Inst().Branding(data.derived.brand())
             version = data.derived.shortversion()
 
             bannerStr = brand + ' ' + version
-            
+
             if Auth.Inst().IsAuthenticated():
                 hostStr = Auth.Inst().LoggedInUsername()+'@'+data.host.hostname('')
             else:
                 hostStr = data.host.hostname('')
-                
+
             # Testing
             # if gotKey is not None:
             #     bannerStr = gotKey
-            
+
             timeStr = time.strftime(" %H:%M:%S ", time.localtime())
             statusLine = ("%-35s%10.10s%35.35s" % (bannerStr[:35], timeStr[:10], hostStr[:35]))
             self.renderer.RenderStatus(self.layout.Window(Layout.WIN_TOPLINE), statusLine)
@@ -292,9 +292,9 @@ class App:
                 self.layout.Refresh()
             elif self.layout.LiveUpdateFields():
                 self.layout.Refresh()
-                
+
             self.layout.DoUpdate()
-            
+
             if secondsNow - lastGarbageCollectSeconds >= 60:
                 lastGarbageCollectSeconds = secondsNow
                 Task.Inst().GarbageCollect()
@@ -307,7 +307,7 @@ class App:
         layout.DoUpdate()
         layout.PopDialogue()
 
-class Renderer:        
+class Renderer:
     def RenderStatus(self, inWindow, inText):
         (cursY, cursX) = curses.getsyx() # Store cursor position
         inWindow.Win().erase()
@@ -315,4 +315,4 @@ class Renderer:
         inWindow.Refresh()
         if cursX != -1 and cursY != -1:
             curses.setsyx(cursY, cursX) # Restore cursor position
-        
+

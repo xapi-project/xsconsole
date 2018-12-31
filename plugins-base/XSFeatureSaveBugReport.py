@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class SaveBugReportDialogue(FileDialogue):
@@ -23,22 +23,22 @@ class SaveBugReportDialogue(FileDialogue):
         self.custom = {
             'title' : Lang("Save Bug Report"),
             'searchregexp' : r'.*',  # Type of bugtool file is .tar
-            'deviceprompt' : Lang("Select the Destination Device"), 
+            'deviceprompt' : Lang("Select the Destination Device"),
             'fileprompt' : Lang("Choose a Destination Filename"),
             'filename' : FileUtils.BugReportFilename(),
             'confirmprompt' : Lang("Press <F8> to Save the Bug Report"),
             'mode' : 'rw'
         }
         FileDialogue.__init__(self) # Must fill in self.custom before calling __init__
-        
+
     def DoAction(self):
         success = False
-        
+
         Layout.Inst().PopDialogue()
-        
+
         Layout.Inst().PushDialogue(BannerDialogue(
             Lang("Saving Bug Report...")))
-            
+
         try:
             try:
                 Layout.Inst().Refresh()
@@ -63,7 +63,7 @@ class SaveBugReportDialogue(FileDialogue):
             except Exception, e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Save Failed"), Lang(e)))
-                
+
         finally:
             try:
                 self.PreExitActions()
@@ -79,9 +79,9 @@ class XSFeatureSaveBugReport:
         inPane.AddWrappedTextField(Lang(
             "This option will save a bug report file, containing information about "
             "the state of this machine, to removable media.  This file may contain sensitive data."))
-            
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Save Bug Report") } )  
-        
+
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Save Bug Report") } )
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(QuestionDialogue(

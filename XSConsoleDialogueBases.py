@@ -29,7 +29,7 @@ class Dialogue:
     def __init__(self, inLayout = None, inParent = None):
         self.layout = FirstValue(inLayout, Layout.Inst())
         self.parent = FirstValue(inParent, self.layout.Parent())
-        
+
         self.panes = {}
 
     def Pane(self, inName = None):
@@ -41,29 +41,29 @@ class Dialogue:
 
     def Title(self):
         return self.title
-        
+
     def Destroy(self):
         for pane in self.panes.values():
             pane.Delete()
-            
+
     def Render(self):
         for pane in self.panes.values():
             pane.Render()
-            
+
     def UpdateFields(self):
-        pass        
-            
+        pass
+
     def NeedsCursor(self):
         retVal = False
         for pane in self.panes.values():
             if pane.NeedsCursor():
                 retVal = True
         return retVal
-        
+
     def CursorOff(self):
         for pane in self.panes.values():
             pane.CursorOff()
-        
+
     def Reset(self):
         # Reset to known state, e.g. first menu item selected
         pass
@@ -73,13 +73,13 @@ class Dialogue:
         for key in sorted(self.panes.keys()):
             retVal.append(self.panes[key].Snapshot())
         return retVal
-        
+
 class InfoDialogue(Dialogue):
     def __init__(self, inText,  inInfo = None):
         Dialogue.__init__(self)
         self.text = inText
         self.info = inInfo
-        
+
         pane = self.NewPane(DialoguePane(self.parent))
         pane.AddBox()
         self.UpdateFields()
@@ -87,7 +87,7 @@ class InfoDialogue(Dialogue):
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedCentredBoldTextField(self.text)
 
         if self.info is not None:
@@ -102,7 +102,7 @@ class InfoDialogue(Dialogue):
             })
 
         pane.AddKeyHelpField( helpKeys )
-        
+
     def HandleKey(self, inKey):
         handled = True
         if inKey == 'KEY_ESCAPE' or inKey == 'KEY_ENTER':
@@ -126,7 +126,7 @@ class BannerDialogue(Dialogue):
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedCentredBoldTextField(self.text)
 
 class QuestionDialogue(Dialogue):
@@ -142,11 +142,11 @@ class QuestionDialogue(Dialogue):
         pane = self.Pane()
         pane.ResetFields()
         pane.ResetPosition()
-        
+
         pane.AddWrappedCentredBoldTextField(self.text)
 
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("Yes"),  Lang("<Esc>") : Lang("No")  } )
-    
+
     def HandleKey(self, inKey):
         handled = True
         if inKey == 'y' or inKey == 'Y' or inKey == 'KEY_F(8)':
@@ -157,7 +157,7 @@ class QuestionDialogue(Dialogue):
             self.handler('n')
         else:
             handled = False
-            
+
         return handled
 
 class LoginDialogue(Dialogue):
@@ -170,7 +170,7 @@ class LoginDialogue(Dialogue):
         pane.AddBox()
         self.UpdateFields()
         pane.InputIndexSet(0)
-        
+
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -183,7 +183,7 @@ class LoginDialogue(Dialogue):
             Lang("<Enter>") : Lang("Next/OK"),
             Lang("<Tab>") : Lang("Next")
         })
-        
+
     def HandleKey(self, inKey):
         handled = True
         pane = self.Pane()
@@ -203,12 +203,12 @@ class LoginDialogue(Dialogue):
                         self.successFunc()
                     else:
                         Layout.Inst().PushDialogue(InfoDialogue( Lang('Login Successful')))
-                
+
                 except Exception, e:
                     Layout.Inst().PushDialogue(InfoDialogue( Lang('Login Failed: ')+Lang(e)))
 
                 Data.Inst().Update()
-                
+
         elif inKey == 'KEY_TAB':
             pane.ActivateNextInput()
         elif inKey == 'KEY_BTAB':
@@ -218,28 +218,28 @@ class LoginDialogue(Dialogue):
         else:
             handled = False
         return handled
-        
+
 class FileDialogue(Dialogue):
     def __init__(self):
         Dialogue.__init__(self)
 
         self.vdiMount = None
         self.ChangeState('INITIAL')
-    
+
     def Custom(self, inKey):
         return self.custom.get(inKey, None)
-    
+
     def BuildPaneBase(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(self.Custom('title'))
         pane.AddBox()
-    
+
     def BuildPaneINITIAL(self):
         if self.Custom('mode') == 'rw':
             self.deviceList = FileUtils.DeviceList(True) # Writable devices only
         else:
             self.deviceList = FileUtils.DeviceList(False) # Writable and read-only devices
-        
+
         choiceDefs = []
         for device in self.deviceList:
             choiceDefs.append(ChoiceDef(device.name, lambda: self.HandleDeviceChoice(self.deviceMenu.ChoiceIndex()) ) )
@@ -251,35 +251,35 @@ class FileDialogue(Dialogue):
 
         self.BuildPaneBase()
         self.UpdateFields()
-    
+
     def BuildPaneUSBNOTFORMATTED(self):
         self.BuildPaneBase()
         self.UpdateFields()
-        
+
     def BuildPaneUSBNOTMOUNTABLE(self):
         self.BuildPaneBase()
         self.UpdateFields()
-    
+
     def BuildPaneFILES(self):
         self.BuildPaneBase()
-        
+
         choiceDefs = []
-        
+
         offset = 0
         if self.Custom('mode') == 'rw':
             choiceDefs.append(ChoiceDef(Lang('Enter New Filename'), lambda: self.HandleFileChoice(None)))
             offset=1
-            
+
         for filename in self.fileList:
             displayName = "%-60.60s%10.10s" % (filename, self.vdiMount.SizeString(filename))
             choiceDefs.append(ChoiceDef(displayName, lambda: self.HandleFileChoice(self.fileMenu.ChoiceIndex() - offset) ) )
 
         if self.Custom('mode') != 'rw': # Read-only
             choiceDefs.append(ChoiceDef(Lang('Enter Custom Filename'), lambda: self.HandleFileChoice(None)))
-        
+
         self.fileMenu = Menu(self, None, Lang("Select File"), choiceDefs)
         self.UpdateFields()
-        
+
     def BuildPaneCONFIRM(self):
         self.BuildPaneBase()
         self.UpdateFields()
@@ -287,42 +287,42 @@ class FileDialogue(Dialogue):
     def BuildPaneCUSTOM(self):
         self.BuildPaneBase()
         self.UpdateFields()
-    
+
     def ChangeState(self, inState):
         self.state = inState
         getattr(self, 'BuildPane'+self.state)() # Despatch method named 'BuildPane'+self.state
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-        
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.Custom('deviceprompt'))
         pane.AddMenuField(self.deviceMenu)
-        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel"), 
+        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel"),
             "<F5>" : Lang("Rescan") } )
 
     def UpdateFieldsUSBNOTFORMATTED(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedBoldTextField(Lang("This USB media is not formatted.  Would you like to format it now?"))
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("Format media"), Lang("<Esc>") : Lang("Exit") } )
 
     def UpdateFieldsUSBNOTMOUNTABLE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedBoldTextField(Lang("This USB media contains data but this application cannot mount it.  Would you like to format the media?  This will erase all data on the media."))
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("Format Media"), Lang("<Esc>") : Lang("Exit") } )
 
     def UpdateFieldsFILES(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.Custom('fileprompt'))
         pane.AddMenuField(self.fileMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
@@ -330,7 +330,7 @@ class FileDialogue(Dialogue):
     def UpdateFieldsCUSTOM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Enter Filename"))
         pane.AddInputField(Lang("Filename",  16), FirstValue(self.Custom('filename'), ''), 'filename')
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Exit") } )
@@ -340,12 +340,12 @@ class FileDialogue(Dialogue):
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.Custom('confirmprompt'))
         pane.AddWrappedBoldTextField(Lang("Device"))
         pane.AddWrappedTextField(self.deviceName)
         pane.NewLine()
-        
+
         if self.Custom('mode') == 'rw':
             fileSize = ' ('+self.vdiMount.SizeString(self.filename, Lang('New file'))+')'
         else:
@@ -355,29 +355,29 @@ class FileDialogue(Dialogue):
                 fileSize = Lang(' (Directory)')
             else:
                 fileSize = ' ('+self.vdiMount.SizeString(self.filename, Lang('File not found'))+')'
-        
+
         pane.AddWrappedBoldTextField(Lang("File"))
         pane.AddWrappedTextField(self.filename+fileSize)
-        
+
         pane.NewLine()
-        
+
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Exit") } )
 
     def HandleKey(self, inKey):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             self.PreExitActions()
             handled = True
 
         return handled
-        
+
     def HandleKeyINITIAL(self, inKey):
         handled = self.deviceMenu.HandleKey(inKey)
-        
+
         if not handled and inKey == 'KEY_F(5)':
             Layout.Inst().PushDialogue(BannerDialogue( Lang("Rescanning...")))
             Layout.Inst().Refresh()
@@ -387,9 +387,9 @@ class FileDialogue(Dialogue):
             time.sleep(0.5) # Display rescanning box for a reasonable time
             Layout.Inst().Refresh()
             handled = True
-            
+
         return handled
-    
+
     def HandleKeyUSBNOTFORMATTED(self, inKey):
         handled = False
         if inKey == 'KEY_F(8)':
@@ -407,13 +407,13 @@ class FileDialogue(Dialogue):
             handled = True
 
         return handled
-    
+
     def HandleKeyUSBNOTMOUNTABLE(self, inKey):
         return self.HandleKeyUSBNOTFORMATTED(inKey)
-    
+
     def HandleKeyFILES(self, inKey):
         return self.fileMenu.HandleKey(inKey)
-        
+
     def HandleKeyCUSTOM(self, inKey):
         handled = True
         pane = self.Pane()
@@ -433,21 +433,21 @@ class FileDialogue(Dialogue):
         else:
             handled = False
         return handled
-    
+
     def HandleKeyCONFIRM(self, inKey):
         handled = False
-        
+
         if inKey == 'KEY_F(8)':
             self.DoAction()
             handled = True
-            
+
         return handled
-    
+
     def HandleDeviceChoice(self, inChoice):
         self.deviceName = self.deviceList[inChoice].name
         self.vdi = self.deviceList[inChoice].vdi
         self.HandleDevice()
-        
+
     def HandleDevice(self):
         try:
 
@@ -459,18 +459,18 @@ class FileDialogue(Dialogue):
 
             self.vdiMount = MountVDIDirectly(self.vdi, self.Custom('mode'))
 
-            
+
             Layout.Inst().PopDialogue()
             Layout.Inst().PushDialogue(BannerDialogue( Lang("Scanning device...")))
             Layout.Inst().Refresh()
             Layout.Inst().DoUpdate()
-            
+
             self.fileList = self.vdiMount.Scan(self.Custom('searchregexp'), 500) # Limit number of files to avoid colossal menu
-            
+
             Layout.Inst().PopDialogue()
-            
+
             self.ChangeState('FILES')
-        
+
         except USBNotFormatted:
             Layout.Inst().PopDialogue()
             self.ChangeState('USBNOTFORMATTED')
@@ -492,7 +492,7 @@ class FileDialogue(Dialogue):
             FileUtils.AssertSafeLeafname(self.fileList[inChoice])
             self.filename = self.fileList[inChoice]
             self.ChangeState('CONFIRM')
-    
+
     def PreExitActions(self):
         if self.vdiMount is not None:
             self.vdiMount.Unmount()
@@ -506,28 +506,28 @@ class InputDialogue(Dialogue):
         pane.AddBox()
         self.UpdateFields()
         pane.InputIndexSet(0)
-    
+
     def Custom(self, inKey):
         return self.custom.get(inKey, None)
-    
+
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
         if self.Custom('info') is not None:
             pane.AddWrappedTextField(self.Custom('info'))
             pane.NewLine()
-            
+
         for field in self.Custom('fields'):
             pane.AddInputField(*field)
-        
+
         pane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("OK"),
             Lang("<Esc>") : Lang("Cancel")
         })
-    
+
     def HandleCommit(self, inValues): # Override this
         Layout.Inst().PopDialogue()
-    
+
     def HandleKey(self, inKey):
         handled = True
         pane = self.Pane()
@@ -553,26 +553,26 @@ class InputDialogue(Dialogue):
         else:
             handled = False
         return handled
-        
+
 class SRDialogue(Dialogue):
     def __init__(self):
         Dialogue.__init__(self)
 
         self.ChangeState('INITIAL')
-    
+
     def Custom(self, inKey):
         return self.custom.get(inKey, None)
-    
+
     def BuildPaneBase(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(self.Custom('title'))
         pane.AddBox()
-    
+
     def BuildPaneINITIAL(self):
         data = Data.Inst()
-        
+
         data.Update() # Make sure SR list is up to date
-        
+
         self.choices = SRDataUtils.SRList(self.Custom('mode'), self.Custom('capabilities'))
         choiceDefs = []
         for choice in self.choices:
@@ -589,15 +589,15 @@ class SRDialogue(Dialogue):
     def ChangeState(self, inState):
         self.state = inState
         getattr(self, 'BuildPane'+self.state)() # Despatch method named 'BuildPane'+self.state
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-        
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.Custom('prompt'))
         pane.AddMenuField(self.srMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel"), Lang("<F5>") : Lang("Refresh") } )
@@ -606,22 +606,22 @@ class SRDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-        
+
     def HandleKeyINITIAL(self, inKey):
         handled = self.srMenu.HandleKey(inKey)
-        
+
         if not handled and inKey == 'KEY_F(5)':
             Data.Inst().Update()
             self.BuildPaneINITIAL() # Updates menu
             Layout.Inst().Refresh()
             handled = True
-        
+
         return handled
 
     def HandleSRChoice(self, inChoice):
@@ -632,7 +632,7 @@ class ProgressDialogue(Dialogue):
         Dialogue.__init__(self)
         self.task = inTask
         self.text = inText
-        
+
         self.ChangeState('INITIAL')
 
     def BuildPane(self):
@@ -642,7 +642,7 @@ class ProgressDialogue(Dialogue):
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.text)
 
         try:
@@ -650,78 +650,78 @@ class ProgressDialogue(Dialogue):
             progressStr = str(int(100*progressVal))+'%'
             durationSecs = self.task.DurationSecs()
             elapsedStr = TimeUtils.DurationString(durationSecs)
-            
+
         except Exception, e:
             progressStr = Lang('<Unavailable>')
             elapsedStr = Lang('<Unavailable>')
 
         pane.AddWrappedTextField(Lang('Time', 16) + elapsedStr)
         pane.AddWrappedTextField(Lang('Progress', 16) + progressStr)
-        
+
         helpKeys = { Lang("<Enter>") : Lang("Hide This Window") }
         if self.task.CanCancel():
             helpKeys[ Lang('<Esc>') ]= Lang('Cancel Operation')
         pane.AddKeyHelpField( helpKeys )
-    
+
     def UpdateFieldsCANCEL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.text)
         pane.AddWrappedBoldTextField(Lang('Attempting to cancel operation...'))
         pane.NewLine()
-        
+
         try:
             progressVal = self.task.ProgressValue()
             progressStr = str(int(100*progressVal))+'%'
             durationSecs = self.task.DurationSecs()
             elapsedStr = TimeUtils.DurationString(durationSecs)
-            
+
         except Exception, e:
             progressStr = Lang('<Unavailable>')
             elapsedStr = Lang('<Unavailable>')
 
         pane.AddWrappedTextField(Lang('Time', 16) + elapsedStr)
         pane.AddWrappedTextField(Lang('Progress', 16) + progressStr)
-        
+
         helpKeys = { Lang("<Enter>") : Lang("Hide This Window") }
         pane.AddKeyHelpField( helpKeys )
-    
+
     def UpdateFieldsCOMPLETE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(self.text)
 
         message = self.task.Message()
         pane.AddWrappedBoldTextField(message)
         pane.NewLine()
-        
+
         progressStr = '100%'
         try:
             durationSecs = self.task.DurationSecs()
             elapsedStr = TimeUtils.DurationString(durationSecs)
-            
+
         except Exception, e:
             elapsedStr = Lang(e)
 
         pane.AddWrappedTextField(Lang('Time', 16) + elapsedStr)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK") } )
-    
+
     def UpdateFields(self):
         if self.state != 'COMPLETE' and not self.task.IsPending():
             self.HandleCompletion()
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-    
+
     def LiveUpdateFields(self):
         self.UpdateFields()
-    
+
     def ChangeState(self, inState):
         self.state = inState
         self.BuildPane()
         self.UpdateFields()
-        
+
     def HandleKey(self, inKey):
         handled = True
         if inKey == 'KEY_ESCAPE':
@@ -748,7 +748,7 @@ class DialogueUtils:
             Layout.Inst().PushDialogue(LoginDialogue(Lang('Please log in to perform this function'), inFunc))
         else:
             inFunc()
-            
+
     @classmethod
     def AuthenticatedOrPasswordUnsetOnly(cls, inFunc):
         if Auth.Inst().IsPasswordSet():

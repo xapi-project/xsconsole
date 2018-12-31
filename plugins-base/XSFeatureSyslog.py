@@ -15,14 +15,14 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class SyslogDialogue(InputDialogue):
     def __init__(self):
         self.custom = {
             'title' : Lang("Change Logging Destination"),
-            'info' : Lang("Please enter the hostname or IP address for remote logging (or blank for none)"), 
+            'info' : Lang("Please enter the hostname or IP address for remote logging (or blank for none)"),
             'fields' : [ [Lang("Destination", 20), Data.Inst().host.logging.syslog_destination(''), 'destination'] ]
             }
         InputDialogue.__init__(self)
@@ -40,7 +40,7 @@ class SyslogDialogue(InputDialogue):
             message = Lang("Remote logging disabled.")
         else:
             message = Lang("Logging destination set to '")+hostname + "'."
-        return Lang('Logging Destination Change Successful'), message        
+        return Lang('Logging Destination Change Successful'), message
 
 
 class XSFeatureSyslog:
@@ -48,23 +48,23 @@ class XSFeatureSyslog:
     def StatusUpdateHandler(cls, inPane):
         data = Data.Inst()
         inPane.AddTitleField(Lang("Remote Logging (syslog)"))
-    
+
         if data.host.logging.syslog_destination('') == '':
             inPane.AddWrappedTextField(Lang("Remote logging is not configured on this host.  Press <Enter> to activate and set a destination address."))
         else:
             inPane.AddWrappedTextField(Lang("The remote logging destination for this host is"))
             inPane.NewLine()
             inPane.AddWrappedTextField(data.host.logging.syslog_destination())
-        
+
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Reconfigure"),
             Lang("<F5>") : Lang("Refresh")
         })
-        
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(SyslogDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

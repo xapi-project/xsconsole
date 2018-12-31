@@ -25,7 +25,7 @@ class Importer:
     menuEntries = {}
     menuRegenerators = {}
     resources = {}
-    
+
     @classmethod
     def Reset(cls):
         cls.plugIns = {}
@@ -55,7 +55,7 @@ class Importer:
                         finally:
                             if fileObj is not None:
                                 fileObj.close()
-                            
+
     @classmethod
     def ImportRelativeDir(self, inDir):
         basePath = sys.path[0]
@@ -63,51 +63,51 @@ class Importer:
             # Handle redundant empty string when running from IDE
             basePath = sys.path[1]
         self.ImportAbsDir(basePath+'/'+inDir)
-            
+
     @classmethod
     def RegisterMenuEntry(cls, inObj, inName, inParams):
         if inName not in cls.menuEntries:
             cls.menuEntries[inName] = []
-            
+
         cls.menuEntries[inName].append(inParams)
         menuName = inParams.get('menuname', None)
         menuRegenerator = inParams.get('menuregenerator', None)
         if menuName is not None and menuRegenerator is not None:
             cls.menuRegenerators[menuName] = menuRegenerator
         # Store inObj only when we need to reregister plugins
-        
+
     @classmethod
     def UnregisterMenuEntry(cls, inName):
-        del cls.menuEntries[inName]            
-    
+        del cls.menuEntries[inName]
+
     @classmethod
     def RegisterNamedPlugIn(cls, inObj, inName, inParams):
         cls.plugIns[inName] = inParams
         # Store inObj only when we need to reregister plugins
-        
+
     @classmethod
     def UnregisterNamedPlugIn(cls, inName):
         del cls.plugIns[inName]
-        
+
     @classmethod
     def RegisterResource(cls, inObj, inName, inParams):
         cls.resources[inName] = inParams
         # Store inObj only when we need to reregister plugins
-        
+
     @classmethod
     def UnregisterResource(cls, inName):
         del cls.resources[inName]
-        
+
     @classmethod
     def ActivateNamedPlugIn(cls, inName, *inParams):
         plugIn = cls.plugIns.get(inName, None)
         if plugIn is None:
             raise Exception(Lang("PlugIn (for activation) named '")+inName+Lang("' does not exist"))
         handler = plugIn.get('activatehandler', None)
-        
+
         if handler is None:
             raise Exception(Lang("PlugIn (for activation) named '")+inName+Lang("' has no activation handler"))
-        
+
         handler(*inParams)
 
     @classmethod
@@ -124,7 +124,7 @@ class Importer:
             handler = plugin.get('readyhandler', None)
             if handler:
                 handler()
-    
+
     @classmethod
     def GetResource(cls, inName): # Don't use this until all of the PlugIns have had a chance to register
         retVal = None
@@ -135,18 +135,18 @@ class Importer:
                 break
 
         return retVal
-        
+
     def GetResourceOrThrow(cls, inName): # Don't use this until all of the PlugIns have had a chance to register
         retVal = cls.GetResource(inName)
         if retVal is None:
             raise Exception(Lang("Resource named '")+inName+Lang("' does not exist"))
-        
+
         return retVal
-        
+
     @classmethod
     def BuildRootMenu(cls, inParent):
         retVal = RootMenu(inParent)
-        
+
         for name, entries in cls.menuEntries.iteritems():
             for entry in entries:
                 # Create the menu that this item is in
@@ -154,20 +154,20 @@ class Importer:
                 # Create the menu that this item leads to when you select it
                 if entry['menuname'] is not None:
                     retVal.CreateMenuIfNotPresent(entry['menuname'], entry['menutext'], name)
-                
+
                 choiceDef = ChoiceDef(entry['menutext'], entry.get('activatehandler', None), entry.get('statushandler', None))
                 choiceDef.StatusUpdateHandlerSet(entry.get('statusupdatehandler', None))
                 retVal.AddChoice(name, choiceDef, entry.get('menupriority', None))
-        
+
         for entry in cls.plugIns.values():
             menuName = entry.get('menuname', None)
             if menuName is not None:
                 choiceDef = ChoiceDef(entry['menutext'], entry.get('activatehandler', None), entry.get('statushandler', None))
                 choiceDef.StatusUpdateHandlerSet(entry.get('statusupdatehandler', None))
                 retVal.AddChoice(menuName, choiceDef, entry.get('menupriority', None))
-        
+
         return retVal
-    
+
     @classmethod
     def RegenerateMenu(cls, inName, inMenu):
         retVal = inMenu
@@ -184,4 +184,4 @@ class Importer:
         pprint(cls.menuEntries)
         print "\nRegistered resources:"
         pprint(cls.resources)
-    
+

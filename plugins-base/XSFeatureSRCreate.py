@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 import xml.dom.minidom
 
@@ -38,20 +38,20 @@ class SRNewDialogue(Dialogue):
         'NETAPP': Lang('NetApp'),
         'CIFS_ISO': Lang('Windows File Sharing (CIFS) ISO Library'),
         'NFS_ISO': Lang('NFS ISO Library')
-    }    
-    
+    }
+
     netAppProvisioning = {
         'THICK' : Struct(name=Lang('Thick Provisioning'), config={'allocation':'thick'}),
         'THIN_NO_ASIS' :  Struct(name=Lang('Thin Provisioning Without A-SIS Deduplication'), config={'allocation':'thin','asis':'false'}),
         'THIN_ASIS' : Struct(name=Lang('Thin Provisioning With A-SIS Deduplication'), config={'allocation':'thin', 'asis':'true'})
     }
-    
+
     def NetAppProvisioningName(self, inType):
         return self.netAppProvisioning[inType].name
-        
+
     def NetAppProvisioningConfig(self, inType):
         return self.netAppProvisioning[inType].config
-    
+
     def __init__(self, inVariant):
 
         Dialogue.__init__(self)
@@ -79,18 +79,18 @@ class SRNewDialogue(Dialogue):
             retVal = "TPGT %-5.5s %-60.60s" % (inIQN.tpgt[:5], inIQN.name[:60])
         else:
             retVal = "TPGT %-5.5s %-52.52s LUN %-3.3s" % (inIQN.tpgt[:5], inIQN.name[:52], str(inLUN)[:3])
-        
+
         return retVal
 
     def LUNString(self, inLUN):
         retVal = "LUN %-4.4s %s" % (inLUN.LUNid[:4], (SizeUtils.SRSizeString(inLUN.size)+ ' ('+inLUN.vendor)[:62]+')')
-        
+
         return retVal
-        
+
     def AggregateString(self, inAggregate):
         retVal = "%-60.60s %-9.9s" % (inAggregate.name[:60], (SizeUtils.SRSizeString(inAggregate.size))[:9])
         return retVal
-        
+
     def NetAppSRString(self, inNetAppSR):
         retVal = "%-36.36s  %-22.22s %-9.9s" % (self.ExtendedSRName(inNetAppSR.uuid)[:36], inNetAppSR.aggregate[:22], (SizeUtils.SRSizeString(inNetAppSR.size))[:9])
         return retVal
@@ -106,22 +106,22 @@ class SRNewDialogue(Dialogue):
                 idString += inDevice.path[-spaceLeft:]
         retVal = idString[:72]
         return retVal
-        
+
     def EqualSizeStr(self, inSize):
         if re.match(r'.*B$', inSize):
             retVal = inSize
         else:
             retVal = SizeUtils.SRSizeString(inSize)
         return retVal
-        
+
     def StoragePoolString(self, inStoragePool):
         retVal = "%-39.39s %32.32s" % (inStoragePool.name[:39], (self.EqualSizeStr(inStoragePool.capacity))[:12] + (' ('+self.EqualSizeStr(inStoragePool.freespace)[:12]+Lang(' free)'))[:32])
         return retVal
-    
+
     def EqualSRString(self, inSR):
         retVal = "%-56.56s %-12.12s" % (self.ExtendedSRName(inSR.uuid)[:56], (SizeUtils.SRSizeString(inSR.size))[:12])
         return retVal
-        
+
     def ExtendedSRName(self, inUUID):
         retVal = inUUID
         matchingSRs = [ sr for sr in HotAccessor().sr if sr.uuid() == inUUID ]
@@ -139,14 +139,14 @@ class SRNewDialogue(Dialogue):
             names[sr.uuid()] = sr.name_label(Lang('<Unknown>'))
             if len(sr.PBDs()) == 0:
                 names[sr.uuid()] += Lang(' (detached)')
-            
+
         for srChoice in self.srChoices:
             self.srMenu.AddChoice(name = self.ExtendedSRName(srChoice),
                 onAction = self.HandleProbeChoice,
                 handle = srChoice)
         if self.srMenu.NumChoices() == 0:
             self.srMenu.AddChoice(name = Lang('<No Storage Repositories Detected>'))
-            
+
     def BuildPanePROBE_ISCSI_IQN(self):
         self.iqnMenu = Menu()
         for iqnChoice in self.iqnChoices:
@@ -155,7 +155,7 @@ class SRNewDialogue(Dialogue):
                 handle = iqnChoice)
         if self.iqnMenu.NumChoices() == 0:
             self.iqnMenu.AddChoice(name = Lang('<No IQNs Detected>'))
-    
+
     def BuildPanePROBE_ISCSI_LUN(self):
         self.lunMenu = Menu()
         for lunChoice in self.lunChoices:
@@ -164,7 +164,7 @@ class SRNewDialogue(Dialogue):
                 handle = lunChoice)
         if self.lunMenu.NumChoices() == 0:
             self.lunMenu.AddChoice(name = Lang('<No LUNs Detected>'))
-            
+
     def BuildPanePROBE_ISCSI_SR(self):
         self.srMenu = Menu()
         for srChoice in self.srChoices:
@@ -252,15 +252,15 @@ class SRNewDialogue(Dialogue):
         pane.AddBox()
         if hasattr(self, 'BuildPane'+self.state):
             handled = getattr(self, 'BuildPane'+self.state)() # Despatch method named 'BuildPane'+self.state
-            
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
         pane.AddTitleField(Lang('Please select the type of Storage Repository to ')+Lang(self.variant.lower()))
         pane.AddMenuField(self.createMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
-    
+
+
     def UpdateFieldsGATHER_NFS(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -271,7 +271,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsGATHER_NFS_ISO(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -283,7 +283,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsGATHER_CIFS_ISO(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -297,7 +297,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-            
+
     def UpdateFieldsGATHER_ISCSI(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -313,7 +313,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsGATHER_NETAPP(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -329,7 +329,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsGATHER_HBA(self):
         data = Data.Inst()
         pane = self.Pane()
@@ -345,7 +345,7 @@ class SRNewDialogue(Dialogue):
         pane.NewLine()
         pane.AddWrappedTextField(Lang('Press <Enter> to scan for HBA devices.'))
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsGATHER_EQUAL(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -361,7 +361,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsPROBE_NFS(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -374,7 +374,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.srMenu, 7) # Only room for 7 menu items
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_ISCSI_IQN(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -382,7 +382,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.iqnMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel"), Lang("<Space>") : Lang("More Information On Item") } )
-    
+
     def UpdateFieldsPROBE_ISCSI_LUN(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -390,7 +390,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.lunMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_ISCSI_SR(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -402,7 +402,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.srMenu, 7) # Only room for 7 menu items
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-        
+
     def UpdateFieldsPROBE_NETAPP_AGGREGATE(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -410,18 +410,18 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.aggregateMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_NETAPP_FLEXVOLS(self):
         pane = self.Pane()
         pane.ResetFields()
         pane.AddTitleField(Lang('Please enter the number of FlexVols to assign to this Storage Repository.'))
 
         pane.AddInputField(Lang('Number of FlexVols',24), '8', 'numflexvols')
-        
+
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-            
+
     def UpdateFieldsPROBE_NETAPP_PROVISIONING(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -429,7 +429,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.provisioningMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_NETAPP_SR(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -441,7 +441,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.srMenu, 7) # Only room for 7 menu items
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_HBA_DEVICE(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -449,7 +449,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.deviceMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_HBA_NAME(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -462,7 +462,7 @@ class SRNewDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsPROBE_HBA_SR(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -474,7 +474,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.srMenu, 7) # Only room for 7 menu items
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_EQUAL_STORAGEPOOL(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -482,7 +482,7 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.storagePoolMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPROBE_EQUAL_SR(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -494,20 +494,20 @@ class SRNewDialogue(Dialogue):
 
         pane.AddMenuField(self.srMenu, 7) # Only room for 7 menu items
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
         pane.AddTitleField(Lang('Press <F8> to ')+Lang(self.variant.lower())+Lang(' this Storage Repository'))
-        
+
         pane.AddStatusField(Lang('SR Type', 26), self.srTypeNames[self.createType])
         for name, value in self.extraInfo:
             pane.AddStatusField(name.ljust(26, ' '), value)
-        
+
         pane.NewLine()
 
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -516,7 +516,7 @@ class SRNewDialogue(Dialogue):
         self.state = inState
         self.BuildPane()
         self.UpdateFields()
-    
+
     def HandleKeyINITIAL(self, inKey):
         return self.createMenu.HandleKey(inKey)
 
@@ -614,7 +614,7 @@ class SRNewDialogue(Dialogue):
         else:
             handled = False
         return handled
-    
+
     def HandleKeyPROBE_HBA_NAME(self, inKey):
         handled = True
         pane = self.Pane()
@@ -627,7 +627,7 @@ class SRNewDialogue(Dialogue):
                     (Lang('Name'), self.srParams['name']),
                     (Lang('Description'), self.srParams['description'])
                 ]
-                if self.variant == 'ATTACH':                    
+                if self.variant == 'ATTACH':
                     self.ChangeState('PROBE_HBA_SR')
                 else:
                     self.ChangeState('CONFIRM')
@@ -637,7 +637,7 @@ class SRNewDialogue(Dialogue):
         else:
             handled = self.HandleInputFieldKeys(inKey)
         return handled
-    
+
     def HandleKeyGATHER_EQUAL(self, inKey):
         handled = True
         pane = self.Pane()
@@ -665,7 +665,7 @@ class SRNewDialogue(Dialogue):
                 message = Lang("Portal", 12)+iqn.portal+"\n"
                 message += Lang("TPGT", 12)+iqn.tpgt+"\n"
                 message += Lang("IQN", 12)+iqn.name
-                
+
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("IQN Information"), message))
             except Exception, e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Failed: ")+Lang(e)))
@@ -702,7 +702,7 @@ class SRNewDialogue(Dialogue):
 
     def HandleKeyPROBE_NETAPP_PROVISIONING(self, inKey):
         return self.provisioningMenu.HandleKey(inKey)
-        
+
     def HandleKeyPROBE_NETAPP_SR(self, inKey):
         return self.srMenu.HandleKey(inKey)
 
@@ -711,7 +711,7 @@ class SRNewDialogue(Dialogue):
 
     def HandleKeyPROBE_HBA_SR(self, inKey):
         return self.srMenu.HandleKey(inKey)
-        
+
     def HandleKeyPROBE_EQUAL_STORAGEPOOL(self, inKey):
         return self.storagePoolMenu.HandleKey(inKey)
 
@@ -723,7 +723,7 @@ class SRNewDialogue(Dialogue):
         if inKey == 'KEY_F(8)':
             try:
                 # Despatch method named 'Commit'+self.srCreateType+'_'+self.variant
-                getattr(self, 'Commit'+self.createType+'_'+self.variant)() 
+                getattr(self, 'Commit'+self.createType+'_'+self.variant)()
             except Exception, e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
@@ -734,7 +734,7 @@ class SRNewDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey in ('KEY_ESCAPE', 'KEY_LEFT'):
             Layout.Inst().PopDialogue()
             handled = True
@@ -776,11 +776,11 @@ class SRNewDialogue(Dialogue):
                 # Parse XML for UUID values
                 xmlDoc = xml.dom.minidom.parseString(xmlSRList)
                 self.srChoices = [ str(node.firstChild.nodeValue.strip()) for node in xmlDoc.getElementsByTagName("UUID") ]
-                
+
             self.ChangeState('PROBE_NFS')
         else:
             raise Exception('Bad self.variant') # Logic error
-    
+
     def HandleCIFSData(self, inParams):
         self.srParams = inParams
 
@@ -795,7 +795,7 @@ class SRNewDialogue(Dialogue):
             ]
 
         self.ChangeState('CONFIRM')
-        
+
     def HandleISCSIData(self, inParams):
         self.srParams = inParams
         self.extraInfo = [ # Array of tuples
@@ -832,17 +832,17 @@ class SRNewDialogue(Dialogue):
                             tpgt=index,
                             name=iqn,
                             iqn=iqn))
-                            
+
                     except Exception, e:
                         pass # Ignore failures
-                
+
         self.ChangeState('PROBE_ISCSI_IQN')
 
     def NetAppBaseConfig(self):
         retVal = {
             'target':self.srParams['target'],
             'username':self.srParams['username'],
-            'password':self.srParams['password']        
+            'password':self.srParams['password']
         }
         if self.srParams['chapuser'] != '':
             retVal.update({
@@ -896,7 +896,7 @@ class SRNewDialogue(Dialogue):
                                 disks = disks,
                                 raidType = raidType,
                                 asisdedup = asisdedup)) # NetApp's Advanced Single Instance Storage Deduplication, 'true' if supported
-                                
+
                         except Exception, e:
                             pass # Ignore failures
             self.ChangeState('PROBE_NETAPP_AGGREGATE')
@@ -908,7 +908,7 @@ class SRNewDialogue(Dialogue):
                 self.srTypes['NETAPP'] # type
                 )
             )
-    
+
             self.netAppSRChoices = []
             xmlDoc = xml.dom.minidom.parseString(xmlOutput)
             for xmlSR in xmlDoc.getElementsByTagName('SR'):
@@ -921,10 +921,10 @@ class SRNewDialogue(Dialogue):
                         size = size,
                         aggregate = aggregate
                     ))
-                        
+
                 except Exception, e:
                     pass # Ignore failures
-                    
+
             self.ChangeState('PROBE_NETAPP_SR')
         else:
             raise Exception('bad self.variant') # Logic error
@@ -952,8 +952,8 @@ class SRNewDialogue(Dialogue):
                         deviceInfo = Struct()
                         for name in ('path', 'SCSIid', 'vendor', 'serial', 'size', 'adapter', 'channel', 'id', 'lun', 'hba'):
                             setattr(deviceInfo, name.lower(), str(device.getElementsByTagName(name)[0].firstChild.nodeValue.strip()))
-                        self.deviceChoices.append(deviceInfo) 
-                            
+                        self.deviceChoices.append(deviceInfo)
+
                     except Exception, e:
                         pass # Ignore failures
         self.ChangeState('PROBE_HBA_DEVICE')
@@ -962,7 +962,7 @@ class SRNewDialogue(Dialogue):
         retVal = {
             'target':self.srParams['target'],
             'username':self.srParams['username'],
-            'password':self.srParams['password']        
+            'password':self.srParams['password']
         }
         if self.srParams['chapuser'] != '':
             retVal.update({
@@ -1008,8 +1008,8 @@ class SRNewDialogue(Dialogue):
                             storageInfo = Struct()
                             for name in ('Name', 'Default', 'Members', 'Volumes', 'Capacity', 'FreeSpace'):
                                 setattr(storageInfo, name.lower(), storagePool.getElementsByTagName(name)[0].firstChild.nodeValue.strip())
-                            self.storagePoolChoices.append(storageInfo) 
-                                
+                            self.storagePoolChoices.append(storageInfo)
+
                         except Exception, e:
                             pass # Ignore failures
             self.ChangeState('PROBE_EQUAL_STORAGEPOOL')
@@ -1021,7 +1021,7 @@ class SRNewDialogue(Dialogue):
                 self.srTypes['EQUAL'] # type
                 )
             )
-    
+
             self.equalSRChoices = []
             xmlDoc = xml.dom.minidom.parseString(xmlOutput)
             for xmlSR in xmlDoc.getElementsByTagName('SR'):
@@ -1032,10 +1032,10 @@ class SRNewDialogue(Dialogue):
                         uuid = uuid,
                         size = size
                     ))
-                        
+
                 except Exception, e:
                     pass # Ignore failures
-                
+
             self.ChangeState('PROBE_EQUAL_SR')
         else:
             raise Exception('bad self.variant') # Logic error
@@ -1043,7 +1043,7 @@ class SRNewDialogue(Dialogue):
 
     def HandleCreateChoice(self, inChoice):
         self.createType = inChoice
-        
+
         self.ChangeState('GATHER_'+inChoice)
 
     def HandleProbeChoice(self, inChoice):
@@ -1079,12 +1079,12 @@ class SRNewDialogue(Dialogue):
                         record = Struct()
                         for name in ('vendor', 'LUNid', 'size', 'SCSIid'):
                             setattr(record, name, str(xmlLUN.getElementsByTagName(name)[0].firstChild.nodeValue.strip()))
-                            
+
                         self.lunChoices.append(record)
-                            
+
                     except Exception, e:
                         pass # Ignore failures
-            
+
         self.ChangeState('PROBE_ISCSI_LUN')
 
     def HandleLUNChoice(self, inChoice):
@@ -1113,7 +1113,7 @@ class SRNewDialogue(Dialogue):
                 self.srChoices = []
             else:
                 self.srChoices = [ str(node.firstChild.nodeValue.strip()) for node in xmlDoc.getElementsByTagName("UUID") ]
-    
+
             self.ChangeState('PROBE_ISCSI_SR')
 
     def HandleiSCSISRChoice(self, inChoice):
@@ -1152,7 +1152,7 @@ class SRNewDialogue(Dialogue):
             self.srChoices = [ str(node.firstChild.nodeValue.strip()) for node in xmlDoc.getElementsByTagName("UUID") ]
 
         self.hbaWarn = ( self.variant == 'CREATE' and len(self.srChoices) != 0 )
-            
+
         self.ChangeState('PROBE_HBA_NAME')
 
     def HandleHBASRChoice(self, inChoice):
@@ -1185,7 +1185,7 @@ class SRNewDialogue(Dialogue):
                 True # shared
                 )
             )
-            
+
             # Set values in other_config only if the SR.create operation hasn't already set them
             for key, value in FirstValue(inOtherConfig, {}).iteritems():
                 try:
@@ -1196,13 +1196,13 @@ class SRNewDialogue(Dialogue):
             Data.Inst().Update()
             Data.Inst().SetPoolSRIfRequired(srRef)
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Successful")))
-            
+
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Failed"), Lang(e)))
 
     def CommitAttach(self, inType, inDeviceConfig, inOtherConfig, inContentType):
         srRef = None
-        
+
         for sr in HotAccessor().sr:
             if sr.uuid() == self.srParams['uuid']:
                 # SR already exists, so check whether it's fully configured
@@ -1228,7 +1228,7 @@ class SRNewDialogue(Dialogue):
                     True # shared
                     )
                 )
-    
+
                 # Set values in other_config only if the SR.introduce operation hasn't already set them
                 for key, value in FirstValue(inOtherConfig, {}).iteritems():
                     try:
@@ -1242,11 +1242,11 @@ class SRNewDialogue(Dialogue):
                     'SR':srRef, # SR ref
                     'device_config':inDeviceConfig
                 })))
-            
+
             for pbd in pbdList:
                 Task.Sync(lambda x: x.xenapi.PBD.plug(pbd))
                 pluggedPBDList.append(pbd)
-            
+
             Data.Inst().Update()
             if inContentType != 'iso':
                 Data.Inst().SetPoolSRIfRequired(srRef)
@@ -1260,9 +1260,9 @@ class SRNewDialogue(Dialogue):
                     Task.Sync(lambda x: x.xenapi.PBD.unplug(pluggedPBD))
                 for pbd in pbdList:
                     Task.Sync(lambda x: x.xenapi.PBD.destroy(pbd))
-                    
+
                 Task.Sync(lambda x: x.xenapi.SR.forget(srRef))
-                
+
             except Exception, e:
                 message += Lang('.  Attempts to rollback also failed: ')+Lang(e)
 
@@ -1276,7 +1276,7 @@ class SRNewDialogue(Dialogue):
         { # Set auto-scan to false for non-ISO SRs
             'auto-scan':'false'
         })
-        
+
     def CommitNFS_ATTACH(self):
         self.CommitAttach(self.srTypes['NFS'], { # device_config
             'server':self.srParams['server'],
@@ -1309,7 +1309,7 @@ class SRNewDialogue(Dialogue):
                 'username' : self.srParams['username'],
                 'cifspassword' : self.srParams['cifspassword']
             })
-        self.CommitAttach(self.srTypes['CIFS_ISO'], 
+        self.CommitAttach(self.srTypes['CIFS_ISO'],
             deviceConfig,
             { # Set auto-scan to true for ISO SRs
                 'auto-scan':'true'
@@ -1328,7 +1328,7 @@ class SRNewDialogue(Dialogue):
                 'auto-scan':'false'
             }
         )
-        
+
     def CommitISCSI_ATTACH(self):
         self.CommitAttach(self.srTypes['ISCSI'], { # device_config
             'target':self.srParams['remotehost'],
@@ -1356,13 +1356,13 @@ class SRNewDialogue(Dialogue):
 
     def CommitNETAPP_ATTACH(self):
         deviceConfig = self.NetAppBaseConfig()
-        
+
         self.CommitAttach(self.srTypes['NETAPP'],
             deviceConfig, # device_config
             {}, # other_config
             'user' # content_type
         )
-        
+
     def CommitHBA_CREATE(self):
         deviceConfig = { 'SCSIid' : self.srParams['scsiid'] }
         self.CommitCreate(self.srTypes['HBA'],
@@ -1371,16 +1371,16 @@ class SRNewDialogue(Dialogue):
                 'auto-scan':'false'
             }
         )
-    
+
     def CommitHBA_ATTACH(self):
         deviceConfig = { 'SCSIid' : self.srParams['scsiid'] }
-        
+
         self.CommitAttach(self.srTypes['HBA'],
             deviceConfig, # device_config
             {}, # other_config
             'user' # content_type
         )
-    
+
     def CommitEQUAL_CREATE(self):
         deviceConfig = self.EqualBaseConfig()
         deviceConfig.update({
@@ -1395,7 +1395,7 @@ class SRNewDialogue(Dialogue):
 
     def CommitEQUAL_ATTACH(self):
         deviceConfig = self.EqualBaseConfig()
-        
+
         self.CommitAttach(self.srTypes['EQUAL'],
             deviceConfig, # device_config
             {}, # other_config
@@ -1407,25 +1407,25 @@ class XSFeatureSRCreate:
     @classmethod
     def CreateStatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Create New Storage Repository"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "This option is used to create a new Storage Repository."))
-    
+
     @classmethod
     def AttachStatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Attach Existing Storage Repository"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "This option is used to attach a Storage Repository or ISO library that already exists."))
-    
+
     @classmethod
     def CreateActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(SRNewDialogue('CREATE')))
-    
+
     @classmethod
     def AttachActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(SRNewDialogue('ATTACH')))
-    
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

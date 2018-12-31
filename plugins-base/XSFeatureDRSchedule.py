@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class DRScheduleDialogue(Dialogue):
@@ -32,7 +32,7 @@ class DRScheduleDialogue(Dialogue):
 
     def __init__(self):
         Dialogue.__init__(self)
-   
+
         self.timeMenu = Menu(self, None, "", [
            ChoiceDef("Daily", lambda: self.HandleMethodChoice('daily')),
            ChoiceDef("Weekly", lambda: self.HandleMethodChoice('weekly')),
@@ -51,7 +51,7 @@ class DRScheduleDialogue(Dialogue):
         pane.AddTitleField(title)
         pane.AddMenuField(self.timeMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def HandleMethodChoice(self, inChoice):
         currentSetting = self.findCurrent()
         Layout.Inst().PopDialogue()
@@ -70,7 +70,7 @@ class DRScheduleDialogue(Dialogue):
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Failed to create metadata schedule link")))
         else:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Metadata Backup Schedule successfully disabled")))
-        
+
 
     def HandleKey(self, inKey):
         handled = self.timeMenu.HandleKey(inKey)
@@ -88,13 +88,13 @@ class XSFeatureDRSchedule:
         inPane.AddTitleField(Lang("Schedule Virtual Machine Metadata Backup"))
 
         inPane.AddWrappedTextField(Lang(
-            "Press <Enter> to select how to schedule regular Virtual Machine metadata backups."))  
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Change Schedule") } )  
-        
+            "Press <Enter> to select how to schedule regular Virtual Machine metadata backups."))
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Change Schedule") } )
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(DRScheduleDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

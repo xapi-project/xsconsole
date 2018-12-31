@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class ClaimSRDialogue(Dialogue):
@@ -27,7 +27,7 @@ class ClaimSRDialogue(Dialogue):
         self.srSize = None
         self.typeChoice = 'SRONLY' # Default for HD installations
         self.ChangeState('INITIAL')
-        
+
     def DeviceString(self, inDevice):
         retVal = "%-6.6s%-46.46s%20.20s" % (
             FirstValue(inDevice.bus, '')[:6],
@@ -35,29 +35,29 @@ class ClaimSRDialogue(Dialogue):
             SizeUtils.DiskSizeString(inDevice.size)[:20]
         )
         return retVal
-        
+
     def BuildPaneBase(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang("Claim Disk As Storage Repository"))
         pane.AddBox()
-    
+
     def BuildPaneINITIAL(self):
         self.BuildPaneBase()
         self.UpdateFields()
-        
+
     def BuildPaneDEVICE(self):
         self.deviceList = FileUtils.SRDeviceList()
-        
+
         self.BuildPaneBase()
-        
+
         choiceDefs = []
         for device in self.deviceList:
             choiceDefs.append(ChoiceDef(self.DeviceString(device), lambda: self.HandleDeviceChoice(self.deviceMenu.ChoiceIndex()) ) )
-        
+
         if len(choiceDefs) == 0:
             choiceDefs.append(ChoiceDef(Lang("<No devices available>", 70), None))
-    
-        # 'Custom' manual choice disabled    
+
+        # 'Custom' manual choice disabled
         # choiceDefs.append(ChoiceDef(Lang("Specify a device manually", 70), lambda: self.HandleDeviceChoice(None) ) )
 
         self.deviceMenu = Menu(self, None, Lang("Select Device"), choiceDefs)
@@ -70,15 +70,15 @@ class ClaimSRDialogue(Dialogue):
     def BuildPaneCUSTOM(self):
         self.BuildPaneBase()
         self.UpdateFields()
-        
+
     def BuildPaneCONFIRM(self):
         self.BuildPaneBase()
         self.UpdateFields()
-    
+
     def BuildPaneREBOOT(self):
         self.BuildPaneBase()
         self.UpdateFields()
-    
+
     def BuildPaneCHOOSETYPE(self):
         self.typeMenu = Menu()
         self.typeMenu.AddChoice(name = Lang('Claim Disk for Storage Repository and XenServer Use'),
@@ -91,19 +91,19 @@ class ClaimSRDialogue(Dialogue):
         )
         self.BuildPaneBase()
         self.UpdateFields()
-    
+
     def ChangeState(self, inState):
         self.state = inState
         getattr(self, 'BuildPane'+self.state)() # Despatch method named 'BuildPane'+self.state
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-        
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWarningField(Lang("WARNING"))
         pane.AddWrappedTextField(Lang("Once a disk is selected, this function will erase all information on that disk.  Do you want to continue?"))
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("Continue"), Lang("<Esc>") : Lang("Cancel") } )
@@ -111,19 +111,19 @@ class ClaimSRDialogue(Dialogue):
     def UpdateFieldsDEVICE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Select a disk to erase and claim as a Storage Repository."))
         pane.AddMenuField(self.deviceMenu)
         pane.AddWrappedTextField(Lang('Sizes shown are in binary (1kB = 1024) and decimal (1kB = 1000) units.'))
-        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel"), 
+        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel"),
             "<F5>" : Lang("Rescan") } )
 
     def UpdateFieldsALREADYTHERE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWarningField(Lang("WARNING"))
-        
+
         pane.AddWrappedBoldTextField(Lang("A Storage Repository has already been created on this disk.  "
             "Continuing will destroy all information in this Storage Repository.  Would you like to continue?"))
         pane.NewLine()
@@ -134,30 +134,30 @@ class ClaimSRDialogue(Dialogue):
     def UpdateFieldsCUSTOM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Enter the device name, e.g. /dev/sdb"))
         pane.AddInputField(Lang("Device Name",  16), '', 'device')
         pane.NewLine()
         pane.AddWrappedTextField(Lang("WARNING: No checks will be performed on this device before it is erased."))
-        
+
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Exit") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-    
+
     def UpdateFieldsCHOOSETYPE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Please choose the assignment for this disk."))
         pane.AddMenuField(self.typeMenu)
         pane.AddWrappedTextField(Lang('For disks that are not going to be removed, the Storage Repository and '
             'XenServer Use option is strongly recommended.'))
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedBoldTextField(Lang("Press <F8> to confirm that you want to erase all information on this disk and use it as a Storage Repository.  Data currently on this disk cannot be recovered after this step."))
         pane.NewLine()
         pane.AddWrappedBoldTextField(Lang("Device"))
@@ -171,7 +171,7 @@ class ClaimSRDialogue(Dialogue):
     def UpdateFieldsREBOOT(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedBoldTextField(Lang("This server needs to reboot to use the new Storage Repository.  Press <F8> to reboot now."))
 
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("Reboot"), Lang("<Esc>") : Lang("Cancel") } )
@@ -180,27 +180,27 @@ class ClaimSRDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-        
+
     def HandleKeyINITIAL(self, inKey):
         handled = False
-        
+
         if inKey == 'KEY_F(8)':
             Layout.Inst().TransientBanner(Lang("Scanning..."))
             Data.Inst().Update() # Get current SR list
             self.ChangeState('DEVICE')
             handled = True
-            
+
         return handled
 
     def HandleKeyDEVICE(self, inKey):
         handled = self.deviceMenu.HandleKey(inKey)
-        
+
         if not handled and inKey == 'KEY_F(5)':
             Layout.Inst().PushDialogue(BannerDialogue( Lang("Rescanning...")))
             Layout.Inst().Refresh()
@@ -210,12 +210,12 @@ class ClaimSRDialogue(Dialogue):
             time.sleep(0.5) # Display rescanning box for a reasonable time
             Layout.Inst().Refresh()
             handled = True
-            
+
         return handled
 
     def HandleKeyALREADYTHERE(self, inKey):
         handled = False
-        
+
         if inKey == 'KEY_F(8)':
             XSLog('Disk claim will overwrite existing SR')
             if Data.Inst().state_on_usb_media(True):
@@ -223,7 +223,7 @@ class ClaimSRDialogue(Dialogue):
             else:
                 self.ChangeState('CONFIRM')
             handled = True
-            
+
         return handled
 
     def HandleKeyCHOOSETYPE(self, inKey):
@@ -243,27 +243,27 @@ class ClaimSRDialogue(Dialogue):
         else:
             handled = False
         return handled
-        
+
     def HandleKeyCONFIRM(self, inKey):
         handled = False
-        
+
         if inKey == 'KEY_F(8)':
             self.DoAction()
             handled = True
-            
+
         return handled
-    
+
     def HandleKeyREBOOT(self, inKey):
         handled = False
-        
+
         if inKey == 'KEY_F(8)':
             Layout.Inst().ExitBannerSet(Lang("Rebooting..."))
             Layout.Inst().ExitCommandSet('/sbin/shutdown -r now')
             XSLog('Disk claim initiated reboot')
             handled = True
-            
+
         return handled
-    
+
     def HandleDeviceChoice(self, inChoice):
         if inChoice is None:
             self.ChangeState('CUSTOM')
@@ -298,7 +298,7 @@ class ClaimSRDialogue(Dialogue):
         Layout.Inst().TransientBanner(Lang("Claiming and Configuring Disk..."))
         XSLog('Disk claim initiated for '+str(self.deviceToErase.device))
         Data.Inst().CloseSession() # Disk claim restarts xapi, so close the session in Data.Inst()
-        
+
         if self.typeChoice == 'SRONLY':
             pipe = ShellPipe(
                 "/opt/xensource/libexec/delete-partitions-and-claim-disk", '--sr-only', self.deviceToErase.device)
@@ -306,10 +306,10 @@ class ClaimSRDialogue(Dialogue):
             pipe = ShellPipe(
                 "/opt/xensource/libexec/delete-partitions-and-claim-disk", self.deviceToErase.device)
         status = pipe.CallRC()
-        
+
         time.sleep(4) # Allow xapi to pick up the new SR
         Data.Inst().Update() # Read information about the new SR
-        
+
         if status != 0:
             output = "\n".join(pipe.AllOutput())
             XSLogFailure("Disk claim failed", output)
@@ -322,7 +322,7 @@ class ClaimSRDialogue(Dialogue):
             else:
                 XSLog('Requesting reboot after claiming disk')
                 self.ChangeState('REBOOT')
-            
+
             try:
                 Data.Inst().SetPoolSRsFromDeviceIfNotSet(self.deviceToErase.device)
             except Exception, e:
@@ -335,7 +335,7 @@ class XSFeatureClaimSR:
     def StatusUpdateHandler(cls, inPane):
         data = Data.Inst()
         inPane.AddTitleField(Lang("Claim Local Disk As SR"))
-    
+
         inPane.AddWrappedTextField(Lang("Local disks can be configured as Storage Repositories "
             "for use by virtual machines.  Press <Enter> to list the disks available."))
 
@@ -346,7 +346,7 @@ class XSFeatureClaimSR:
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(ClaimSRDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

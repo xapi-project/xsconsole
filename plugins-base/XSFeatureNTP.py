@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class NTPDialogue(Dialogue):
@@ -23,49 +23,49 @@ class NTPDialogue(Dialogue):
         Dialogue.__init__(self)
 
         data=Data.Inst()
-            
+
         choiceDefs = [
-            ChoiceDef(Lang("Enable NTP Time Synchronization"), lambda: self.HandleInitialChoice('ENABLE') ), 
+            ChoiceDef(Lang("Enable NTP Time Synchronization"), lambda: self.HandleInitialChoice('ENABLE') ),
             ChoiceDef(Lang("Disable NTP Time Synchronization"), lambda: self.HandleInitialChoice('DISABLE') ),
             ChoiceDef(Lang("Add an NTP Server"), lambda: self.HandleInitialChoice('ADD') ) ]
-        
+
         if len(data.ntp.servers([])) > 0:
             choiceDefs.append(ChoiceDef(Lang("Remove a Single NTP Server"), lambda: self.HandleInitialChoice('REMOVE') ))
             choiceDefs.append(ChoiceDef(Lang("Remove All NTP Servers"), lambda: self.HandleInitialChoice('REMOVEALL') ))
-            
+
         if Auth.Inst().IsTestMode():
             # Show Status is a testing-only function
             choiceDefs.append(ChoiceDef(Lang("Show Status (ntpstat)"), lambda: self.HandleInitialChoice('STATUS') ))
-            
+
         self.ntpMenu = Menu(self, None, Lang("Configure Network Time"), choiceDefs)
-    
+
         self.ChangeState('INITIAL')
-        
+
     def BuildPane(self):
         if self.state == 'REMOVE':
             choiceDefs = []
             for server in Data.Inst().ntp.servers([]):
                 choiceDefs.append(ChoiceDef(server, lambda: self.HandleRemoveChoice(self.removeMenu.ChoiceIndex())))
-        
+
             self.removeMenu = Menu(self, None, Lang("Remove NTP Server"), choiceDefs)
-            
+
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang("Configure Network Time"))
         pane.AddBox()
         self.UpdateFields()
-        
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Please Select an Option"))
         pane.AddMenuField(self.ntpMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsADD(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Please Enter the NTP Server Name or Address"))
         pane.AddWrappedTextField(Lang("NTP servers supplied by DHCP may overwrite values configured here."))
         pane.NewLine()
@@ -77,25 +77,25 @@ class NTPDialogue(Dialogue):
     def UpdateFieldsREMOVE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Select Server Entry to Remove"))
         pane.AddWrappedTextField(Lang("NTP servers supplied by DHCP may overwrite values configured here."))
         pane.NewLine()
-        
+
         pane.AddMenuField(self.removeMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-        
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-    
+
     def ChangeState(self, inState):
         self.state = inState
         self.BuildPane()
-    
+
     def HandleKeyINITIAL(self, inKey):
         return self.ntpMenu.HandleKey(inKey)
-     
+
     def HandleKeyADD(self, inKey):
         handled = True
         pane = self.Pane()
@@ -121,18 +121,18 @@ class NTPDialogue(Dialogue):
 
     def HandleKeyREMOVE(self, inKey):
         return self.removeMenu.HandleKey(inKey)
-        
+
     def HandleKey(self,  inKey):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-            
+
     def HandleInitialChoice(self,  inChoice):
         data = Data.Inst()
         try:
@@ -160,7 +160,7 @@ class NTPDialogue(Dialogue):
 
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Operation Failed"), Lang(e)))
-            
+
         data.Update()
 
     def HandleRemoveChoice(self,  inChoice):
@@ -191,33 +191,33 @@ class XSFeatureNTP:
     def StatusUpdateHandler(cls, inPane):
         data = Data.Inst()
         inPane.AddTitleField(Lang("Network Time (NTP)"))
-        
+
         inPane.AddWrappedTextField(Lang("One or more network time servers can be configured to synchronize time between servers.  This is especially important for pooled servers."))
         inPane.NewLine()
-        
+
         if not data.chkconfig.ntpd(False):
             inPane.AddWrappedTextField(Lang("Currently NTP is disabled, and the following servers are configured."))
         else:
             inPane.AddWrappedTextField(Lang("Currently NTP is enabled, and the following servers are configured."))
-        
+
         inPane.NewLine()
-        
-        servers = data.ntp.servers([])        
+
+        servers = data.ntp.servers([])
         if len(servers) == 0:
             inPane.AddWrappedTextField(Lang("<No servers configured>"))
         else:
             for server in servers:
                 inPane.AddWrappedTextField(server)
-        
+
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Reconfigure"),
             Lang("<F5>") : Lang("Refresh")
         })
-        
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(NTPDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

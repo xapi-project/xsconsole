@@ -24,7 +24,7 @@ class UpdateDialogue(FileDialogue):
         self.custom = {
             'title' : Lang("Apply Software Update"),
             'searchregexp' : r'.*\.xsoem$',  # Type of system update file is .xsoem
-            'deviceprompt' : Lang("Select the device containing the update"), 
+            'deviceprompt' : Lang("Select the device containing the update"),
             'fileprompt' : Lang("Select the update file"),
             'confirmprompt' : Lang("Press <F8> to begin the update process"),
             'mode' : 'ro'
@@ -90,7 +90,7 @@ class XSFeatureUpdate:
 
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to apply a software update."))
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Update") } )  
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Update") } )
         
     @classmethod
     def ActivateHandler(cls):

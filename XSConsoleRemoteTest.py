@@ -35,7 +35,7 @@ class UDSXMLRPCServer(SocketServer.UnixStreamServer, SimpleXMLRPCServer.SimpleXM
         SimpleXMLRPCServer.SimpleXMLRPCDispatcher.__init__(self)
         SocketServer.UnixStreamServer.__init__(self, inAddr,
             FirstValue(inRequestHandler, UnixSimpleXMLRPCRequestHandler))
-        
+
     def handle_request(self):
         # Same as base class, but returns True if a request was handled
         try:
@@ -52,7 +52,7 @@ class UDSXMLRPCServer(SocketServer.UnixStreamServer, SimpleXMLRPCServer.SimpleXM
 
 class XMLRPCRemoteTest:
     LOCAL_SOCKET_PATH = '/var/xapi/xmlrpcsocket.xsconsole'
-    
+
     def __init__(self):
         if os.path.exists(self.LOCAL_SOCKET_PATH):
             os.unlink(self.LOCAL_SOCKET_PATH)
@@ -62,13 +62,13 @@ class XMLRPCRemoteTest:
             match = re.match(r'HandleXMLRPC(.+)', name)
             if match:
                 self.server.register_function(getattr(self, name), match.group(1).lower())
-        
+
         self.SetSocketTimeout(0.0)
         self.ResetStrings()
         Language.SetStringHook(self.StringHook)
         Language.SetErrorHook(self.ErrorHook)
 
-    def SetSocketTimeout(self, inTimeout):        
+    def SetSocketTimeout(self, inTimeout):
         self.server.socket.settimeout(inTimeout)
 
     def ResetStrings(self):
@@ -87,7 +87,7 @@ class XMLRPCRemoteTest:
 
     def Poll(self):
         retVal = self.server.handle_request() # True if the server handled a request, False if timed out
-        
+
         # The socket timeout is different for:
         # 1.  XMLRPC idle, where the wait mustn't delay real keypress handling.
         # 2.  Ongoing XML test, where the wait must allow time for the next XML command to arrive
@@ -142,7 +142,7 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCNew(self, inTestname):
         """Function: new(<test name>)
-        
+
         Clears current dialogues and resets xsconsole to the first menu item in the root
         menu.  Requires a test name as a parameter, and returns a banner suitable for
         logging.
@@ -160,16 +160,16 @@ class XMLRPCRemoteTest:
         retVal += "\nManagement IP: "+data.ManagementIP()
         retVal += "\n"+self.StandardReturn()
         return retVal
-        
+
     def HandleXMLRPCKeypress(self, inKeypress):
         """Function: keypress(<key name>)
-        
+
         Simulates a keypress.  The parameter should be the ncurses name of a single key,
         e.g. one of 'H', 'KEY_ESCAPE', 'KEY_ENTER', 'KEY_UP', 'KEY_F(8)' or similar
-        
+
         Return a string suitable for logging.
         """
-        
+
         self.params = ['keypress', inKeypress]
         if self.WrapFunction(lambda: self.app.HandleKeypress(inKeypress)):
             retVal = self.StandardReturn()
@@ -179,12 +179,12 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCVerify(self, inString):
         """Function: verify(<search regexp>)
-        
+
         Searches for the input regexp in the log of every string passed to Lang during
         this test.  Raises an exception if not found.  Prefer assertsuccess/assertfail
         to this function if possible.'
         """
-        
+
         self.params = ['verify', inString]
         result = None
         regExp = re.compile(inString)
@@ -198,12 +198,12 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCActivate(self, inName):
         """ Function: activate(<plug in name>)
-        
+
         Activates a plug in feature, as if the menu item had been selected from
         the menu.  The same thing can be achieved by sending keypresses of arrow
         keys and enter, but this method avoids dependence on the ordering of items
         within menus.
-        
+
         The name parameter should match the name passed to Importer.RegisterNamedPlugIn
         by the intended plug in.  Returns a string suitable for logging.
         """
@@ -213,7 +213,7 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCAuthenticate(self, inPassword):
         """Function: authenticate(<password>)
-        
+
         Authenticates within xsconsole, as if the user had entered the password in
         the login dialogue.  Returns a string suitable for logging.
         """
@@ -224,7 +224,7 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCGetData(self):
         """Function: getdata
-        
+
         Returns xsconsole's internal cache of xapi data.
         """
         self.params = ['getdata']
@@ -234,7 +234,7 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCSnapshot(self):
         """Function: snapshot
-        
+
         Returns the contents of the foreground pane(s) on xsconsole's terminal,
         as a list of lists of strings.
         """
@@ -244,7 +244,7 @@ class XMLRPCRemoteTest:
 
     def HandleXMLRPCAssertFailure(self):
         """Function: assertfailure
-        
+
         Raises an exception if all operations since the start of the test have
         succeeded.  Otherwise returns a string suitable for logging.
         """
@@ -252,10 +252,10 @@ class XMLRPCRemoteTest:
         if len(self.errors) == 0:
             raise xmlrpclib.Fault(1, self.ErrorString())
         return self.StandardReturn()
-    
+
     def HandleXMLRPCAssertSuccess(self):
         """Function: assertsuccess
-        
+
         Raises an exception if any of the operations since the start of the test have
         failed.  Otherwise returns a string suitable for logging.
         """
@@ -267,16 +267,16 @@ class XMLRPCRemoteTest:
 class NullRemoteTest:
     def __init__(*inParams):
         pass
-        
+
     def Poll(self):
         return False
-        
+
     def SetApp(self, *inParams):
         pass
-    
+
 class RemoteTest:
     __instance = None
-    
+
     @classmethod
     def Inst(cls):
         if cls.__instance is None:
@@ -285,5 +285,5 @@ class RemoteTest:
                 XSLog('xsconsole XMLRPC interface activated')
             else:
                 cls.__instance = NullRemoteTest()
-            
+
         return cls.__instance

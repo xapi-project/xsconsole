@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class PoolNewMasterDialogue(Dialogue):
@@ -45,7 +45,7 @@ class PoolNewMasterDialogue(Dialogue):
         pane = self.Pane()
         pane.ResetFields()
 
-        pane.AddWrappedBoldTextField(Lang('Please select a new Master for the Pool.')) 
+        pane.AddWrappedBoldTextField(Lang('Please select a new Master for the Pool.'))
         pane.NewLine()
         pane.AddMenuField(self.hostMenu)
 
@@ -54,12 +54,12 @@ class PoolNewMasterDialogue(Dialogue):
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang('Press <F8> to confirm the new Pool Master.'))
         pane.AddStatusField(Lang('New Master', 16), self.newMaster.name_label())
-        
+
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -71,7 +71,7 @@ class PoolNewMasterDialogue(Dialogue):
 
     def HandleKeySELECT(self, inKey):
         return self.hostMenu.HandleKey(inKey)
-    
+
     def HandleKeyCONFIRM(self, inKey):
         handled = False
         if inKey == 'KEY_F(8)':
@@ -83,7 +83,7 @@ class PoolNewMasterDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
@@ -104,7 +104,7 @@ class PoolNewMasterDialogue(Dialogue):
             Layout.Inst().PushDialogue(InfoDialogue(Lang("The Pool Master Has Been Changed"), Lang('Please allow several seconds for the change to propagate throughout the Pool.')))
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Failed to Designate New Pool Master"), Lang(e)))
-            
+
 class XSFeaturePoolNewMaster:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
@@ -114,7 +114,7 @@ class XSFeaturePoolNewMaster:
             Data.Inst().derived.app_name('')+' will temporarily lose its connection to the Pool '
             'as the transition occurs.  The transition may take several seconds.')
         inPane.NewLine()
-        
+
         if db.host(None) is None:
             pass # Info not available, so print nothing
         elif len(db.host([])) > 1:
@@ -123,7 +123,7 @@ class XSFeaturePoolNewMaster:
             else:
                 masterName = db.host[db.local_pool.master()].name_label(Lang('<Unknown>'))
                 inPane.AddWrappedTextField(Lang("The current Master of this Pool is '"+masterName+"'."))
-                
+
             inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Designate New Pool Master") } )
         else:
             inPane.AddWrappedTextField(Lang('This host is not a member of a Pool so this function is not available.'))
@@ -138,7 +138,7 @@ class XSFeaturePoolNewMaster:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang('Option Unavailable'), Lang('This host is not a Pool member.')))
         else:
             DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(PoolNewMasterDialogue()))
-    
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

@@ -30,7 +30,7 @@ import XenAPI
 
 class Auth:
     instance = None
-    
+
     def __init__(self):
         self.isAuthenticated = False
         self.loggedInUsername = ''
@@ -40,7 +40,7 @@ class Auth:
         self.authTimestampSeconds = None
         self.masterConnectionBroken = False
         socket.setdefaulttimeout(15)
-        
+
         self.testMode = False
         # The testing.txt file is used for testing only
         testFilename = sys.path[0]
@@ -65,30 +65,30 @@ class Auth:
         if cls.instance is None:
             cls.instance = Auth()
         return cls.instance
-    
+
     def IsTestMode(self):
         return self.testMode
-    
+
     def AuthAge(self):
         if self.isAuthenticated:
             retVal = time.time() - self.authTimestampSeconds
         else:
             raise Exception("Cannot get age - not authenticated")
         return retVal
-    
+
     def KeepAlive(self):
         if self.isAuthenticated:
             if self.AuthAge() <= State.Inst().AuthTimeoutSeconds():
                 # Auth still valid, so update timestamp to now
                 self.authTimestampSeconds = time.time()
-    
+
     def LoggedInUsername(self):
         if (self.isAuthenticated):
             retVal = self.loggedInUsername
         else:
             retVal = None
         return retVal
-    
+
     def DefaultPassword(self):
         return self.defaultPassword
 
@@ -96,7 +96,7 @@ class Auth:
 
         if not self.masterConnectionBroken:
             session = XenAPI.Session("https://"+self.testingHost)
-            
+
             try:
                 try:
                     session.login_with_password(inUsername, inPassword,'','XSConsole')
@@ -106,10 +106,10 @@ class Auth:
                     self.masterConnectionBroken = True
                     self.error = 'The master connection has timed out.'
             finally:
-                session.close()    
-        
+                session.close()
+
     def PAMAuthenticate(self, inUsername, inPassword):
-        
+
         def PAMConv(inAuth, inQueryList, *theRest):
             # *theRest consumes the userData argument from later versions of PyPAM
             retVal = []
@@ -118,14 +118,14 @@ class Auth:
                     # Return inPassword from the scope that encloses this function
                     retVal.append((inPassword, 0)) # Append a tuple with two values (so double brackets)
             return retVal
-            
+
         auth = PAM.pam()
         auth.start('passwd')
         auth.set_item(PAM.PAM_USER, inUsername)
         auth.set_item(PAM.PAM_CONV, PAMConv)
-        
+
         try:
-            auth.authenticate() 
+            auth.authenticate()
             auth.acct_mgmt()
             # No exception implies a successful login
         except Exception, e:
@@ -134,16 +134,16 @@ class Auth:
 
     def ProcessLogin(self, inUsername, inPassword):
         self.isAuthenticated = False
-        
+
         if inUsername != 'root':
             raise Exception(Lang("Only root can log in here"))
-        
+
         if self.testingHost is not None:
             self.TCPAuthenticate(inUsername, inPassword)
         else:
             self.PAMAuthenticate(inUsername, inPassword)
         # No exception implies a successful login
-        
+
         self.loggedInUsername = inUsername
         if self.testingHost is not None:
             # Store password when testing only
@@ -151,14 +151,14 @@ class Auth:
         self.authTimestampSeconds = time.time()
         self.isAuthenticated = True
         XSLog('User authenticated successfully')
-        
+
     def IsAuthenticated(self):
         if self.isAuthenticated and self.AuthAge() <= State.Inst().AuthTimeoutSeconds():
             retVal = True
         else:
             retVal = False
         return retVal
-    
+
     def AssertAuthenticated(self):
         if not self.isAuthenticated:
             raise Exception("Not logged in")
@@ -191,13 +191,13 @@ class Auth:
             except Exception,  e:
                 session = None
                 self.error = e
-                
+
             if session is None and self.testingHost is not None:
                 # Local session couldn't connect, so try remote.
                 session = XenAPI.Session("https://"+self.testingHost)
                 try:
                     session.login_with_password('root', self.defaultPassword,'','XSConsole')
-                    
+
                 except XenAPI.Failure, e:
                     if e.details[0] != 'HOST_IS_SLAVE': # Ignore slave errors when testing
                         session = None
@@ -210,10 +210,10 @@ class Auth:
                     session = None
                     self.error = e
         return session
-    
+
     def NewSession(self):
         return self.OpenSession()
-        
+
     def CloseSession(self, inSession):
         if inSession._session is not None:
             try:
@@ -225,26 +225,26 @@ class Auth:
     def IsPasswordSet(self):
         # Security critical - mustn't wrongly return False
         retVal = True
-        
+
         rootHash = spwd.getspnam("root")[1]
         # Account is locked or password is empty
         if rootHash.startswith('!') or rootHash == '':
             retVal = False
-            
+
         return retVal
-    
+
     def ChangePassword(self, inOldPassword, inNewPassword):
-        
+
         if inNewPassword == '':
             raise Exception(Lang('An empty password is not allowed'))
-            
+
         if self.IsPasswordSet():
             try:
                 self.PAMAuthenticate('root', inOldPassword)
             except Exception, e:
                 raise Exception(Lang('Old password not accepted.  Please check your access credentials and try again.'))
             self.AssertAuthenticated()
-            
+
         try:
             # Use xapi if possible, to take care of password changes for pools
             session = self.OpenSession()
@@ -255,9 +255,9 @@ class Auth:
         except Exception, e:
             ShellPipe("/usr/bin/passwd", "--stdin", "root").Call(inNewPassword)
             raise Exception(Lang("The underlying Xen API xapi could not be used.  Password changed successfully on this host only."))
-            
+
         # Caller handles exceptions
-        
+
     def TimeoutSecondsSet(self, inSeconds):
         Auth.Inst().AssertAuthenticated()
         State.Inst().AuthTimeoutSecondsSet(inSeconds)

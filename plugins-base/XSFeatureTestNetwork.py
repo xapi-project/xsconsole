@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class TestNetworkDialogue(Dialogue):
@@ -25,63 +25,63 @@ class TestNetworkDialogue(Dialogue):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang("Test Network Configuration"))
         pane.AddBox()
-        
+
         gatewayName = Data.Inst().ManagementGateway()
         if gatewayName is None:
             gatewayName = Lang('Unknown')
-        
+
         self.testMenu = Menu(self, None, Lang("Select Test Type"), [
-            ChoiceDef(Lang("Ping local address 127.0.0.1"), lambda: self.HandleTestChoice('local') ), 
-            ChoiceDef(Lang("Ping gateway address")+" ("+gatewayName+")", lambda: self.HandleTestChoice('gateway') ), 
-            ChoiceDef(Lang("Ping www.kernel.org"), lambda: self.HandleTestChoice('fixedserver') ), 
-            ChoiceDef(Lang("Ping custom address"), lambda: self.HandleTestChoice('custom') ), 
+            ChoiceDef(Lang("Ping local address 127.0.0.1"), lambda: self.HandleTestChoice('local') ),
+            ChoiceDef(Lang("Ping gateway address")+" ("+gatewayName+")", lambda: self.HandleTestChoice('gateway') ),
+            ChoiceDef(Lang("Ping www.kernel.org"), lambda: self.HandleTestChoice('fixedserver') ),
+            ChoiceDef(Lang("Ping custom address"), lambda: self.HandleTestChoice('custom') ),
             ])
-    
+
         self.customIP = '0.0.0.0'
         self.state = 'INITIAL'
-    
+
         self.UpdateFields()
 
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-        
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Select Test"))
         pane.AddMenuField(self.testMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-        
+
     def UpdateFieldsCUSTOM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Enter hostname or IP address to ping"))
         pane.AddInputField(Lang("Address",  16), self.customIP, 'address')
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Exit") } )
         if pane.CurrentInput() is None:
             pane.InputIndexSet(0)
-            
+
     def HandleKey(self, inKey):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-        
+
     def HandleKeyINITIAL(self, inKey):
         handled = self.testMenu.HandleKey(inKey)
         if not handled and inKey == 'KEY_LEFT':
             Layout.Inst().PopDialogue()
             handled = True
         return handled
-        
+
     def HandleKeyCUSTOM(self, inKey):
         handled = True
         pane = self.Pane()
@@ -92,13 +92,13 @@ class TestNetworkDialogue(Dialogue):
             self.customIP = inputValues['address']
             self.DoPing(self.customIP)
             self.state = 'INITIAL'
-            
+
         elif pane.CurrentInput().HandleKey(inKey):
             pass # Leave handled as True
         else:
             handled = False
         return handled
-        
+
     def HandleTestChoice(self,  inChoice):
         pingTarget = None
         custom = False
@@ -121,35 +121,35 @@ class TestNetworkDialogue(Dialogue):
     def DoPing(self, inAddress):
         success = False
         output = 'Cannot determine address to ping'
-            
+
         if inAddress is not None:
             try:
                 Layout.Inst().TransientBanner(Lang('Pinging...'))
                 (success,  output) = Data.Inst().Ping(inAddress)
             except Exception,  e:
                 output = Lang(e)
-            
+
         if success:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Ping successful"), output))
         else:
             XSLogFailure('Ping failed ', str(output))
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Ping failed"), output))
-        
+
 
 class XSFeatureTestNetwork:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Test Network"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "This option will test the configured network using ping."))
-        
+
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Test Network") })
-        
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(TestNetworkDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

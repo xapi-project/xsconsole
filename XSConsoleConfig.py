@@ -17,18 +17,18 @@ import os, sys
 
 class Config:
     instance = None
-    
+
     def __init__(self):
         self.colours = {
             # Colours specified as name : (red, green, blue), value range 0..999
             'fg_dark' : (400, 400, 360),
             'fg_normal' : (600, 600, 550),
             'fg_bright' : (999, 999, 800),
-            'bg_dark' : (0, 0, 0), 
-            'bg_normal' : (0, 168, 325), 
-            'bg_bright' : (0, 200, 400), 
+            'bg_dark' : (0, 0, 0),
+            'bg_normal' : (0, 168, 325),
+            'bg_bright' : (0, 200, 400),
         }
-        
+
         self.ftpserver = ''
 
         self.xcpconfigdir = '/etc/xensource'
@@ -49,38 +49,38 @@ class Config:
             if os.path.exists(path):
                 self.libexecdir = path
                 break
-    
+
     @classmethod
     def Inst(cls):
         if cls.instance is None:
             cls.instance = Config()
         return cls.instance
-    
+
     @classmethod
     def Mutate(cls, inConfig):
         cls.instance = inConfig
-    
+
     def Colour(self,  inName):
         return self.colours[inName]
-    
+
     def FTPServer(self):
         return self.ftpserver
-    
+
     def BrandingMap(self):
         return {}
-    
+
     def AllShellsTimeout(self):
         return True
-    
+
     def DisplaySerialNumber(self):
         return True
-        
+
     def DisplayAssetTag(self):
         return True
-    
+
     def BMCName(self):
         return 'BMC'
-        
+
     def FirstBootEULAs(self):
         # Subclasses in XSConsoleConfigOEM can add their EULAs to this array
         return ['/EULA']
@@ -100,4 +100,4 @@ class Config:
 # Import a more specific configuration if available
 if os.path.isfile(sys.path[0]+'/XSConsoleConfigOEM.py'):
     import XSConsoleConfigOEM
-    
+

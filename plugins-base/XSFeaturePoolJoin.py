@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class PoolJoinDialogue(Dialogue):
@@ -39,13 +39,13 @@ class PoolJoinDialogue(Dialogue):
         pane = self.Pane()
         pane.ResetFields()
         pane.AddWarningField(Lang('WARNING'))
-        
+
         pane.AddWrappedBoldTextField(Lang('Forcing a host to join a Pool will ignore incompatibilities between '
-            'hosts, which can result in serious problems.  In particular, Virtual Machine migration between incompatible hosts WILL cause crashes and data corruption.')) 
-        
+            'hosts, which can result in serious problems.  In particular, Virtual Machine migration between incompatible hosts WILL cause crashes and data corruption.'))
+
         pane.NewLine()
         pane.AddWrappedTextField(Lang('If you accept these consequences, press <F8> to continue.'))
-        
+
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 
     def UpdateFieldsGATHER(self):
@@ -57,22 +57,22 @@ class PoolJoinDialogue(Dialogue):
         pane.AddInputField(Lang('Hostname', 16), '', 'hostname')
         pane.AddInputField(Lang('Username', 16), '', 'username')
         pane.AddPasswordField(Lang('Password', 16), '', 'password')
-        
+
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("Next/OK"), Lang("<Esc>") : Lang("Cancel"), Lang("<Tab>") : Lang("Next") })
         if pane.InputIndex() is None:
             pane.InputIndexSet(0) # Activate first field for input
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang('Press <F8> to join the Pool with parameters listed below.'))
         pane.AddStatusField(Lang('Hostname', 16), self.params['hostname'])
         pane.AddStatusField(Lang('Username', 16), self.params['username'])
         pane.AddStatusField(Lang('Password', 16), '*'*len(self.params['password']))
 
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -105,7 +105,7 @@ class PoolJoinDialogue(Dialogue):
                 except Exception, e:
                     pane.InputIndexSet(None)
                     Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
-                
+
         elif inKey == 'KEY_TAB':
             pane.ActivateNextInput()
         elif inKey == 'KEY_BTAB':
@@ -115,7 +115,7 @@ class PoolJoinDialogue(Dialogue):
         else:
             handled = False
         return True
-    
+
     def HandleKeyCONFIRM(self, inKey):
         handled = False
         if inKey == 'KEY_F(8)':
@@ -127,7 +127,7 @@ class PoolJoinDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
@@ -148,10 +148,10 @@ class PoolJoinDialogue(Dialogue):
             task = hostUtils.AsyncOperation(op, HotAccessor().local_host_ref(),
                 self.params['hostname'], self.params['username'], self.params['password'])
             Layout.Inst().PushDialogue(ProgressDialogue(task, Lang("Joining Pool with Master '")+self.params['hostname']+"'"))
-    
+
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Host Failed to Join the Pool"), Lang(e)))
-            
+
 class XSFeaturePoolJoin:
     @classmethod
     def StatusUpdateHandler(cls, inPane, inForce = False):
@@ -160,11 +160,11 @@ class XSFeaturePoolJoin:
             inPane.AddTitleField("Join a Resource Pool (forced)")
         else:
             inPane.AddTitleField("Join a Resource Pool")
-            
+
         inPane.AddWrappedTextField(Lang('Joining a Resource Pool will allow this host to share '
             'Storage Repositories and migrate Virtual Machines between hosts in the Pool.'))
         inPane.NewLine()
-        
+
         if db.host(None) is None:
             pass # Info not available, so print nothing
         elif len(db.host([])) > 1:
@@ -184,7 +184,7 @@ class XSFeaturePoolJoin:
         if inForce:
             inPane.AddWarningField(Lang('Forcing a host to join a pool is a dangerous operation and may lead to '
                 'ongoing Virtual Machine and data corruption.'))
-                    
+
     @classmethod
     def ActivateHandler(cls):
         if len(HotAccessor().host([])) > 1:
@@ -192,7 +192,7 @@ class XSFeaturePoolJoin:
                 Lang('This host is already part of a Pool and cannot join another.')))
         else:
             DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(PoolJoinDialogue(False)))
-    
+
     @classmethod
     def ForceActivateHandler(cls):
         if len(HotAccessor().host([])) > 1:
@@ -200,7 +200,7 @@ class XSFeaturePoolJoin:
                 Lang('This host is already part of a Pool and cannot join another.')))
         else:
             DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(PoolJoinDialogue(True)))
-    
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

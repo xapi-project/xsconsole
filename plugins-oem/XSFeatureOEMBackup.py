@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class OEMBackupDialogue(FileDialogue):
@@ -24,14 +24,14 @@ class OEMBackupDialogue(FileDialogue):
         self.custom = {
             'title' : Lang("Backup Server State"),
             'searchregexp' : r'.*\.xbk$',  # Type of backup file is .xbk
-            'deviceprompt' : Lang("Select the backup device"), 
+            'deviceprompt' : Lang("Select the backup device"),
             'fileprompt' : Lang("Choose the backup filename"),
             'filename' : 'backup.xbk',
             'confirmprompt' : Lang("Press <F8> to begin the backup process"),
             'mode' : 'rw'
         }
         FileDialogue.__init__(self) # Must fill in self.custom before calling __init__
-        
+
     def DoAction(self):
         filename = self.vdiMount.MountedPath(self.filename)
         if os.path.isfile(filename):
@@ -39,7 +39,7 @@ class OEMBackupDialogue(FileDialogue):
                 Lang("File already exists.  Do you want to overwrite it?"), lambda x: self.DoOverwriteChoice(x)))
         else:
             self.DoCommit()
-    
+
     def DoOverwriteChoice(self, inChoice):
         if inChoice == 'y':
             filename = self.vdiMount.MountedPath(self.filename)
@@ -47,32 +47,32 @@ class OEMBackupDialogue(FileDialogue):
             self.DoCommit()
         else:
             self.ChangeState('FILES')
-    
+
     def DoCommit(self):
         success = False
-        
+
         Layout.Inst().PopDialogue()
-        
+
         Layout.Inst().PushDialogue(BannerDialogue(
             Lang("Saving to backup... This may take several minutes.  Press <Ctrl-C> to abort.")))
-            
+
         try:
             try:
                 Layout.Inst().Refresh()
                 Layout.Inst().DoUpdate()
-                
+
                 hostRef = Data.Inst().host.uuid(None)
                 if hostRef is None:
                     raise Exception("Internal error 1")
-                    
+
                 filename = self.vdiMount.MountedPath(self.filename)
                 FileUtils.AssertSafePath(filename)
                 command = "/opt/xensource/bin/xe host-backup file-name='"+filename+"' host="+hostRef
                 status, output = commands.getstatusoutput(command)
-                
+
                 if status != 0:
                     raise Exception(output)
-                
+
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue(
                     Lang("Backup Successful")))
@@ -83,7 +83,7 @@ class OEMBackupDialogue(FileDialogue):
                 except: pass
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Backup Failed"), Lang(e)))
-                
+
         finally:
             try:
                 self.PreExitActions()
@@ -99,13 +99,13 @@ class XSFeatureOEMBackup:
 
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to backup the server state to removable media."))
-            
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Backup") } ) 
-        
+
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Backup") } )
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(OEMBackupDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

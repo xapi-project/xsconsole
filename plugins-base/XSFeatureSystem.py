@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureSystem:
@@ -29,14 +29,14 @@ class XSFeatureSystem:
             manufacturer = data.dmi.system_manufacturer()
         inPane.AddWrappedTextField(manufacturer)
         inPane.NewLine()
-        
+
         model = data.host.software_version.oem_model('')
         if model == '':
             model = data.dmi.system_product_name()
         inPane.AddTitleField(Lang("System Model"))
         inPane.AddWrappedTextField(model)
         inPane.NewLine()
-        
+
         if Config.Inst().DisplaySerialNumber():
             inPane.AddTitleField(data.host.software_version.machine_serial_name(Lang("Serial Number")))
             serialNumber = data.host.software_version.machine_serial_number('')
@@ -46,13 +46,13 @@ class XSFeatureSystem:
                 serialNumber = Lang("<Not Set>")
             inPane.AddWrappedTextField(serialNumber)
             inPane.NewLine()
-        
+
         if Config.Inst().DisplayAssetTag():
             inPane.AddTitleField(Lang("Asset Tag"))
             assetTag = data.dmi.asset_tag('') # FIXME: Get from XAPI when available
             if assetTag == '':
                 assetTag = Lang("<Not Set>")
-            inPane.AddWrappedTextField(assetTag) 
+            inPane.AddWrappedTextField(assetTag)
 
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh")})
 
@@ -61,31 +61,31 @@ class XSFeatureSystem:
         data = Data.Inst()
 
         inPane.AddTitleField(Lang("Processor Details"))
-        
+
         inPane.AddStatusField(Lang("Logical CPUs", 27), str(len(data.host.host_CPUs([]))))
         inPane.AddStatusField(Lang("Populated CPU Sockets", 27), str(data.dmi.cpu_populated_sockets()))
         inPane.AddStatusField(Lang("Total CPU Sockets", 27), str(data.dmi.cpu_sockets()))
 
         inPane.NewLine()
         inPane.AddTitleField(Lang("Description"))
-        
+
         for name, value in data.derived.cpu_name_summary().iteritems():
-            # Use DMI number for populated sockets, not xapi-reported number of logical cores 
+            # Use DMI number for populated sockets, not xapi-reported number of logical cores
             inPane.AddWrappedTextField(str(data.dmi.cpu_populated_sockets())+" x "+name)
-            
+
             # inPane.AddWrappedTextField(str(value)+" x "+name) # Alternative - number of logical cores
-    
+
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh")})
-    
+
     @classmethod
     def StatusUpdateHandlerMEMORY(cls, inPane):
         data = Data.Inst()
-        
+
         inPane.AddTitleField(Lang("System Memory"))
-        
+
         xapiMemory = int(data.host.metrics.memory_total(0)) /  1048576 # Convert from bytes to MB
         dmiMemory = data.dmi.memory_size(0)
-        
+
         if xapiMemory != 0 and (dmiMemory < xapiMemory * 0.9 or dmiMemory > xapiMemory * 1.1):
             # DMI memory doesn't agree with xapi, probably due to errors in the
             # BIOS DMI information.  Prefer xapi's value
@@ -102,39 +102,39 @@ class XSFeatureSystem:
     @classmethod
     def StatusUpdateHandlerSTORAGE(cls, inPane):
         data = Data.Inst()
-        
+
         inPane.AddTitleField(Lang("Local Storage Controllers"))
-        
+
         for devClass, name in data.lspci.storage_controllers([]):
             inPane.AddWrappedBoldTextField(devClass)
             inPane.AddWrappedTextField(name)
             inPane.NewLine()
-    
+
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh")})
 
     @classmethod
     def StatusUpdateHandlerBMC(cls, inPane):
         data = Data.Inst()
-        
+
         inPane.AddTitleField(Lang(Config.Inst().BMCName()+" Information"))
-        
+
         inPane.AddStatusField(Lang(Config.Inst().BMCName()+" Firmware Version",  22), data.bmc.version())
-        
+
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh")})
 
     @classmethod
     def StatusUpdateHandlerBIOS(cls, inPane):
         data = Data.Inst()
-        
+
         inPane.AddTitleField(Lang("BIOS Information"))
-        
+
         inPane.AddStatusField(Lang("Vendor", 12), data.dmi.bios_vendor())
         inPane.AddStatusField(Lang("Version", 12), data.dmi.bios_version())
 
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh")})
-        
+
     def Register(self):
-        
+
         Importer.RegisterNamedPlugIn(
             self,
             'SYSTEM_DESCRIPTION', # Key of this plugin for replacement, etc.
@@ -158,7 +158,7 @@ class XSFeatureSystem:
                 'statusupdatehandler' : self.StatusUpdateHandlerPROCESSOR
             }
         )
-            
+
         Importer.RegisterNamedPlugIn(
             self,
             'MEMORY', # Key of this plugin for replacement, etc.
@@ -170,7 +170,7 @@ class XSFeatureSystem:
                 'statusupdatehandler' : self.StatusUpdateHandlerMEMORY
             }
         )
-        
+
         Importer.RegisterNamedPlugIn(
             self,
             'LOCAL_STORAGE_CONTROLLERS', # Key of this plugin for replacement, etc.
@@ -182,7 +182,7 @@ class XSFeatureSystem:
                 'statusupdatehandler' : self.StatusUpdateHandlerSTORAGE
             }
         )
-            
+
         Importer.RegisterNamedPlugIn(
             self,
             'BIOS', # Key of this plugin for replacement, etc.
@@ -194,7 +194,7 @@ class XSFeatureSystem:
                 'statusupdatehandler' : self.StatusUpdateHandlerBIOS
             }
         )
-        
+
         if Data.Inst().bmc.version('') != '':
             Importer.RegisterNamedPlugIn(
                 self,
@@ -206,7 +206,7 @@ class XSFeatureSystem:
                     'statusupdatehandler' : self.StatusUpdateHandlerBMC
                 }
             )
-            
+
 
 # Register this plugin when module is imported
 XSFeatureSystem().Register()

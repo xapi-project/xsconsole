@@ -25,16 +25,16 @@ class TaskEntry:
         self.completed = False
         self.creationTime = None
         self.finishTime = None
-        
+
     def Completed(self):
         return self.completed
-        
+
     def HandleCompletion(self, inStatus):
         if self.completed:
             raise Exception('TaskEntry.HandleCompletion called more than once')
         self.completed = True
         self.completionStatus = inStatus
-        
+
         self.creationTime = TimeUtils.DateTimeToSecs(self.session.xenapi.task.get_created(self.hotOpaqueRef.OpaqueRef()))
         self.finishTime = TimeUtils.DateTimeToSecs(self.session.xenapi.task.get_finished(self.hotOpaqueRef.OpaqueRef()))
         if inStatus.startswith('failure'):
@@ -51,23 +51,23 @@ class TaskEntry:
             if not status.startswith('pending'):
                 self.HandleCompletion(status)
         return status
-    
+
     def Result(self):
         if self.Completed():
             result = self.completionStatus
         else:
             result= self.session.xenapi.task.get_status(self.hotOpaqueRef.OpaqueRef())
         return HotOpaqueRef(result, 'any')
-    
+
     def CanCancel(self):
         if self.Completed():
             retVal = False
         else:
-            allowedOps = self.session.xenapi.task.get_allowed_operations(self.hotOpaqueRef.OpaqueRef())    
+            allowedOps = self.session.xenapi.task.get_allowed_operations(self.hotOpaqueRef.OpaqueRef())
             retVal = ('cancel' in allowedOps)
-            
+
         return retVal
-        
+
     def Message(self):
         status = self.Status().lower()
         if status.startswith('pending'):
@@ -82,13 +82,13 @@ class TaskEntry:
             retVal = Lang('Cancelled')
         else:
             retVal = Lang('<Unknown>')
-            
+
         return retVal
-    
+
     def RaiseIfFailed(self):
         if self.Status().lower().startswith('failure'):
             raise Exception(Language.XapiError(self.errorInfo))
-    
+
     def IsPending(self):
         if self.Status().lower().startswith('pending'):
             retVal = True
@@ -102,30 +102,30 @@ class TaskEntry:
         else:
             retVal = self.session.xenapi.task.get_progress(self.hotOpaqueRef.OpaqueRef())
         return retVal
-    
+
     def DurationSecs(self):
         if self.creationTime is not None and self.finishTime is not None:
             retVal = self.finishTime - self.creationTime
         else:
             retVal = time.time() - self.startTime
         return retVal
-    
+
     def Cancel(self):
         if not self.completed:
             self.session.xenapi.task.cancel(self.hotOpaqueRef.OpaqueRef())
-    
+
 class Task:
     instance = None
     def __init__(self):
         self.taskList = {}
         self.syncSession = None
-            
+
     @classmethod
     def Inst(cls):
         if cls.instance is None:
             cls.instance = Task()
         return cls.instance
-    
+
     def Create(self, inProc):
         session = None
         try:
@@ -135,7 +135,7 @@ class Task:
             if session is not None:
                 Auth.Inst().CloseSession(session)
             raise
-        
+
         hotTaskRef = HotOpaqueRef(taskRef, 'task')
         taskEntry = TaskEntry(hotTaskRef, session)
         self.taskList[hotTaskRef] = taskEntry
@@ -149,7 +149,7 @@ class Task:
             value.Status()
             if value.Completed() or value.DurationSecs() > 86400:
                 deleteKeys.append(key)
-        
+
         for key in deleteKeys:
             del self.taskList[key]
 
@@ -165,9 +165,9 @@ class Task:
     @classmethod
     def New(cls, inProc):
         return cls.Inst().Create(inProc)
-    
+
     @classmethod
     def Sync(cls, inProc):
         return cls.Inst().SyncOperation(inProc)
 
-    
+

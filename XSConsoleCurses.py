@@ -34,7 +34,7 @@ class CursesPalette:
         curses.init_pair(thisIndex, inForeground, inBackground)
         cls.pairIndex += 1
         return curses.color_pair(thisIndex)
-    
+
     @classmethod
     def DefineColours(cls):
         cls.pairIndex = 1
@@ -44,7 +44,7 @@ class CursesPalette:
             # Define colours on colour-changing terminals - these are terminals with the ccc
             # flag in their capabilities in terminfo
             prefix = ''
-                
+
             # Some terminals advertise that they can change colours but don't,
             # so the following keeps things at least legible in that case
             fgBright = curses.COLOR_WHITE
@@ -53,21 +53,21 @@ class CursesPalette:
             bgBright = curses.COLOR_MAGENTA
             bgNormal = curses.COLOR_BLUE
             bgDark = curses.COLOR_BLACK
-            
+
             curses.init_color(fgBright, *config.Colour(prefix+'fg_bright'))
             curses.init_color(fgNormal, *config.Colour(prefix+'fg_normal'))
             curses.init_color(fgDark, *config.Colour(prefix+'fg_dark'))
             curses.init_color(bgBright, *config.Colour(prefix+'bg_bright'))
             curses.init_color(bgNormal, *config.Colour(prefix+'bg_normal'))
             curses.init_color(bgDark, *config.Colour(prefix+'bg_dark'))
-            
+
         else:
             # Set sensible defaults for non-colour-changing terminals
             fgBright = curses.COLOR_WHITE
             fgNormal = curses.COLOR_WHITE
             fgDark = curses.COLOR_WHITE
             bgDark = curses.COLOR_BLACK # Ensure bgDark != bgBright for MODAL_HIGHLIGHT colour
-            
+
             bgNormal = curses.COLOR_RED
             bgBright = curses.COLOR_RED
 
@@ -103,7 +103,7 @@ class CursesPalette:
 
 class CursesPane:
     debugBackground = 0
-    
+
     def __init__(self, inXPos, inYPos, inXSize, inYSize, inXOffset, inYOffset):
         self.xPos = inXPos
         self.yPos = inYPos
@@ -114,7 +114,7 @@ class CursesPane:
         self.yClipMin = 0
         self.yClipMax = self.ySize
         self.title = ""
-        
+
     def HasBox(self):
         return self.hasBox
 
@@ -123,22 +123,22 @@ class CursesPane:
 
     def XSize(self):
         return self.xSize
-        
+
     def YSize(self):
         return self.ySize
-        
+
     def XPos(self):
         return self.xPos
-        
+
     def YPos(self):
         return self.yPos
-        
+
     def XOffset(self):
         return self.xOffset
-        
+
     def YOffset(self):
         return self.yOffset
-        
+
     def OffsetSet(self,  inXOffset, inYOffset):
         self.xOffset = inXOffset
         self.yOffset = inYOffset
@@ -147,7 +147,7 @@ class CursesPane:
         if inYClipMin < 0 or inYClipMin > self.ySize:
             raise Exception("Bad YClipMin "+str(inYClipMin))
         self.yClipMin = inYClipMin
-        
+
     def YClipMaxSet(self, inYClipMax):
         if inYClipMax > self.ySize:
             raise Exception("Bad YClipMax "+str(inYClipMax))
@@ -155,11 +155,11 @@ class CursesPane:
 
     def TitleSet(self, inTitle):
         self.title = inTitle
-        
+
     def ClippedAddStr(self,  inString, inX,  inY,  inColour): # Internal use
         xPos = inX
         clippedStr = inString
-        
+
         # Is text on the screen at all?
         if inY >= self.yClipMin and inY < self.yClipMax and xPos < self.xSize:
 
@@ -170,7 +170,7 @@ class CursesPane:
 
             # Clip against right hand side
             clippedStr = clippedStr[:self.xSize - xPos]
-            
+
             if len(clippedStr) > 0:
                 try:
                     encodedStr = clippedStr
@@ -187,13 +187,13 @@ class CursesPane:
                         pass
                     else:
                         raise Exception("addstr failed with "+Lang(e)+" for '"+inString+"' at "+str(xPos)+', '+str(inY))
-        
+
     def AddBox(self):
         self.hasBox = True
- 
+
     def AddText(self, inString, inX, inY, inColour = None):
         self.ClippedAddStr(inString, inX, inY, inColour)
-    
+
     def AddWrappedText(self, inString, inX, inY, inColour = None):
         yPos = inY
         width = self.xSize - inX - 1
@@ -205,22 +205,22 @@ class CursesPane:
                     lineLength = width
                 else:
                     lineLength = spacePos
-                
+
                 thisLine = text[0:lineLength]
                 text = text[lineLength+1:]
                 self.ClippedAddStr(thisLine, inX, inY, inColour)
                 yPos += 1
-    
+
     def AddHCentredText(self, inString, inY, inColour = None):
         xStart = self.xSize / 2 - len(inString) / 2
         self.ClippedAddStr(inString, xStart, inY, inColour)
-    
+
     def Decorate(self):
         if self.hasBox:
             self.Box()
         if self.title != "":
             self.AddHCentredText(" "+self.title+" ", 0)
-    
+
     def Erase(self):
         self.win.erase()
         self.Decorate()
@@ -228,29 +228,29 @@ class CursesPane:
     def Clear(self):
         self.win.clear()
         self.Decorate()
-        
+
     def Box(self):
         self.win.box(0, 0)
-        
+
     def Refresh(self):
         self.win.noutrefresh()
-    
+
     def Redraw(self):
         self.win.redrawwin()
         self.Decorate()
         self.win.noutrefresh()
-    
+
     def GetCh(self):
         return self.win.getch()
-    
+
     def GetKey(self):
         self.win.timeout(1000) # Return from getkey after x milliseconds if no key pressed
         return self.win.getkey()
-        
+
     def GetKeyBlocking(self):
         self.win.timeout(-1) # Wait for ever
         return self.win.getkey()
-    
+
     def DefaultColourSet(self, inName):
         self.defaultColour = inName
         self.win.bkgdset(ord(' '), CursesPalette.ColourAttr(self.defaultColour))
@@ -265,9 +265,9 @@ class CursesPane:
             clippedYPos = max(min(inYPos,  self.ySize-1),  0)
             self.win.move(clippedYPos, clippedXPos)
             self.win.cursyncup()
-            
+
     def CursorOff(self):
-        try: 
+        try:
             curses.curs_set(0)
         except:
             pass
@@ -283,7 +283,7 @@ class CursesPane:
         else:
             for i in range(self.ySize):
                 retVal.append(self.win.instr(i, 0, self.xSize))
-                
+
         return retVal
 
 class CursesWindow(CursesPane):
@@ -299,14 +299,14 @@ class CursesWindow(CursesPane):
         self.title = ""
         self.hasBox = False
         self.win.timeout(1000) # Return from getkey after x milliseconds if no key pressed
-        
+
     def Delete(self):
         # We rely on the garbage collector to call delwin(self.win), in the binding for PyCursesWindow_Dealloc
         del self.win
 
 class CursesScreen(CursesPane):
     def __init__(self):
-        
+
         self.win = curses.initscr()
 
         (ySize, xSize) = self.win.getmaxyx()
@@ -321,12 +321,12 @@ class CursesScreen(CursesPane):
             pass
         self.win.keypad(1)
         self.win.timeout(1000) # Return from getkey after x milliseconds if no key pressed
-                
+
     def Exit(self):
         curses.nocbreak()
         self.win.keypad(0)
         curses.echo()
         curses.endwin()
-            
+
     def UseColor(self):
         return curses.has_color()

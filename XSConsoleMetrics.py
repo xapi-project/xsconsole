@@ -25,18 +25,18 @@ class HotMetrics:
     LIFETIME_SECS = 5 # The lifetime of objects in the cache before they are refetched
     SNAPSHOT_SECS = 10 # The number of seconds of metric data to fetch
     __instance = None
-    
+
     @classmethod
     def Inst(cls):
         if cls.__instance is None:
             cls.__instance = HotMetrics()
         return cls.__instance
-        
+
     def __init__(self):
         self.data = {}
         self.timestamp = None
         self.thisHostUUID = None
-        
+
     def LocalHostMetrics(self):
         self.UpdateMetrics()
         retVal = {}
@@ -48,12 +48,12 @@ class HotMetrics:
             retVal['cpuusage'] = None
         else:
             retVal['cpuusage'] = sum(cpuValues) / len(cpuValues)
-        
+
         try:
             retVal['memory_total'] = float(self.data[hostPrefix +':memory_total_kib']) * 1024.0
         except Exception, e:
             retVal['memory_total'] = None
-        
+
         try:
             retVal['memory_free'] = float(self.data[hostPrefix +':memory_free_kib']) * 1024.0
         except Exception, e:
@@ -78,7 +78,7 @@ class HotMetrics:
             retVal['memory_total'] = float(self.data[vmPrefix +':memory']) # Not scaled
         except Exception, e:
             retVal['memory_total'] = None
-        
+
         try:
             retVal['memory_free'] = float(self.data[vmPrefix +':memory_internal_free']) * 1024.0 # Value is in kiB
         except Exception, e:
@@ -92,19 +92,19 @@ class HotMetrics:
             # Refetch host metrics
             self.data = self.FetchData()
             self.timestamp = timeNow
-        
+
     def ParseXML(self, inXML):
         xmlDoc = xml.dom.minidom.parseString(inXML)
         metaNode = xmlDoc.getElementsByTagName('meta')[0]
         valuesNode = xmlDoc.getElementsByTagName('data')[0]
-        
+
         meta = Struct()
         # Values comments out below are currently not required
         # for name in ('start', 'end', 'rows', 'columns'):
         #     setattr(meta, name, int(metaNode.getElementsByTagName(name)[0].firstChild.nodeValue.strip()))
         legendNode = metaNode.getElementsByTagName('legend')[0]
         meta.entries = [ str(entry.firstChild.nodeValue.strip()) for entry in legendNode.getElementsByTagName('entry') ]
-        
+
         # Find the most recent row in the values
         mostRecentRow = None
         mostRecentTime = None
@@ -113,17 +113,17 @@ class HotMetrics:
             if mostRecentTime is None or mostRecentTime < rowTime:
                 mostRecentRow = row
                 mostRecentTime = rowTime
-                
+
         # Decode the row contents
         if mostRecentRow is None:
             values = []
         else:
             values = [ str(v.firstChild.nodeValue.strip()) for v in mostRecentRow.getElementsByTagName('v') ]
-    
+
         retVal = {}
         for entry, value in zip(meta.entries, values):
             retVal[entry] = value
-            
+
         return retVal
 
     def FetchData(self):
@@ -135,20 +135,20 @@ class HotMetrics:
                 # Make use of this session to get the local host UUID
                 opaqueRef = session.xenapi.session.get_this_host(sessionID)
                 self.thisHostUUID = session.xenapi.host.get_uuid(opaqueRef)
-                
+
             httpRequest = 'https://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
-            
+
             socket = urllib.URLopener().open(httpRequest)
             try:
                 content = socket.read()
             finally:
                 socket.close()
-            retVal = self.ParseXML(content)    
-                
+            retVal = self.ParseXML(content)
+
         finally:
             if session is not None:
                 Auth.Inst().CloseSession(session)
-        
+
         return retVal
-        
-                
+
+

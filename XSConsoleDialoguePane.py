@@ -21,10 +21,10 @@ from XSConsoleLang import *
 class PaneSizer:
     def __init__(self):
         pass
-        
+
     def Update(self, inSource):
         pass
-    
+
     def XPos(self):
         return self.xPos
 
@@ -36,7 +36,7 @@ class PaneSizer:
 
     def YSize(self):
         return self.ySize
-        
+
 class PaneSizerFixed(PaneSizer):
     def __init__(self, inXPos, inYPos, inXSize, inYSize):
         self.xPos = inXPos
@@ -52,7 +52,7 @@ class PaneSizerCentre(PaneSizer):
         self.ySize = self.parent.YSize() - self.SHRINKVALUE
         self.xPos = 0
         self.yPos = 0
-    
+
     def Update(self, inArranger):
         self.xSize = min(inArranger.XBounds(), self.parent.XSize() - self.SHRINKVALUE)
         self.xSize = (self.xSize + 1) & ~1 # make xSize even
@@ -60,7 +60,7 @@ class PaneSizerCentre(PaneSizer):
         self.xPos = self.parent.XPos() + (self.parent.XSize() - self.xSize) / 2
         self.yPos = self.parent.YPos() + (self.parent.YSize() - self.ySize) / 2
 
-class DialoguePane:    
+class DialoguePane:
     def __init__(self, inParent = None, inSizer = None):
         self.parent = inParent
         self.sizer = FirstValue(inSizer, PaneSizerCentre(self.parent))
@@ -72,7 +72,7 @@ class DialoguePane:
         self.title = None
         self.hasBox = False
         self.ColoursSet('MODAL_BASE', 'MODAL_BRIGHT', 'MODAL_HIGHLIGHT', 'MODAL_SELECTED', 'MODAL_BRIGHT', 'MODAL_FLASH')
-        
+
     def ResetPosition(self):
         self.arranger.Reset()
 
@@ -105,7 +105,7 @@ class DialoguePane:
 
     def CursorOff(self):
         self.Win().CursorOff()
-        
+
     def Refresh(self):
         self.Win().Refresh()
 
@@ -119,17 +119,17 @@ class DialoguePane:
         if self.window is not None:
             self.window.AddBox()
         self.arranger.AddBox()
-    
+
     def TitleSet(self, inTitle):
         self.title = inTitle
-    
+
     def NeedsScroll(self):
         return self.arranger.YSize() + 2 >= self.Win().YSize()
 
     def ScrollPageUp(self):
         if self.yScrollPos > 0:
             self.yScrollPos -= 1
-        
+
     def ScrollPageDown(self):
         if self.yScrollPos + self.Win().YSize() <= self.arranger.YSize() + 2:
             self.yScrollPos += 1
@@ -144,7 +144,7 @@ class DialoguePane:
         self.selectedColour = FirstValue(inSelected, inBright)
         self.titleColour = FirstValue(inTitle, inBright)
         self.flashColour = FirstValue(inFlash, inBright)
-        
+
     def MakeLabel(self, inLabel = None):
         return inLabel
 
@@ -165,13 +165,13 @@ class DialoguePane:
 
     def AddTitleField(self, inTitle):
         self.AddBodyFieldObj(WrappedTextField(inTitle, self.titleColour, Field.FLOW_DOUBLERETURN))
-        
+
     def AddWarningField(self, inText):
         self.AddBodyFieldObj(WrappedTextField(inText, self.flashColour, Field.FLOW_DOUBLERETURN))
-        
+
     def AddTextField(self, inText, inFlow = None):
         self.AddBodyFieldObj(TextField(inText, self.baseColour, FirstValue(inFlow, Field.FLOW_RIGHT)))
-    
+
     def AddWrappedTextField(self, inText, inFlow = None):
         field = self.AddBodyFieldObj(WrappedTextField(inText, self.baseColour, FirstValue(inFlow, Field.FLOW_RETURN)))
 
@@ -189,23 +189,23 @@ class DialoguePane:
     def AddStatusField(self, inName, inValue):
         self.AddBodyFieldObj(TextField(str(inName), self.brightColour, Field.FLOW_RIGHT))
         self.AddBodyFieldObj(WrappedTextField(str(inValue), self.baseColour, Field.FLOW_RETURN))
-    
+
     def AddInputField(self, inName, inValue, inLabel, inLengthLimit = None):
         self.AddBodyFieldObj(TextField(str(inName), self.brightColour, Field.FLOW_RIGHT))
         self.AddInputFieldObj(InputField(str(inValue), self.highlightColour, self.selectedColour,
             Field.FLOW_RETURN, inLengthLimit), inLabel)
-        
+
     def AddPasswordField(self, inName, inValue, inLabel, inLengthLimit = None):
         self.AddBodyFieldObj(TextField(str(inName), self.brightColour, Field.FLOW_RIGHT))
         passwordField = InputField(str(inValue), self.highlightColour, self.selectedColour,
             Field.FLOW_RETURN, inLengthLimit)
         passwordField.HideText()
         self.AddInputFieldObj(passwordField, inLabel)
-    
+
     def AddMenuField(self, inMenu, inHeight = None):
         # Arbitrarily limit menu size to 10 lines
         field = self.AddBodyFieldObj(MenuField(inMenu, self.baseColour, self.selectedColour, FirstValue(inHeight, 10), Field.FLOW_DOUBLERETURN))
-    
+
     def AddKeyHelpField(self, inKeys):
         for name in sorted(inKeys):
             self.AddStaticFieldObj(TextField(str(name), self.brightColour, Field.FLOW_RIGHT))
@@ -215,13 +215,13 @@ class DialoguePane:
         win = self.Win()
         win.DefaultColourSet(self.baseColour)
         win.Erase()
-        
+
         if self.hasBox:
             yMin = 2
         else:
             yMin = 0
         win.YClipMinSet(yMin)
-        
+
         if len(self.fieldGroup.StaticFields()) == 0:
             yMax = win.YSize()
         else:
@@ -231,22 +231,22 @@ class DialoguePane:
             else:
                 yMax = max(0, win.YSize() - 2)
         win.YClipMaxSet(yMax)
-        
+
         bodyLayout = self.arranger.BodyLayout()
-        
+
         for field in self.fieldGroup.BodyFields():
             layout = bodyLayout.pop(0)
             # Check whether visible - first whether off the top, then whether off the bottom
             if layout.ypos + field.Height() > self.yScrollPos and layout.ypos <= self.yScrollPos + yMax:
 
                 field.Render(win, layout.xpos, layout.ypos - self.yScrollPos)
-        
-        
+
+
         win.YClipMinSet(0)
         win.YClipMaxSet(win.YSize())
-        
+
         staticLayout = self.arranger.StaticLayout()
-        
+
         for field in self.fieldGroup.StaticFields():
             # Static fields aren't affected by the scroll position, and get a larger clip window
             # so then can fill the bottom line
@@ -254,7 +254,7 @@ class DialoguePane:
             field.Render(win, layout.xpos, layout.ypos)
 
         win.Refresh()
-            
+
     def Delete(self):
         self.Win().Delete()
         self.window = None
@@ -265,4 +265,4 @@ class DialoguePane:
         else:
             retVal = self.window.Snapshot()
         return retVal
-        
+

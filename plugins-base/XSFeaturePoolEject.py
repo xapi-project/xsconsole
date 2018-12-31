@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class PoolEjectDialogue(Dialogue):
@@ -35,24 +35,24 @@ class PoolEjectDialogue(Dialogue):
         pane = self.Pane()
         pane.ResetFields()
         pane.AddWarningField(Lang('WARNING'))
-        
+
         pane.AddWrappedBoldTextField(Lang('Removing this host from its Pool will permanently delete and reinitialize '
             'all local Storage Repositories on this host.  The data in local Storage Repositories will be lost, and '
-           'this host will immediately reboot.')) 
-        
+           'this host will immediately reboot.'))
+
         pane.NewLine()
         pane.AddWrappedBoldTextField(Lang('Press <F8> to continue.'))
-        
+
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang('Press <Enter> to remove this host from the Pool.'))
 
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -68,7 +68,7 @@ class PoolEjectDialogue(Dialogue):
             self.ChangeState('CONFIRM')
             handled = True
         return handled
-    
+
     def HandleKeyCONFIRM(self, inKey):
         handled = False
         if inKey == 'KEY_ENTER':
@@ -80,7 +80,7 @@ class PoolEjectDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
@@ -98,7 +98,7 @@ class PoolEjectDialogue(Dialogue):
             Layout.Inst().ExitCommandSet('/bin/sleep 120')
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Failed to Remove Host from Pool"), Lang(e)))
-            
+
 class XSFeaturePoolEject:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
@@ -108,7 +108,7 @@ class XSFeaturePoolEject:
             'all local Storage Repositories on this host.  The data in local Storage Repositories will be lost, and '
             'this host will immediately reboot.'))
         inPane.NewLine()
-        
+
         if db.host(None) is None:
             pass # Info not available, so print nothing
         elif len(db.host([])) > 1:
@@ -135,7 +135,7 @@ class XSFeaturePoolEject:
                 'and cannot be removed until another host is designated as Master.')))
         else:
             DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(PoolEjectDialogue()))
-    
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

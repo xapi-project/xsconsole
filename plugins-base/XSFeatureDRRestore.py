@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 import subprocess
 
@@ -23,7 +23,7 @@ class DRRestoreSelection(Dialogue):
 
     def __init__(self, date_choices, vdi_uuid, sr_uuid):
         Dialogue.__init__(self)
-    
+
         choices = []
         self.vdi_uuid = vdi_uuid
         self.sr_uuid = sr_uuid
@@ -43,21 +43,21 @@ class DRRestoreSelection(Dialogue):
            ChoiceDef("All VM Metadata (Dry Run)", lambda: self.HandleMethodChoice('all', True)),
         ])
         self.ChangeState('LISTDATES')
-    
+
     def BuildPane(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang('Restore Virtual Machine Metadata'))
         pane.AddBox()
-    
+
     def UpdateFieldsLISTDATES(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.TitleSet("Available Metadata Backups")
         pane.AddTitleField(Lang("Select Metadata Backup to Restore From"))
         pane.AddMenuField(self.testMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-       
+
     def UpdateFieldsCHOOSERESTORE(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -111,7 +111,7 @@ class DRRestoreSelection(Dialogue):
             handled = True
 
         return handled
- 
+
     def HandleKeyLISTDATES(self, inKey):
         handled = self.testMenu.HandleKey(inKey)
         if not handled and inKey == 'KEY_LEFT':
@@ -144,7 +144,7 @@ class DRRestoreDialogue(SRDialogue):
         try:
             # probe for the restore VDI UUID
             command = "%s/xe-restore-metadata -p -u %s" % (Config.Inst().HelperPath(), sr_uuid)
-            cmd = subprocess.Popen(command, 
+            cmd = subprocess.Popen(command,
                                    stdout = subprocess.PIPE,
                                    stderr = subprocess.PIPE,
                                    shell = True)
@@ -160,7 +160,7 @@ class DRRestoreDialogue(SRDialogue):
             # list the available backups
             Layout.Inst().TransientBanner(Lang("Found VDI, retrieving available backups..."))
             command = "%s/xe-restore-metadata -l -u %s -x %s" % (Config.Inst().HelperPath(), sr_uuid, vdi_uuid)
-            cmd = subprocess.Popen(command, 
+            cmd = subprocess.Popen(command,
                                    stdout = subprocess.PIPE,
                                    stderr = subprocess.PIPE,
                                    shell = True)
@@ -181,13 +181,13 @@ class XSFeatureDRRestore:
         inPane.AddTitleField(Lang("Restore Virtual Machine Metadata"))
 
         inPane.AddWrappedTextField(Lang(
-            "Press <Enter> to restore Virtual Machine metadata from a Storage Repository."))  
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Backup") } )  
-        
+            "Press <Enter> to restore Virtual Machine metadata from a Storage Repository."))
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Backup") } )
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(DRRestoreDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

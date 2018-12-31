@@ -26,7 +26,7 @@ class VerboseBootDialogue(Dialogue):
         pane.AddBox()
 
         self.remoteShellMenu = Menu(self, None, Lang("Configure Verbose Boot Mode"), [
-            ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(True) ), 
+            ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(True) ),
             ChoiceDef(Lang("Disable"), lambda: self.HandleChoice(False) )
             ])
     
@@ -79,7 +79,7 @@ class XSFeatureVerboseBoot:
             "This option will control the level of information displayed as this server boots.  "
             "The current state of verbose boot mode is ")+message+Lang(" press <Enter>."))
             
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Configure") } )  
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Configure") } )
         
     @classmethod
     def ActivateHandler(cls):

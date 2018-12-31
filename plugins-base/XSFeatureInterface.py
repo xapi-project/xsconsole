@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class InterfaceDialogue(Dialogue):
@@ -44,7 +44,7 @@ class InterfaceDialogue(Dialogue):
                 choiceName += '('+Lang("not connected")+')'
 
             choiceDefs.append(ChoiceDef(choiceName, lambda: self.HandleNICChoice(self.nicMenu.ChoiceIndex())))
-        
+
         if len(choiceDefs) == 0:
             XSLog('Configure Management Interface found no PIFs to present')
             choiceDefs.append(ChoiceDef(Lang("<No interfaces present>"), None))
@@ -52,27 +52,27 @@ class InterfaceDialogue(Dialogue):
             choiceDefs.append(ChoiceDef(Lang("Disable Management Interface"), lambda: self.HandleNICChoice(None)))
 
         self.nicMenu = Menu(self, None, "Configure Management Interface", choiceDefs)
-        
+
         self.modeMenu = Menu(self, None, Lang("Select IP Address Configuration Mode"), [
-            ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP2') ), 
-            ChoiceDef(Lang("DHCP with Manually Assigned Hostname"), lambda: self.HandleModeChoice('DHCPMANUAL') ), 
+            ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP2') ),
+            ChoiceDef(Lang("DHCP with Manually Assigned Hostname"), lambda: self.HandleModeChoice('DHCPMANUAL') ),
             ChoiceDef(Lang("Static"), lambda: self.HandleModeChoice('STATIC') )
             ])
-        
+
         self.postDHCPMenu = Menu(self, None, Lang("Accept or Edit"), [
-            ChoiceDef(Lang("Continue With DHCP Enabled"), lambda: self.HandlePostDHCPChoice('CONTINUE') ), 
-            ChoiceDef(Lang("Convert to Static Addressing"), lambda: self.HandlePostDHCPChoice('CONVERT') ), 
+            ChoiceDef(Lang("Continue With DHCP Enabled"), lambda: self.HandlePostDHCPChoice('CONTINUE') ),
+            ChoiceDef(Lang("Convert to Static Addressing"), lambda: self.HandlePostDHCPChoice('CONVERT') ),
             ])
-        
+
         self.postHostnameMenu = Menu(self, None, Lang("Assign Name"), [
             ChoiceDef(Lang("Copy Hostname to ")+data.derived.app_name()+Lang(' Name'),
-                lambda: self.HandlePostHostnameChoice('COPY') ), 
+                lambda: self.HandlePostHostnameChoice('COPY') ),
             ChoiceDef(Lang("Keep the Current ")+data.derived.app_name()+Lang(' Name'),
-                lambda: self.HandlePostHostnameChoice('KEEP') ), 
+                lambda: self.HandlePostHostnameChoice('KEEP') ),
             ChoiceDef(Lang("Enter a New ")+data.derived.app_name()+Lang(' Name'),
                 lambda: self.HandlePostHostnameChoice('NEW') ),
             ])
-        
+
         self.ChangeState('INITIAL')
 
         # Get best guess of current values
@@ -81,14 +81,14 @@ class InterfaceDialogue(Dialogue):
         self.netmask = '0.0.0.0'
         self.gateway = '0.0.0.0'
         self.hostname = data.host.hostname('')
-        
+
         if currentPIF is not None:
             if 'ip_configuration_mode' in currentPIF: self.mode = currentPIF['ip_configuration_mode']
             if self.mode.lower().startswith('static'):
                 if 'IP' in currentPIF: self.IP = currentPIF['IP']
                 if 'netmask' in currentPIF: self.netmask = currentPIF['netmask']
                 if 'gateway' in currentPIF: self.gateway = currentPIF['gateway']
-    
+
         # Make the menu current choices point to our best guess of current choices
         if self.nic is not None:
             self.nicMenu.CurrentChoiceSet(self.nic)
@@ -96,23 +96,23 @@ class InterfaceDialogue(Dialogue):
             self.modeMenu.CurrentChoiceSet(2)
         else:
             self.modeMenu.CurrentChoiceSet(0)
-            
+
         if self.mode.lower().startswith('dhcp') and self.nic is not None:
             self.nicMenu.AddChoice(name = Lang('Renew DHCP Lease On Current Interface'),
                 onAction = lambda: self.HandleRenewChoice()
                 )
-    
+
         self.ChangeState('INITIAL')
-        
+
     def BuildPane(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang("Management Interface Configuration"))
         pane.AddBox()
-        
+
     def UpdateFieldsINITIAL(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Select NIC for Management Interface"))
         pane.AddMenuField(self.nicMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
@@ -120,11 +120,11 @@ class InterfaceDialogue(Dialogue):
     def UpdateFieldsMODE(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Select DHCP or static IP address configuration"))
         pane.AddMenuField(self.modeMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-        
+
     def UpdateFieldsSTATICIP(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -139,22 +139,22 @@ class InterfaceDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.InputIndex() is None:
             pane.InputIndexSet(0) # Activate first field for input
-        
+
     def UpdateFieldsHOSTNAME(self):
         pane = self.Pane()
         pane.ResetFields()
         pane.AddTitleField(Lang("Enter the hostname for this server"))
         pane.AddInputField(Lang("Hostname",  14),  Data.Inst().host.hostname(''), 'hostname')
-        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )        
+        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.InputIndex() is None:
             pane.InputIndexSet(0) # Activate first field for input
-            
+
     def UpdateFieldsPRECOMMIT(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Press <Enter> to apply the following configuration"))
-        
+
         if self.nic is None:
             pane.AddWrappedTextField(Lang("The Management Interface will be disabled"))
         else:
@@ -166,21 +166,21 @@ class InterfaceDialogue(Dialogue):
                 pane.AddStatusField(Lang("IP Address",  16),  self.IP)
                 pane.AddStatusField(Lang("Netmask",  16),  self.netmask)
                 pane.AddStatusField(Lang("Gateway",  16),  self.gateway)
-                
+
             if self.mode != 'Static' and self.hostname == '':
                 pane.AddStatusField(Lang("Hostname",  16), Lang("Assigned by DHCP"))
             else:
                 pane.AddStatusField(Lang("Hostname",  16), self.hostname)
-                
+
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-        
+
     def UpdateFieldsPOSTDHCP(self):
         pane = self.Pane()
         pane.ResetFields()
-   
+
         pane.AddWrappedBoldTextField(Lang("The following addresses have been assigned by DHCP.  Would you like to accept them and continue with DHCP enabled, or convert to a static configuration?"))
         pane.NewLine()
-        
+
         if self.nic is None:
             pane.AddWrappedTextField(Lang("<No interface configured>"))
         else:
@@ -194,12 +194,12 @@ class InterfaceDialogue(Dialogue):
         pane.NewLine()
         pane.AddMenuField(self.postDHCPMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsPOSTHOSTNAME(self):
         data = Data.Inst()
         pane = self.Pane()
         pane.ResetFields()
-   
+
         pane.AddWrappedBoldTextField(data.derived.full_app_name()+Lang(" uses free-form names to "
             "refer to hosts.  Would you like to copy the new hostname to the "+data.derived.app_name()+
             " name?"))
@@ -211,26 +211,26 @@ class InterfaceDialogue(Dialogue):
         pane.NewLine()
         pane.AddMenuField(self.postHostnameMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsNAMELABEL(self):
         data = Data.Inst()
         pane = self.Pane()
         pane.ResetFields()
         pane.AddTitleField(Lang("Enter the ")+data.derived.app_name()+Lang(" name for this server"))
         pane.AddInputField(Lang("Name",  8),  data.host.hostname(''), 'namelabel')
-        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )     
+        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
         if pane.InputIndex() is None:
             pane.InputIndexSet(0) # Activate first field for input
-            
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-    
+
     def ChangeState(self, inState):
         self.state = inState
         self.BuildPane()
         self.UpdateFields()
-                            
+
     def HandleKeyINITIAL(self, inKey):
         return self.nicMenu.HandleKey(inKey)
 
@@ -285,7 +285,7 @@ class InterfaceDialogue(Dialogue):
             except:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang('Invalid hostname')))
-                
+
         elif pane.CurrentInput().HandleKey(inKey):
             pass # Leave handled as True
         else:
@@ -310,20 +310,20 @@ class InterfaceDialogue(Dialogue):
                     self.ChangeState('POSTHOSTNAME')
                 else:
                     self.Complete() # Disabled management interface
-                
+
             except Exception, e:
                 self.Complete(Lang("Configuration Failed: "+Lang(e)))
-                
+
         else:
             handled = False
         return handled
-    
+
     def HandleKeyPOSTDHCP(self, inKey):
         return self.postDHCPMenu.HandleKey(inKey)
-    
+
     def HandleKeyPOSTHOSTNAME(self, inKey):
         return self.postHostnameMenu.HandleKey(inKey)
-    
+
     def HandleKeyNAMELABEL(self, inKey):
         handled = True
         pane = self.Pane()
@@ -341,25 +341,25 @@ class InterfaceDialogue(Dialogue):
         else:
             handled = False
         return handled
-    
+
     def HandleKey(self,  inKey):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-            
+
     def HandleNICChoice(self,  inChoice):
         self.nic = inChoice
         if self.nic is None:
             self.ChangeState('PRECOMMIT')
         else:
             self.ChangeState('MODE')
-        
+
     def HandleModeChoice(self,  inChoice):
         self.hostname = ''
         if inChoice == 'DHCP2': # DHCP with DHCP-assigned hostname
@@ -394,10 +394,10 @@ class InterfaceDialogue(Dialogue):
     def HandleRenewChoice(self):
         data = Data.Inst()
         pif = data.host.PIFs()[self.nic]
-        
+
         Layout.Inst().PopDialogue()
         Layout.Inst().TransientBanner(Lang('Renewing DHCP Lease...'))
-        
+
         try:
             data.ReconfigureManagement(pif, 'DHCP', '', '', '')
             data.Update()
@@ -413,7 +413,7 @@ class InterfaceDialogue(Dialogue):
             Layout.Inst().PushDialogue(InfoDialogue(Lang("DHCP Renewed with IP address ")+ipAddress))
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Renewal Failed"), Lang(e)))
-            
+
     def Commit(self):
         data = Data.Inst()
         if self.nic is None:
@@ -426,7 +426,7 @@ class InterfaceDialogue(Dialogue):
                 dns = ','.join(data.dns.nameservers([]))
             else:
                 dns = ''
-                
+
             # Operation of the dhclient-script is:
             # If the current hostname from bin/hostname is '(none)', 'localhost' or 'localhost.localdomain',
             # get the hostname from DHCP, otherwise keep the current hostname.  So we set the hostname
@@ -434,7 +434,7 @@ class InterfaceDialogue(Dialogue):
             if self.hostname == '':
                  # DHCP will override if the DHCP server offers a hostname, otherwise we'll keep this one
                 data.HostnameSet('localhost')
-            else:                
+            else:
                 data.HostnameSet(self.hostname)
             data.ReconfigureManagement(pif, self.mode, self.IP,  self.netmask, self.gateway, dns)
         data.Update()
@@ -448,9 +448,9 @@ class XSFeatureInterface:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         data = Data.Inst()
-        
+
         inPane.AddTitleField(Lang("Configure Management Interface"))
-        
+
         if len(data.derived.managementpifs([])) == 0:
             inPane.AddWrappedTextField(Lang("<No interface configured>"))
         else:
@@ -463,23 +463,23 @@ class XSFeatureInterface:
                 inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
                 inPane.AddStatusField(Lang('Gateway', 16),  data.ManagementGateway(''))
                 inPane.AddStatusField(Lang('Hostname', 16),  data.host.hostname(''))
-                
+
                 inPane.NewLine()
                 inPane.AddTitleField(Lang("NIC Vendor"))
                 inPane.AddWrappedTextField(pif['metrics']['vendor_name'])
                 inPane.NewLine()
                 inPane.AddTitleField(Lang("NIC Model"))
                 inPane.AddWrappedTextField(pif['metrics']['device_name'])
-                
+
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Reconfigure"),
             Lang("<F5>") : Lang("Refresh")
         } )
-    
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(InterfaceDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

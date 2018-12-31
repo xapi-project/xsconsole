@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class DRBackupDialogue(SRDialogue):
@@ -35,7 +35,7 @@ class DRBackupDialogue(SRDialogue):
             # determine if there is a backup VDI or not, and if not just create one
             sr_uuid = inSR['uuid']
             command = "%s/xe-backup-metadata -n -u %s" % (Config.Inst().HelperPath(), sr_uuid)
-            
+
             status, output = commands.getstatusoutput(command)
             status = os.WEXITSTATUS(status)
             initalize_vdi = ""
@@ -63,12 +63,12 @@ class XSFeatureDRBackup:
 
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to backup Virtual Machine metadata to a Storage Repository.  This will back up the information associated with the VM configuration to a special backup disk on the Storage Repository.  You can subsequently restore this metadata if you migrate the Storage Repository to another " + Language.Inst().Branding(data.host.software_version.product_brand('')) + " pool."))
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Backup") } )  
-        
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Backup") } )
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(DRBackupDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
 	raise Exception("This script is a plugin for xsconsole and cannot run independently")
-	
+
 from XSConsoleStandard import *
 
 pool_conf = '%s/pool.conf' % (Config.Inst().XCPConfigDir())
@@ -85,16 +85,16 @@ class NetworkResetDialogue(Dialogue):
 			ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP') ),
 			ChoiceDef(Lang("Static"), lambda: self.HandleModeChoice('STATIC') )
 			])
-		
+
 		# Get best guess of current values
 		self.mode = 'DHCP'
 		self.IP = '0.0.0.0'
 		self.netmask = '0.0.0.0'
 		self.gateway = '0.0.0.0'
 		self.dns = '0.0.0.0'
-		
+
 		self.ChangeState('INITIAL')
-				
+
 	def BuildPane(self):
 		pane = self.NewPane(DialoguePane(self.parent))
 		pane.TitleSet(Lang("Emergency Network Reset"))
@@ -103,7 +103,7 @@ class NetworkResetDialogue(Dialogue):
 	def UpdateFieldsINITIAL(self):
 		pane = self.Pane()
 		pane.ResetFields()
-		
+
 		pane.AddTitleField(Lang("!! WARNING !!"))
 		pane.AddWrappedTextField(Lang("This command will reboot the host and reset its network configuration."))
 		pane.NewLine()
@@ -117,7 +117,7 @@ class NetworkResetDialogue(Dialogue):
 	def UpdateFieldsDEVICE(self):
 		pane = self.Pane()
 		pane.ResetFields()
-		
+
 		pane.AddTitleField(Lang("Enter the Primary Management Interface to be used after reset"))
 		pane.AddInputField(Lang("Device name",  18),  self.device, 'device')
 		pane.AddInputField(Lang("VLAN (Optional)",  18),  self.vlan, 'vlan')
@@ -128,7 +128,7 @@ class NetworkResetDialogue(Dialogue):
 	def UpdateFieldsMODE(self):
 		pane = self.Pane()
 		pane.ResetFields()
-		
+
 		pane.AddTitleField(Lang("Select the IP configuration mode to be used after reset"))
 		pane.AddMenuField(self.modeMenu)
 		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
@@ -139,12 +139,12 @@ class NetworkResetDialogue(Dialogue):
 		pane.AddTitleField(Lang("Specify Pool Master's IP Address"))
 		pane.AddWrappedTextField(Lang("The host is a pool slave."))
 		pane.AddWrappedTextField(Lang("Please confirm or correct the IP address of the pool master."))
-		pane.NewLine()				
-		pane.AddInputField(Lang("IP Address",  14),  self.master_ip, 'master_ip')		
+		pane.NewLine()
+		pane.AddInputField(Lang("IP Address",  14),  self.master_ip, 'master_ip')
 		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 		if pane.CurrentInput() is None:
 			pane.InputIndexSet(0)
-				
+
 	def UpdateFieldsSTATICIP(self):
 		pane = self.Pane()
 		pane.ResetFields()
@@ -156,7 +156,7 @@ class NetworkResetDialogue(Dialogue):
 		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 		if pane.InputIndex() is None:
 			pane.InputIndexSet(0) # Activate first field for input
-					
+
 	def UpdateFieldsPRECOMMIT(self):
 		pane = self.Pane()
 		pane.ResetFields()
@@ -175,13 +175,13 @@ class NetworkResetDialogue(Dialogue):
 			pane.AddStatusField(Lang("Netmask",  16),  self.netmask)
 			pane.AddStatusField(Lang("Gateway",  16),  self.gateway)
 			pane.AddStatusField(Lang("DNS Server",  16),  self.dns)
-								
+
 		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("Apply Changes and Reboot"), Lang("<Esc>") : Lang("Cancel") } )
-					
+
 	def UpdateFields(self):
 		self.Pane().ResetPosition()
 		getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
-	
+
 	def ChangeState(self, inState):
 		self.state = inState
 		self.BuildPane()
@@ -249,7 +249,7 @@ class NetworkResetDialogue(Dialogue):
 		else:
 			handled = False
 		return handled
-		
+
 	def HandleKeySTATICIP(self, inKey):
 		handled = True
 		pane = self.Pane()
@@ -293,7 +293,7 @@ class NetworkResetDialogue(Dialogue):
 		pane = self.Pane()
 		if inKey == 'KEY_ENTER':
 			self.Commit()
-			
+
 			# Reboot
 			Layout.Inst().ExitBannerSet(Lang("Rebooting..."))
 			Layout.Inst().ExitCommandSet('mount -o remount, ro /')
@@ -302,12 +302,12 @@ class NetworkResetDialogue(Dialogue):
 		else:
 			handled = False
 		return handled
-		
+
 	def HandleKey(self,  inKey):
 		handled = False
 		if hasattr(self, 'HandleKey'+self.state):
 			handled = getattr(self, 'HandleKey'+self.state)(inKey)
-		
+
 		if not handled and inKey == 'KEY_ESCAPE':
 			Layout.Inst().PopDialogue()
 			handled = True
@@ -324,7 +324,7 @@ class NetworkResetDialogue(Dialogue):
 		else:
 			self.mode = 'static'
 			self.ChangeState('STATICIP')
-			
+
 	def Commit(self):
 		# Update master's IP, if needed and given
 		if self.master_ip != None:
@@ -333,7 +333,7 @@ class NetworkResetDialogue(Dialogue):
 				f.write('slave:' + self.master_ip)
 			finally:
 				f.close()
-		
+
 		# Construct bridge name for management interface based on convention
 		if self.device[:3] == 'eth':
 			bridge = 'xenbr' + self.device[3:]
@@ -417,15 +417,15 @@ Before running this command:
 - Disable HA if enabled on the pool."""
 		inPane.AddTitleField(Lang("Emergency Network Reset"))
 		inPane.AddWrappedTextField(warning)
-				
+
 		inPane.AddKeyHelpField( {
 			Lang("<Enter>") : Lang("Reset Networking")
 		} )
-	
+
 	@classmethod
 	def ActivateHandler(cls):
 		DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(NetworkResetDialogue()))
-		
+
 	def Register(self):
 		Importer.RegisterNamedPlugIn(
 			self,

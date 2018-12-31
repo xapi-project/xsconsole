@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class SRUtils:
@@ -28,7 +28,7 @@ class SRUtils:
 
         'none' : Struct(name = Lang("No Operation"), priority = 300),
     }
-    
+
     @classmethod
     def AllowedOperations(cls):
         if Auth.Inst().IsTestMode():
@@ -37,7 +37,7 @@ class SRUtils:
         else:
             retVal = ['forget', 'xsconsole-detach','xsconsole-destroy']
         return retVal
-        
+
     @classmethod
     def AsyncOperation(cls, inOperation, inSRHandle, inParam0 = None):
         task = None
@@ -51,11 +51,11 @@ class SRUtils:
                     Task.Sync(lambda x: x.xenapi.PBD.destroy(pbd.HotOpaqueRef().OpaqueRef()))
                 except Exception, e:
                     storedError = e
-                    
+
             if storedError is not None:
                 # Raise one exception, even if more than one occured
                 raise storedError
-                
+
         elif inOperation == 'xsconsole-destroy': # This is a synthetic operation that unplugs then destroys
             cls.DoOperation('unplug', inSRHandle)
             task = cls.AsyncOperation('destroy', inSRHandle)
@@ -71,11 +71,11 @@ class SRUtils:
                     Task.Sync(lambda x: x.xenapi.PBD.plug(pbd.HotOpaqueRef().OpaqueRef()))
                 except Exception, e:
                     storedError = e
-                    
+
             if storedError is not None:
                 # Raise one exception, even if more than one occured
                 raise storedError
-                
+
         elif inOperation == 'unplug':
             unplugged = []
             try:
@@ -91,19 +91,19 @@ class SRUtils:
                     except Exception, e:
                         XSLogFailure('SR undo failed', e)
                 raise # Reraise the original exception
-                
-                
+
+
         elif inOperation == 'none':
             pass
         else:
             raise Exception("Unknown SR operation "+str(inOperation))
-        
+
         return task
-        
+
     @classmethod
     def DoOperation(cls, inOperation, inSRHandle):
         task = cls.AsyncOperation(inOperation, inSRHandle)
-        
+
         if task is not None:
             while task.IsPending():
                 time.sleep(0.1)
@@ -143,7 +143,7 @@ class SRUtils:
         if inSR.uuid() in [ pool.crash_dump_SR.uuid() for pool in HotAccessor().pool ]:
             retVal.append('crashdump')
         return retVal
-        
+
     @classmethod
     def AnnotatedName(cls, inSR):
         retVal = inSR.name_label(Lang('<Unknown>'))
@@ -155,7 +155,7 @@ class SRUtils:
     @classmethod
     def TypeName(cls, inSRType):
         return LangFriendlyNames.Translate('Label-SR.SRTypes-'+inSRType)
-    
+
     @classmethod
     def IsDetachable(cls, inSR):
         # Use same criteria as XenCenter for detach (from IsDetachable in SR.cs)
@@ -178,33 +178,33 @@ class SRControlDialogue(Dialogue):
         if SRUtils.IsDetachable(sr):
             if len(sr.PBDs()) != 0:
                 # Attached SR
-                allowedOps += ['xsconsole-detach', 'xsconsole-destroy'] 
+                allowedOps += ['xsconsole-detach', 'xsconsole-destroy']
                 if 'forget' in allowedOps:
                     allowedOps.remove('forget') # Allow forget for detached SRs only
         else:
             if 'forget' in allowedOps:
                 allowedOps.remove('forget') # Don't allow forget for non-detachable SRs
-            
+
         choiceList = [ name for name in allowedOps if name in SRUtils.AllowedOperations() ]
-        
+
         choiceList.sort(lambda x, y: cmp(SRUtils.OperationPriority(x), SRUtils.OperationPriority(y)))
-        
+
         self.controlMenu = Menu()
         for choice in choiceList:
             self.controlMenu.AddChoice(name = SRUtils.OperationName(choice),
                 onAction = self.HandleControlChoice,
                 handle = choice)
-            
+
         if self.controlMenu.NumChoices() == 0:
             self.controlMenu.AddChoice(name = Lang('<No Operations Available>'))
 
         self.ChangeState('INITIAL')
-        
+
     def BuildPane(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang("Storage Repository Control"))
         pane.AddBox()
-        
+
     def UpdateFieldsINITIAL(self):
         data = Data.Inst()
         pane = self.Pane()
@@ -218,9 +218,9 @@ class SRControlDialogue(Dialogue):
             pane.AddTitleField(Lang("Please select an operation to perform on '"+srName+"'"))
         pane.AddMenuField(self.controlMenu)
         if sr.type() == 'lvm':
-            pane.AddWrappedTextField(Lang('Local Storage cannot be detached or destroyed because ' + Language.Inst().Branding(data.host.software_version.product_brand('')) + ' configuration information is also stored on the local disk.'))        
+            pane.AddWrappedTextField(Lang('Local Storage cannot be detached or destroyed because ' + Language.Inst().Branding(data.host.software_version.product_brand('')) + ' configuration information is also stored on the local disk.'))
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -241,9 +241,9 @@ class SRControlDialogue(Dialogue):
             pane.AddStatusField(Lang("Storage Repository", 20), srName)
             for values in self.extraInfo:
                 pane.AddStatusField(values[0], values[1])
-                
+
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -252,7 +252,7 @@ class SRControlDialogue(Dialogue):
         self.state = inState
         self.BuildPane()
         self.UpdateFields()
-    
+
     def HandleKeyINITIAL(self, inKey):
         return self.controlMenu.HandleKey(inKey)
 
@@ -267,17 +267,17 @@ class SRControlDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-    
+
     def HandleControlChoice(self, inChoice):
         self.operation = inChoice
         self.ChangeState('CONFIRM')
-        
+
     def Commit(self):
         Layout.Inst().PopDialogue()
 

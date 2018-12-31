@@ -15,14 +15,14 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class UploadBugReportDialogue(InputDialogue):
     def __init__(self):
         self.custom = {
             'title' : Lang("Upload Bug Report"),
-            'info' : Lang("Please enter the destination server name, and proxy name if required (blank for none).  Use the form ftp://username:password@server:port for authenticated servers and proxies."), 
+            'info' : Lang("Please enter the destination server name, and proxy name if required (blank for none).  Use the form ftp://username:password@server:port for authenticated servers and proxies."),
             'fields' : [
                 [Lang("Destination", 14), Config.Inst().FTPServer(), 'destination'],
                 [Lang("Filename", 14), FileUtils.BugReportFilename(), 'filename'],
@@ -33,7 +33,7 @@ class UploadBugReportDialogue(InputDialogue):
 
     def HandleCommit(self, inValues):
         Layout.Inst().TransientBanner(Lang("Uploading Bug Report..."))
-            
+
         hostRef = ShellUtils.MakeSafeParam(Data.Inst().host.uuid(''))
         destServer = ShellUtils.MakeSafeParam(inValues['destination'])
         if not re.match(r'(ftp|http|https)://', destServer):
@@ -41,19 +41,19 @@ class UploadBugReportDialogue(InputDialogue):
         destFilename = ShellUtils.MakeSafeParam(inValues['filename'])
         destURL = destServer.rstrip('/')+'/'+destFilename.lstrip('/')
         proxy = ShellUtils.MakeSafeParam(inValues['proxy'])
-        
+
         command = "%s host-bugreport-upload host='%s' url='%s'" % (Config.Inst().XECLIPath(), hostRef, destURL)
         if proxy != '':
             command += " http_proxy='"+proxy+"'"
-            
+
         status, output = commands.getstatusoutput(command)
-                
+
         if status != 0:
             XSLogError('Upload bugreport failed', output) # Error output can be verbose, so syslog only
-            raise Exception(Lang('The bug report upload failed.  Please check that the destination directory is correct, and that the server accepts anonymous uploads to that directory and is reachable from this network.')) 
+            raise Exception(Lang('The bug report upload failed.  Please check that the destination directory is correct, and that the server accepts anonymous uploads to that directory and is reachable from this network.'))
 
         return (Lang("Bug Report Uploaded Successfully"), None)
-        
+
 
 class XSFeatureUploadBugReport:
     @classmethod
@@ -64,8 +64,8 @@ class XSFeatureUploadBugReport:
         inPane.AddWrappedTextField(Lang(
             "This option will upload a bug report file, containing information about "
             "the state of this machine to the support ftp server.  This file may contain sensitive data."))
-            
-        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Upload Bug Report") } )  
+
+        inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Upload Bug Report") } )
 
     @classmethod
     def ActivateHandler(cls):

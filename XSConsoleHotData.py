@@ -28,14 +28,14 @@ class HotOpaqueRef:
         self.opaqueRef = inOpaqueRef
         self.type = inType
         self.hash = hash(inOpaqueRef)
-    
+
     def __repr__(self):
         return str(self.__dict__)
-        
+
     # __hash__ and __cmp__ allow this object to be used as a dictionary key
     def __hash__(self):
         return self.hash
-    
+
     def __cmp__(self, inOther):
         if not isinstance(inOther, HotOpaqueRef):
             return 1
@@ -44,15 +44,15 @@ class HotOpaqueRef:
         if self.opaqueRef < inOther.opaqueRef:
             return -1
         return 1
-    
+
     def OpaqueRef(self): return self.opaqueRef
     def Type(self): return self.type
-        
+
 class HotAccessor:
     def __init__(self, inName = None, inRefs = None):
         self.name = FirstValue(inName, [])
         self.refs = FirstValue(inRefs, [])
-        
+
     def __getattr__(self, inName):
         retVal = HotAccessor(self.name[:], self.refs[:]) # [:] copies the array
         retVal.name.append(inName)
@@ -68,7 +68,7 @@ class HotAccessor:
         else:
             raise Exception(Lang("Cannot iterate over type '")+str(type(iterData))+"'")
         return self
-        
+
     # This method will hide fields called 'next' in the xapi database.  If any appear, __iter__ will need to
     # return a new object type and this method will need to be moved into that
     def next(self):
@@ -92,19 +92,19 @@ class HotAccessor:
         if isinstance(inParam, HotOpaqueRef):
             raise Exception('Use [] to pass HotOpaqueRefs to HotAccessors')
         return HotData.Inst().GetData(self.name, inParam, self.refs)
-    
+
     def HotOpaqueRef(self):
         return self.refs[-1]
-    
+
     def __str__(self):
         return str(self.__dict__)
-    
+
     def __repr__(self):
         return str(self.__dict__)
 
 class HotData:
     instance = None
-    
+
     def __init__(self):
         self.data = {}
         self.timestamps = {}
@@ -116,17 +116,17 @@ class HotData:
         if cls.instance is None:
             cls.instance = HotData()
         return cls.instance
-    
+
     @classmethod
     def Reset(cls):
         if cls.instance is not None:
             del cls.instance
             cls.instance = None
-    
+
     def DeleteCache(self):
         self.data = {}
         self.timestamps = {}
-    
+
     def Fetch(self, inName, inRef):
         # Top-level object are cached by name, referenced objects by reference
         cacheName = FirstValue(inRef, inName)
@@ -144,12 +144,12 @@ class HotData:
             except socket.timeout:
                 self.session = None
                 raise socket.timeout
-        return retVal    
-    
+        return retVal
+
     def FetchByRef(self, inRef):
         retVal = self.Fetch(inRef.Type(), inRef)
         return retVal
-    
+
     def FetchByNameOrRef(self, inName, inRef):
         if inName in self.fetchers:
             retVal = self.Fetch(inName, inRef)
@@ -160,7 +160,7 @@ class HotData:
     def GetData(self, inNames, inDefault, inRefs):
         try:
             itemRef = self.data # Start at the top level
-    
+
             for i, name in enumerate(inNames):
                 currentRef = inRefs[i]
                 if isinstance(currentRef, HotOpaqueRef):
@@ -170,7 +170,7 @@ class HotData:
                     # Look for a data fetcher matching this item name
                     if name in self.fetchers:
                         # We have a fetcher for this element, so use it
-                        
+
                         # Handle the case where itemRef is a dictionary containing the key/value pair ( current name : HotOpaqueRef )
                         if isinstance(itemRef, types.DictType) and name in itemRef and isinstance(itemRef[name], HotOpaqueRef):
                             # This is a subitem with an OpaqueRef supplied by xapi, so fetch the obect it's referring to
@@ -187,7 +187,7 @@ class HotData:
 
                         # This allows hash navigation using HotAccessor().key1.key2.key3(), etc.
                         itemRef = itemRef[name] # Allow to throw if element not present
-    
+
                     # Handle integer references as list indices
                     if isinstance(currentRef, types.IntType):
                         if not isinstance(itemRef, (types.ListType, types.TupleType)):
@@ -198,8 +198,8 @@ class HotData:
             return itemRef
         except Exception, e:
             # Data not present/fetchable, so return the default value
-            return FirstValue(inDefault, None)                
-        
+            return FirstValue(inDefault, None)
+
     def __getattr__(self, inName):
         if inName[0].isupper():
             # Don't expect elements to start with upper case, so probably an unknown method name
@@ -207,7 +207,7 @@ class HotData:
         return HotAccessor([inName], [None])
 
     def AddFetcher(self, inKey, inFetcher, inLifetimeSecs):
-        self.fetchers[inKey] = Struct( fetcher = inFetcher, lifetimeSecs = inLifetimeSecs ) 
+        self.fetchers[inKey] = Struct( fetcher = inFetcher, lifetimeSecs = inLifetimeSecs )
 
     def InitialiseFetchers(self):
         self.fetchers = {}
@@ -225,10 +225,10 @@ class HotData:
         self.AddFetcher('sr', self.FetchSR, 5)
         self.AddFetcher('visible_sr', self.FetchVisibleSR, 5) # Derived
         self.AddFetcher('vm', self.FetchVM, 5)
-    
+
     def FetchVMGuestMetrics(self, inOpaqueRef):
         retVal = self.Session().xenapi.VM_guest_metrics.get_record(inOpaqueRef.OpaqueRef())
-        return retVal    
+        return retVal
 
     def FetchGuestVM(self, inOpaqueRef):
         if inOpaqueRef is not None:
@@ -246,11 +246,11 @@ class HotData:
             return HotData.ConvertOpaqueRefs(inCPU,
                 host='host'
                 )
-            
+
         if inOpaqueRef is not None:
             cpu = self.Session().xenapi.host_cpu.get_record(inOpaqueRef.OpaqueRef())
             retVal = LocalConverter(cpu)
-        else:    
+        else:
             cpus = self.Session().xenapi.host_cpu.get_all_records()
             retVal = {}
             for key, cpu in cpus.iteritems():
@@ -275,7 +275,7 @@ class HotData:
                 running += 1
             elif powerState.startswith('suspended'):
                 suspended += 1
-            
+
         retVal['num_halted'] = halted
         retVal['num_paused'] = paused
         retVal['num_running'] = running
@@ -286,14 +286,14 @@ class HotData:
     def FetchLocalHost(self, inOpaqueRef):
         retVal = self.FetchHost(self.FetchLocalHostRef(inOpaqueRef))
         return retVal
-        
+
     def FetchLocalHostRef(self, inOpaqueRef):
         if inOpaqueRef is not None:
             raise Exception("Request for local host must not be passed an OpaqueRef")
         thisHost = self.Session().xenapi.session.get_this_host(self.Session()._session)
         retVal = HotOpaqueRef(thisHost, 'host')
-        return retVal    
-    
+        return retVal
+
     def FetchLocalPool(self, inOpaqueRef):
         if inOpaqueRef is not None:
             raise Exception("Request for local pool must not be passed an OpaqueRef")
@@ -304,7 +304,7 @@ class HotData:
 
         retVal = self.FetchPool(HotOpaqueRef(pools[0], 'pool'))
         return retVal
-        
+
     def FetchHost(self, inOpaqueRef):
         def LocalConverter(inHost):
             return HotData.ConvertOpaqueRefs(inHost,
@@ -320,7 +320,7 @@ class HotData:
                 VBDs = 'vbd',
                 VIFs = 'vif'
                 )
-        
+
         if inOpaqueRef is not None:
             host = self.Session().xenapi.host.get_record(inOpaqueRef.OpaqueRef())
             retVal = LocalConverter(host)
@@ -331,7 +331,7 @@ class HotData:
                 host = LocalConverter(host)
                 retVal[HotOpaqueRef(key, 'host')] = host
         return retVal
-        
+
     def FetchMetrics(self, inOpaqueRef):
         if inOpaqueRef is None:
             raise Exception("Request for VM metrics requires an OpaqueRef")
@@ -349,7 +349,7 @@ class HotData:
                 host='host',
                 SR='sr'
             )
-                
+
         if inOpaqueRef is not None:
             pbd = self.Session().xenapi.PBD.get_record(inOpaqueRef.OpaqueRef())
             retVal = LocalConverter(pbd)
@@ -369,7 +369,7 @@ class HotData:
                 master='host',
                 suspend_image_SR='sr'
             )
-                
+
         if inOpaqueRef is not None:
             pool = self.Session().xenapi.pool.get_record(inOpaqueRef.OpaqueRef())
             retVal = LocalConverter(pool)
@@ -380,14 +380,14 @@ class HotData:
                 pool = LocalConverter(pool)
                 retVal[HotOpaqueRef(key, 'pool')] = pool
         return retVal
-        
+
     def FetchSR(self, inOpaqueRef):
         def LocalConverter(inSR):
             return HotData.ConvertOpaqueRefs(inSR,
                 current_operations = 'task',
                 PBDs = 'pbd',
                 VDIs = 'vdi')
-                
+
         if inOpaqueRef is not None:
             sr = self.Session().xenapi.SR.get_record(inOpaqueRef.OpaqueRef())
             retVal = LocalConverter(sr)
@@ -398,11 +398,11 @@ class HotData:
                 sr = LocalConverter(sr)
                 retVal[HotOpaqueRef(key, 'sr')] = sr
         return retVal
-    
+
     def FetchVisibleSR(self, inOpaqueRef):
         if inOpaqueRef is not None:
             # Make sr[ref] and visible_sr[ref] do the same thing, i.e. don't check the the SR is visible
-            retVal = self.FetchSR(inOpaqueRef) 
+            retVal = self.FetchSR(inOpaqueRef)
         else:
             retVal = {}
             for sr in HotAccessor().sr: # Iterates through HotAccessors to SRs
@@ -415,7 +415,7 @@ class HotData:
                             visible = True
                 if visible:
                     retVal[sr.HotOpaqueRef()] = sr
-                    
+
         return retVal
 
     def FetchVM(self, inOpaqueRef):
@@ -432,7 +432,7 @@ class HotData:
                 snapshot_of='snapshot',
                 VBDs = 'vbd',
                 VIFs = 'vif')
-                
+
         if inOpaqueRef is not None:
             vm = self.Session().xenapi.VM.get_record(inOpaqueRef.OpaqueRef())
             retVal = LocalConverter(vm)
@@ -461,7 +461,7 @@ class HotData:
                     for key, item in obj.iteritems():
                         result[ HotOpaqueRef(key, value) ] = item
                     ioObj[keyword] = result
-                    
+
         if Auth.Inst().IsTestMode(): # Tell the caller what they've missed, when in test mode
             for key,value in ioObj.iteritems():
                 if isinstance(value, str) and value.startswith('OpaqueRef'):
@@ -483,7 +483,7 @@ class HotData:
         if self.session is None:
             self.session = Auth.Inst().OpenSession()
         return self.session
-        
+
     def Dump(self):
         print "Contents of HotData cache:"
         pprint(self.data)
