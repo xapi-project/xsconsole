@@ -152,6 +152,10 @@ clean:
 
 depend:
 
+.PHONY: test
+test:
+	python -m unittest discover
+
 all:
 
 # Convenience targets for pylint output
