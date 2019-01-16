@@ -144,7 +144,11 @@ install-oem:
 	$(foreach script,$(PLUGINS_OEM),\
           $(INSTALL) -m $(LIB_MODE) plugins-oem/$(script) $(LIBDIR)/xsconsole/plugins-oem;)
 
+.PHONY: clean
 clean:
+	rm -f *.pyc
+	rm -f */*.pyc
+	rm -rf __pycache__
 
 depend:
 
