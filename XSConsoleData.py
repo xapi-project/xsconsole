@@ -338,7 +338,7 @@ class Data:
 
         self.data['chkconfig'] = {}
         self.ScanService('sshd')
-        self.ScanService('ntpd')
+        self.ScanService('chronyd')
 
         self.DeriveData()
 
@@ -465,7 +465,7 @@ class Data:
             self.ScanHostname(output.split("\n"))
 
     def UpdateFromNTPConf(self):
-        (status, output) = commands.getstatusoutput("/bin/cat /etc/ntp.conf")
+        (status, output) = commands.getstatusoutput("/bin/cat /etc/chrony.conf")
         if status == 0:
             self.ScanNTPConf(output.split("\n"))
 
@@ -509,11 +509,11 @@ class Data:
 
         file = None
         try:
-            file = open("/etc/ntp.conf", "w")
+            file = open("/etc/chrony.conf", "w")
             for other in self.ntp.othercontents([]):
                 file.write(other+"\n")
             for server in self.ntp.servers([]):
-                file.write("server "+server+"\n")
+                file.write("server "+server+" iburst\n")
         finally:
             if file is not None: file.close()
             self.UpdateFromNTPConf()

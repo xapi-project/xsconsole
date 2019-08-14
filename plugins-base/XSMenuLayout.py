@@ -62,7 +62,7 @@ class XSMenuLayout:
             inPane.AddWrappedTextField(Lang("Currently, no management interface is configured."))
         else:
             inPane.AddTitleField(Lang("Current Management Interface"))
-            if data.chkconfig.ntpd(False):
+            if data.chkconfig.chronyd(False):
                 ntpState = 'Enabled'
             else:
                 ntpState = 'Disabled'

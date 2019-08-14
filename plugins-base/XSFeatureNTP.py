@@ -138,13 +138,15 @@ class NTPDialogue(Dialogue):
         try:
             if inChoice == 'ENABLE':
                 Layout.Inst().TransientBanner(Lang("Enabling..."))
-                data.EnableService('ntpd')
-                data.StartService('ntpd')
+                data.EnableService('chronyd')
+                data.EnableService('chrony-wait')
+                data.StartService('chronyd')
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("NTP Time Synchronization Enabled")))
             elif inChoice == 'DISABLE':
                 Layout.Inst().TransientBanner(Lang("Disabling..."))
-                data.DisableService('ntpd')
-                data.StopService('ntpd')
+                data.DisableService('chronyd')
+                data.DisableService('chrony-wait')
+                data.StopService('chronyd')
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("NTP Time Synchronization Disabled")))
             elif inChoice == 'ADD':
                 self.ChangeState('ADD')
@@ -177,9 +179,9 @@ class NTPDialogue(Dialogue):
         data=Data.Inst()
         try:
             data.SaveToNTPConf()
-            if data.chkconfig.ntpd(False):
+            if data.chkconfig.chronyd(False):
                 Layout.Inst().TransientBanner(Lang("Restarting NTP daemon with new configuration..."))
-                data.RestartService('ntpd')
+                data.RestartService('chronyd')
             Layout.Inst().PushDialogue(InfoDialogue( inMessage))
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Update failed: ")+Lang(e)))
@@ -195,7 +197,7 @@ class XSFeatureNTP:
         inPane.AddWrappedTextField(Lang("One or more network time servers can be configured to synchronize time between servers.  This is especially important for pooled servers."))
         inPane.NewLine()
 
-        if not data.chkconfig.ntpd(False):
+        if not data.chkconfig.chronyd(False):
             inPane.AddWrappedTextField(Lang("Currently NTP is disabled, and the following servers are configured."))
         else:
             inPane.AddWrappedTextField(Lang("Currently NTP is enabled, and the following servers are configured."))
