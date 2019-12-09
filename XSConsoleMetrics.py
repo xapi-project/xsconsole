@@ -136,7 +136,7 @@ class HotMetrics:
                 opaqueRef = session.xenapi.session.get_this_host(sessionID)
                 self.thisHostUUID = session.xenapi.host.get_uuid(opaqueRef)
 
-            httpRequest = 'https://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
+            httpRequest = 'http://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
 
             socket = urllib.URLopener().open(httpRequest)
             try:
