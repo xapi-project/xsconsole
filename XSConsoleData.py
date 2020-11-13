@@ -397,7 +397,9 @@ class Data:
             build_number = self.data['inventory'].get('BUILD_NUMBER')
             if build_number is None:
                 build_number = self.host.software_version.build_number('')
-            fullversion = version + '-' + build_number
+            fullversion = version
+            if build_number != '':
+                fullversion += '-' + build_number
 
             # if we have an OEM build number then add it on
             oemBuildNumber = self.host.software_version.oem_build_number('')
