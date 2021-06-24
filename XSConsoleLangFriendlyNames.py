@@ -599,7 +599,7 @@ class LangFriendlyNames:
     'Label-SR.SRTypes-egenera' : 'Egenera Virtual Storage',
     'Label-SR.SRTypes-egeneracd' : 'Egenera Virtual DVD Drive',
     'Label-SR.SRTypes-equal' : 'Dell EqualLogic',
-    'Label-SR.SRTypes-ext' : 'Ext3',
+    'Label-SR.SRTypes-ext' : 'Ext',
     'Label-SR.SRTypes-iso' : 'ISO',
     'Label-SR.SRTypes-local' : 'Local',
     'Label-SR.SRTypes-lvm' : 'LVM',
