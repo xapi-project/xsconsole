@@ -18,6 +18,20 @@ if __name__ == "__main__":
     
 from XSConsoleStandard import *
 
+def is_master():
+    master = False
+    try:
+        fd = open('%s/pool.conf' % (Config.Inst().XCPConfigDir()), 'r')
+        try:
+            items = fd.readline().split(':')
+            if items[0].strip() == 'master':
+                master = True
+        finally:
+            fd.close()
+    except Exception:
+        pass
+    return master
+
 class XSFeatureStatus:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
@@ -32,7 +46,15 @@ class XSFeatureStatus:
         inPane.AddTitleField(Lang("Management Network Parameters"))
         
         if len(data.derived.managementpifs([])) == 0:
-            inPane.AddWrappedTextField(Lang("<No network configured>"))
+            db = HotAccessor()
+            if not data.IsXAPIRunning():
+                inPane.AddWrappedTextField(Lang("XAPI service is not running."))
+            elif db.host(None) is not None:
+                inPane.AddWrappedTextField(Lang("Finishing start-up."))
+            elif not is_master():
+                inPane.AddWrappedTextField(Lang("Pool master is unreachable."))
+            else:
+                inPane.AddWrappedTextField(Lang("<No network configured>"))
         else:
             inPane.AddStatusField(Lang('Device', 16), data.derived.managementpifs()[0]['device'])
             inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
