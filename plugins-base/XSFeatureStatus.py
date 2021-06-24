@@ -19,18 +19,14 @@ if __name__ == "__main__":
 from XSConsoleStandard import *
 
 def is_master():
-    master = False
     try:
-        fd = open('%s/pool.conf' % (Config.Inst().XCPConfigDir()), 'r')
-        try:
+        with open('%s/pool.conf' % (Config.Inst().XCPConfigDir()), 'r') as fd:
             items = fd.readline().split(':')
             if items[0].strip() == 'master':
-                master = True
-        finally:
-            fd.close()
+                return True
     except Exception:
         pass
-    return master
+    return False
 
 class XSFeatureStatus:
     @classmethod
