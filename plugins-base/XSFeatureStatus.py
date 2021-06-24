@@ -19,14 +19,12 @@ if __name__ == "__main__":
 from XSConsoleStandard import *
 
 def is_master():
-    try:
-        with open('%s/pool.conf' % (Config.Inst().XCPConfigDir()), 'r') as fd:
-            items = fd.readline().split(':')
-            if items[0].strip() == 'master':
-                return True
-    except Exception:
-        pass
-    return False
+    """ Reads pool.conf and return whether or not this host is the pool master.
+        Raises an exception if the file couldn't be read.
+    """
+    with open('%s/pool.conf' % (Config.Inst().XCPConfigDir()), 'r') as fd:
+        items = fd.readline().split(':')
+        return items[0].strip() == 'master'
 
 class XSFeatureStatus:
     @classmethod
@@ -43,14 +41,19 @@ class XSFeatureStatus:
         
         if len(data.derived.managementpifs([])) == 0:
             db = HotAccessor()
-            if not data.IsXAPIRunning():
-                inPane.AddWrappedTextField(Lang("XAPI service is not running."))
-            elif db.host(None) is not None:
-                inPane.AddWrappedTextField(Lang("Finishing start-up."))
-            elif not is_master():
-                inPane.AddWrappedTextField(Lang("Pool master is unreachable."))
+            try:
+                is_not_master = not is_master()
+            except Exception as e:
+                inPane.AddWrappedTextField(Lang("`pool.conf` couldn't be read: %s" % e))
             else:
-                inPane.AddWrappedTextField(Lang("<No network configured>"))
+                if not data.IsXAPIRunning():
+                    inPane.AddWrappedTextField(Lang("XAPI service is not running."))
+                elif db.host(None) is not None:
+                    inPane.AddWrappedTextField(Lang("Finishing start-up."))
+                elif is_not_master:
+                    inPane.AddWrappedTextField(Lang("Pool master is unreachable."))
+                else:
+                    inPane.AddWrappedTextField(Lang("<No network configured>"))
         else:
             inPane.AddStatusField(Lang('Device', 16), data.derived.managementpifs()[0]['device'])
             inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
