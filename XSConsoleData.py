@@ -524,18 +524,16 @@ class Data:
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
 
-        file = None
-        try:
-            file = open("/etc/resolv.conf", "w")
-            now = datetime.datetime.now().strftime("; created by xsconsole %I:%M%p on %B %d, %Y\n")
-            file.write(now)
-            for other in self.dns.othercontents([]):
-                file.write(other+"\n")
-            for server in self.dns.nameservers([]):
-                file.write("nameserver "+server+"\n")
-        finally:
-            if file is not None: file.close()
-            self.UpdateFromResolveConf()
+        for pif in Data.Inst().derived.managementpifs([]):
+            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
+            mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+            ip = pif['IPv6'][0].split('/')[0] if ipv6 else pif['IP']
+            netmask = pif['IPv6'][0].split('/')[1] if ipv6 else pif['netmask']
+            gw = pif['ipv6_gateway'] if ipv6 else pif['gateway']
+            dns = ','.join(self.dns.nameservers([]))
+            self.ReconfigureManagement(pif, mode, ip, netmask, gw, dns)
+
+        self.UpdateFromResolveConf()
 
 
     def ScanDmiDecode(self, inLines):
