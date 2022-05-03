@@ -56,6 +56,8 @@ class XSFeatureStatus:
                     inPane.AddWrappedTextField(Lang("<No network configured>"))
         else:
             inPane.AddStatusField(Lang('Device', 16), data.derived.managementpifs()[0]['device'])
+            if int(data.derived.managementpifs()[0]['VLAN']) >= 0:
+                inPane.AddStatusField(Lang('VLAN', 16), data.derived.managementpifs()[0]['VLAN'])
             inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
             inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
             inPane.AddStatusField(Lang('Gateway', 16),  data.ManagementGateway(''))
