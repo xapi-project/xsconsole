@@ -69,6 +69,8 @@ class XSMenuLayout:
             
             for pif in data.derived.managementpifs([]):
                 inPane.AddStatusField(Lang('Device', 16), pif['device'])
+                if int(pif['VLAN']) >= 0:
+                    inPane.AddStatusField(Lang('VLAN', 16), pif['VLAN'])
                 inPane.AddStatusField(Lang('MAC Address', 16),  pif['MAC'])
                 inPane.AddStatusField(Lang('DHCP/Static IP', 16),  pif['ip_configuration_mode'])
 
