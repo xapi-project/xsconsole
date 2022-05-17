@@ -910,7 +910,21 @@ class Data:
         Auth.Inst().AssertAuthenticated()
         try:
             self.RequireSession()
-            self.session.xenapi.PIF.reconfigure_ip(inPIF['opaqueref'],  inMode,  inIP,  inNetmask,  inGateway, FirstValue(inDNS, ''))
+            if inPIF['primary_address_type'].lower() == 'ipv4':
+                self.session.xenapi.PIF.reconfigure_ip(inPIF['opaqueref'],  inMode,  inIP,  inNetmask,  inGateway, FirstValue(inDNS, ''))
+                if inPIF['ipv6_configuration_mode'].lower() == 'static':
+                    # Update IPv6 DNS as well
+                    self.session.xenapi.PIF.reconfigure_ipv6(
+                        inPIF['opaqueref'], inPIF['ipv6_configuration_mode'], ','.join(inPIF['IPv6']), inPIF['ipv6_gateway'], FirstValue(inDNS, '')
+                    )
+            else:
+                inIPv6 = inIP + '/' + inNetmask
+                self.session.xenapi.PIF.reconfigure_ipv6(inPIF['opaqueref'],  inMode,  inIPv6,  inGateway, FirstValue(inDNS, ''))
+                if inPIF['ip_configuration_mode'].lower() == 'static':
+                    # Update IPv4 DNS as well
+                    self.session.xenapi.PIF.reconfigure_ip(
+                        inPIF['opaqueref'], inPIF['ip_configuration_mode'], inPIF['IP'], inPIF['netmask'], inPIF['gateway'], FirstValue(inDNS, '')
+                    )
             self.session.xenapi.host.management_reconfigure(inPIF['opaqueref'])
             status, output = commands.getstatusoutput('%s host-signal-networking-change' % (Config.Inst().XECLIPath()))
             if status != 0:
@@ -930,6 +944,7 @@ class Data:
             # Disable the PIF that the management interface was using
             for pif in self.derived.managementpifs([]):
                 self.session.xenapi.PIF.reconfigure_ip(pif['opaqueref'], 'None','' ,'' ,'' ,'')
+                self.session.xenapi.PIF.reconfigure_ipv6(pif['opaqueref'], 'None','' ,'' ,'')
         finally:
             # Network reconfigured so this link is potentially no longer valid
             self.session = Auth.Inst().CloseSession(self.session)
@@ -965,10 +980,12 @@ class Data:
 
         # FIXME: Address should come from API, but not available at present.  For DHCP this is just a guess at the gateway address
         for pif in self.derived.managementpifs([]):
-            if pif['ip_configuration_mode'].lower().startswith('static'):
+            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
+            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+            if configuration_mode.lower().startswith('static'):
                 # For static IP the API address is correct
-                retVal = pif['netmask']
-            elif pif['ip_configuration_mode'].lower().startswith('dhcp'):
+                retVal = pif['IPv6'][0].split('/')[1] if ipv6 else pif['netmask']
+            elif configuration_mode.lower().startswith('dhcp'):
                 # For DHCP,  find the gateway address by parsing the output from the 'route' command
                 if 'bridge' in pif['network']:
                     device = pif['network']['bridge']
@@ -995,10 +1012,12 @@ class Data:
 
         # FIXME: Address should come from API, but not available at present.  For DHCP this is just a guess at the gateway address
         for pif in self.derived.managementpifs([]):
-            if pif['ip_configuration_mode'].lower().startswith('static'):
+            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
+            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+            if configuration_mode.lower().startswith('static'):
                 # For static IP the API address is correct
-                retVal = pif['gateway']
-            elif pif['ip_configuration_mode'].lower().startswith('dhcp'):
+                retVal = pif['ipv6_gateway'] if ipv6 else pif['gateway']
+            elif configuration_mode.lower().startswith('dhcp'):
                 # For DHCP,  find the gateway address by parsing the output from the 'route' command
                 if 'bridge' in pif['network']:
                     device = pif['network']['bridge']
