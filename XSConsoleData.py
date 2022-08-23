@@ -377,15 +377,17 @@ class Data:
                 if 'domid' in vm and vm['domid'] == '0':
                     self.data['derived']['dom0_vm'] = vm
 
-        # get the version number
-        version = self.data['inventory'].get('PRODUCT_VERSION')
-        if version is None:
-            version = self.host.software_version.product_version(self.host.software_version.platform_version(''))
+        # get the version
+        version = self.data['inventory'].get('PRODUCT_VERSION_TEXT')
+        assert version
+
+        # get the numeric product version
+        version_number = self.data['inventory'].get('PRODUCT_VERSION')
+        assert version_number
 
         # get the short version number
         shortversion = self.data['inventory'].get('PRODUCT_VERSION_TEXT_SHORT')
-        if shortversion is None:
-            shortversion = self.host.software_version.product_version_text_short(self.host.software_version.platform_version(''))
+        assert shortversion
 
         # if we have a - at the start of the version number everything is unknown
         if version.startswith('-'):
@@ -397,9 +399,9 @@ class Data:
             build_number = self.data['inventory'].get('BUILD_NUMBER')
             if build_number is None:
                 build_number = self.host.software_version.build_number('')
-            fullversion = version
             if build_number != '':
-                fullversion += '-' + build_number
+                build_number = '-' + build_number
+            fullversion = '%s (%s%s)' % (version, version_number, build_number)
 
             # if we have an OEM build number then add it on
             oemBuildNumber = self.host.software_version.oem_build_number('')
