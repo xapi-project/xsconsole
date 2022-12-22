@@ -204,7 +204,7 @@ class InterfaceDialogue(Dialogue):
         pane = self.Pane()
         pane.ResetFields()
 
-        pane.AddWrappedBoldTextField(data.derived.full_app_name()+Lang(" uses free-form names to "
+        pane.AddWrappedBoldTextField(data.derived.app_name()+Lang(" uses free-form names to "
             "refer to hosts.  Would you like to copy the new hostname to the "+data.derived.app_name()+
             " name?"))
         pane.NewLine()
