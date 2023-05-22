@@ -965,56 +965,20 @@ class Data:
     def ManagementNetmask(self, inDefault = None):
         retVal = inDefault
 
-        # FIXME: Address should come from API, but not available at present.  For DHCP this is just a guess at the gateway address
         for pif in self.derived.managementpifs([]):
-            if pif['ip_configuration_mode'].lower().startswith('static'):
-                # For static IP the API address is correct
-                retVal = pif['netmask']
-            elif pif['ip_configuration_mode'].lower().startswith('dhcp'):
-                # For DHCP,  find the gateway address by parsing the output from the 'route' command
-                if 'bridge' in pif['network']:
-                    device = pif['network']['bridge']
-                else:
-                    device = pif['device']
-
-                device = ShellUtils.MakeSafeParam(device)
-
-                ipre = r'[0-9a-f.:]+'
-                ifRE = re.compile(r'\s*inet\s+' + ipre + '\s+netmask\s+(' + ipre + r')\s+broadcast\s+(' + ipre + r')\s*$',
-                    re.IGNORECASE)
-
-                ifconfig = commands.getoutput("/sbin/ifconfig '"+device+"'").split("\n")
-                for line in ifconfig:
-                    match = ifRE.match(line)
-                    if match:
-                        retVal = match.group(1)
-                        break
+            retVal = pif['netmask']
+            if retVal:
+                break
 
         return retVal
 
     def ManagementGateway(self, inDefault = None):
         retVal = inDefault
 
-        # FIXME: Address should come from API, but not available at present.  For DHCP this is just a guess at the gateway address
         for pif in self.derived.managementpifs([]):
-            if pif['ip_configuration_mode'].lower().startswith('static'):
-                # For static IP the API address is correct
-                retVal = pif['gateway']
-            elif pif['ip_configuration_mode'].lower().startswith('dhcp'):
-                # For DHCP,  find the gateway address by parsing the output from the 'route' command
-                if 'bridge' in pif['network']:
-                    device = pif['network']['bridge']
-                else:
-                    device = pif['device']
-                routeRE = re.compile(r'([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)\s+UG\s+\d+\s+\d+\s+\d+\s+'+device,
-                    re.IGNORECASE)
-
-                routes = commands.getoutput("/sbin/route -n").split("\n")
-                for line in routes:
-                    match = routeRE.match(line)
-                    if match:
-                        retVal = match.group(2)
-                        break
+            retVal = pif['gateway']
+            if retVal:
+                break
 
         return retVal
 
