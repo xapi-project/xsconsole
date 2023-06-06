@@ -102,7 +102,7 @@ class ResetDialogue(Dialogue):
         try:
             Layout.Inst().TransientBanner(Lang('Stopping Virtual Machines...'))
             ShellPipe('service', 'xapi-domains', 'stop').Call()
-        except Exception as e:
+        except Exception, e:
             Layout.Inst().TransientBanner(Lang('Could not stop Virtual Machines: ' + Lang(e)))
             time.sleep(3.0)
         try:
@@ -111,7 +111,7 @@ class ResetDialogue(Dialogue):
             Layout.Inst().TransientBanner(Lang('Rebooting...'))
             Layout.Inst().ExitBannerSet(Lang("Rebooting..."))
             Layout.Inst().SubshellCommandSet("/sbin/reboot -f") # -f avoids running init scripts on shutdown
-        except Exception as e:
+        except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang('Reset to Factory Defaults Failed'), Lang(e)))
 
 class XSFeatureReset:
