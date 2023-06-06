@@ -23,7 +23,7 @@ import XenAPI # For XenAPI.Failure
 def Lang(inLabel, inPad = 0):
     retStr = Language.ToString(inLabel)
     if inPad > 0:
-        retStr = retStr.ljust(inPad, ' ')
+        retStr = retStr.ljust(inPad,b' ')
     return retStr
     
 class Language:
@@ -58,13 +58,14 @@ class Language:
         if inNumber == 1:
             return Lang(inText)
         else:
-            return Lang(inText+"s")
+            return Lang(inText+b"s")
 
     @classmethod
     def XapiError(cls, inList):
         retVal = LangErrors.Translate(inList[0])
         for i in range(1, len(inList)):
-            retVal = retVal.replace('{'+str(i-1)+'}', inList[i])
+            retVal = retVal.replace(b"{" + str(i - 1).encode() + b"}", str(inList[i]).encode())
+        return retVal
         return retVal
 
     @classmethod
@@ -82,15 +83,15 @@ class Language:
         elif isinstance(inLabel, Exception):
             exn_strings = []
             for arg in inLabel.args:
-                #if isinstance(arg, unicode):
-                   # exn_strings.append(arg.encode('utf-8'))
-                #else:
+                if isinstance(arg, str):
+                    exn_strings.append(arg.encode('utf-8'))
+                else:
                     exn_strings.append(str(arg))
             retVal = str(tuple(exn_strings))
             cls.LogError(retVal)
         else:
-            #if isinstance(inLabel, unicode):
-                #inLabel = inLabel.encode('utf-8')
+            if isinstance(inLabel, str):
+                inLabel = inLabel.encode('utf-8')
             retVal = inLabel
             if cls.stringHook is not None:
                 cls.stringHook(retVal)
@@ -100,7 +101,7 @@ class Language:
     def ReflowText(cls, inText, inWidth):
         # Return an array of string that are at most inWidth characters long
         retArray = []
-        text = inText+" "
+        text = str(inText) +" "
         while len(text) > 0:
             spacePos = text.rfind(' ', 0, inWidth+1) # returns max (lastParam-1), i.e. 'aaaaa'.rfind('a', 0, 3) == 2
             retPos = text.find("\r", 0, inWidth+1)

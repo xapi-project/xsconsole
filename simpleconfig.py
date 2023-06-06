@@ -23,17 +23,17 @@ import shutil
 def uppercase_ASCII_string(str):
     newstr = ""
     for i in range(0,len(str)):
-	if str[i] in string.lowercase:
-	    newstr += chr(ord(str[i])-32)
-	else:
-	    newstr += str[i]
+	    if str[i] in string.lowercase:#ashwin indentation
+	        newstr += chr(ord(str[i])-32)
+	    else:
+	        newstr += str[i]
 
     return newstr
 
 class SimpleConfigFile:
     def __str__ (self):
         s = ""
-        keys = self.info.keys ()
+        keys = list(self.info.keys ())
         keys.sort ()
         for key in keys:
             # FIXME - use proper escaping
@@ -76,7 +76,7 @@ class SimpleConfigFile:
     def unset (self, *keys):
         for key in keys:
             key = uppercase_ASCII_string(key)
-            if self.info.has_key (key):
+            if key in self.info:
                del self.info[key]
 
     def get (self, key):

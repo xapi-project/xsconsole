@@ -13,7 +13,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import curses, sys, commands
+import curses, sys, subprocess
 
 from XSConsoleBases import *
 from XSConsoleConfig import *
@@ -93,7 +93,7 @@ class CursesPalette:
                          'MODAL_SELECTED', 'MODAL_FLASH', 'HELP_BASE', 'HELP_BRIGHT',
                          'HELP_FLASH', 'TOPLINE_BASE']:
                 cls.colours[name] = curses.color_pair(0)
-            for key, value in cls.colours.items():
+            for key, value in list(cls.colours.items()):
                 if key.endswith('_SELECTED'):
                     cls.colours[key] |= curses.A_REVERSE
                 elif key.endswith('_FLASH'):
@@ -169,18 +169,19 @@ class CursesPane:
                 xPos = 0
 
             # Clip against right hand side
-            clippedStr = clippedStr[:self.xSize - xPos]
+            clippedStr = clippedStr[:int(self.xSize - xPos)]#Ashwin
 
             if len(clippedStr) > 0:
                 try:
                     encodedStr = clippedStr
-                    if isinstance(clippedStr, unicode):
+                    if isinstance(clippedStr, str):
                         encodedStr = clippedStr.encode('utf-8')
                         # Clear field here since addstr will clear len(encodedStr)-len(clippedStr) too few spaces
-                        self.win.addstr(inY, xPos, len(clippedStr)*' ', CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
+                        self.win.addstr(inY, int(xPos), ' ' * len(clippedStr), CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))#Ashwin
                         self.win.refresh()
-                    self.win.addstr(inY, xPos, encodedStr, CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
-                except Exception,  e:
+                    self.win.addstr(inY, int(xPos), encodedStr, CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))#Ashwin
+
+                except Exception as  e:
                     if xPos + len(inString) == self.xSize and inY + 1 == self.ySize:
                         # Curses incorrectly raises an exception when writing the bottom right
                         # character in a window, but still completes the write, so ignore it
@@ -291,7 +292,8 @@ class CursesWindow(CursesPane):
         CursesPane.__init__(self, inXPos, inYPos, inXSize, inYSize, inParent.xOffset, inParent.yOffset)
 
         if inParent:
-            self.win = inParent.Win().subwin(self.ySize, self.xSize, self.yPos+inParent.YOffset(), self.xPos+inParent.XOffset())
+            self.win = inParent.Win().subwin(int(self.ySize), int(self.xSize), int(self.yPos+inParent.YOffset()), int(self.xPos+inParent.XOffset()))#Ashwin
+
         else:
             raise Exception("Orphan windows not supported - supply parent")
             self.win = curses.newwin(self.ySize, self.xSize, self.yPos, self.xPos) # Old behaviour

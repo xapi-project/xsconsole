@@ -51,7 +51,7 @@ class ShellPipe:
         self.called = False
         
     def _NewPipe(self, *inParams):
-        if len(inParams) == 1 and isinstance(inParams, (types.ListType, types.TupleType)):
+        if len(inParams) == 1 and isinstance(inParams, (list, tuple)):
                 params = inParams[0]
         else:
             params = inParams
@@ -84,7 +84,7 @@ class ShellPipe:
         self.called = True
         while True:
             try:
-                if isinstance(inInput, (types.ListType, types.TupleType)):
+                if isinstance(inInput, (list, tuple)):
                     stdout, stderr = self.pipe.communicate("\n".join(inInput))
                 else:
                     stdout, stderr = self.pipe.communicate(inInput)
@@ -92,7 +92,7 @@ class ShellPipe:
                 self.stdout += stdout.splitlines()
                 self.stderr += stderr.splitlines()
                 break
-            except IOError, e:
+            except IOError as e:
                 if e.errno != errno.EINTR: # Loop if EINTR
                     raise
             # Other exceptions propagate to the caller
@@ -143,7 +143,7 @@ class ShellUtils:
             try:
                 inPipe.wait()
                 break
-            except IOError, e:
+            except IOError as e:
                 if e.errno != errno.EINTR: # Loop if EINTR
                     raise
 
@@ -192,7 +192,7 @@ class IPUtils:
     def ValidateIP(cls, text):
         rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
         if not rc: return False
-        ints = map(int, rc.groups())
+        ints = list(map(int, rc.groups()))
         largest = 0
         for i in ints:
             if i > 255: return False
@@ -205,7 +205,7 @@ class IPUtils:
         rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
         if not rc:
             return False
-        ints = map(int, rc.groups())
+        ints = list(map(int, rc.groups()))
         for i in ints:
             if i > 255:
                 return False

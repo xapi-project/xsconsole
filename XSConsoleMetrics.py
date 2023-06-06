@@ -14,7 +14,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import XenAPI
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import xml.dom.minidom
 
 from XSConsoleAuth import *
@@ -42,7 +42,7 @@ class HotMetrics:
         retVal = {}
         hostPrefix = r'AVERAGE:host:'+self.thisHostUUID
         cpuRE = re.compile(hostPrefix+r':cpu[0-9]+$')
-        cpuValues = [ float(v) for k, v in self.data.iteritems() if cpuRE.match(k) ]
+        cpuValues = [ float(v) for k, v in list(self.data.items()) if cpuRE.match(k) ]
         retVal['numcpus'] = len(cpuValues)
         if len(cpuValues) == 0:
             retVal['cpuusage'] = None
@@ -51,12 +51,12 @@ class HotMetrics:
 
         try:
             retVal['memory_total'] = float(self.data[hostPrefix +':memory_total_kib']) * 1024.0
-        except Exception, e:
+        except Exception as e:
             retVal['memory_total'] = None
 
         try:
             retVal['memory_free'] = float(self.data[hostPrefix +':memory_free_kib']) * 1024.0
-        except Exception, e:
+        except Exception as e:
             retVal['memory_free'] = None
 
         return retVal
@@ -67,7 +67,7 @@ class HotMetrics:
         vmPrefix = r'AVERAGE:vm:' + inUUID
 
         cpuRE = re.compile(vmPrefix+r':cpu[0-9]+$')
-        cpuValues = [ float(v) for k, v in self.data.iteritems() if cpuRE.match(k) ]
+        cpuValues = [ float(v) for k, v in list(self.data.items()) if cpuRE.match(k) ]
         retVal['numcpus'] = len(cpuValues)
         if len(cpuValues) == 0:
             retVal['cpuusage'] = None
@@ -76,12 +76,12 @@ class HotMetrics:
 
         try:
             retVal['memory_total'] = float(self.data[vmPrefix +':memory']) # Not scaled
-        except Exception, e:
+        except Exception as e:
             retVal['memory_total'] = None
 
         try:
             retVal['memory_free'] = float(self.data[vmPrefix +':memory_internal_free']) * 1024.0 # Value is in kiB
-        except Exception, e:
+        except Exception as e:
             retVal['memory_free'] = None
 
         return retVal
@@ -138,7 +138,7 @@ class HotMetrics:
 
             httpRequest = 'http://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
 
-            socket = urllib.URLopener().open(httpRequest)
+            socket = urllib.request.URLopener().open(httpRequest)
             try:
                 content = socket.read()
             finally:

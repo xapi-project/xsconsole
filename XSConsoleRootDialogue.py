@@ -67,7 +67,7 @@ class RootDialogue(Dialogue):
             else:
                 raise Exception(Lang("Missing status handler"))
 
-        except Exception, e:
+        except Exception as e:
             statusPane.ResetFields()
             statusPane.ResetPosition()
             statusPane.AddTitleField(Lang("Information not available"))
