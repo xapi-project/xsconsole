@@ -37,7 +37,7 @@ class CrashDumpSRDialogue(SRDialogue):
             Data.Inst().CrashDumpSRSet(inSR)
             Layout.Inst().PushDialogue(InfoDialogue( Lang('Configuration Successful'),
                 Lang("Crash Dump SR set to '"+inSR['name_label']+"'")))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Configuration failed: ")+str(e)))
         Data.Inst().Update()
 

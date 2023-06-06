@@ -96,7 +96,7 @@ class PoolEjectDialogue(Dialogue):
             hostUtils.DoOperation('eject', HotAccessor().local_host_ref())
             Layout.Inst().ExitBannerSet(Lang('Removal Successful.  This Host Will Now Reboot...'))
             Layout.Inst().ExitCommandSet('/bin/sleep 120')
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Failed to Remove Host from Pool"), Lang(e)))
 
 class XSFeaturePoolEject:

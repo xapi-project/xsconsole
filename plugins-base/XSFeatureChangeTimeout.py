@@ -29,7 +29,7 @@ class ChangeTimeoutDialogue(InputDialogue):
     def HandleCommit(self, inValues):
         try:
             timeoutMinutes = int(inValues['timeout'])
-        except Exception, e:
+        except Exception as e:
             raise Exception("Invalid value - please supply a numeric value")
         
         Auth.Inst().TimeoutSecondsSet(timeoutMinutes * 60)
