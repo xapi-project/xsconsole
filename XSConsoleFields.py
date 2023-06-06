@@ -44,17 +44,18 @@ class SeparatorField(Field):
     def Height(self):
         return 1
 
+INPUT_FIELD_DEFAULT_WIDTH = 40  # Declared for use in constructor
 class InputField(Field):
-    MIN_WIDTH = 40 # Minimum width for input fields
+    MIN_WIDTH = 5  # Minimum width for input fields
 
-    def __init__(self, text, colour, selectedColour, flow, lengthLimit):
+    def __init__(self, text, colour, selectedColour, flow, lengthLimit, width=INPUT_FIELD_DEFAULT_WIDTH):
         ParamsToAttr()
         self.activated = False
         self.cursorPos = len(self.text)
         self.hideText = False
         self.selected = True
         self.scrollPos = 0
-        self.width = self.MIN_WIDTH
+        self.UpdateWidth(width)
         if self.lengthLimit is None:
             self.lengthLimit = 4096
 
