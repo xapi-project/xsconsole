@@ -127,17 +127,22 @@ class Data:
             fp = output.split("=")
             if len(fp) >= 2:
                 self.data['sslfingerprint'] = fp[1]
+          
             else:
                 self.data['sslfingerprint'] = "<Unknown>"
 
         try:
-            self.data['sshfingerprint'] = ShellPipe('/usr/bin/ssh-keygen', '-lf', '/etc/ssh/ssh_host_rsa_key.pub').AllOutput()[0].split(' ')[1]
-        except:
+              self.data['sshfingerprint'] = subprocess.check_output(['/usr/bin/ssh-keygen', '-lf', '/etc/ssh/ssh_host_rsa_key.pub']).decode('utf-8').split(' ')[1]#fixed error "Error occurred:a bytes-like object is required, not 'str'"
+
+           	            
+        except Exception as e:
+            print(f"Error occurred:{e}") 
             self.data['sshfingerprint'] = Lang('<Unknown>')
 
         try:
             self.data['state_on_usb_media'] = ( ShellPipe('/bin/bash', '-c', 'source /opt/xensource/libexec/oem-functions; if state_on_usb_media; then exit 1; else exit 0; fi').CallRC() != 0 )
-        except:
+        except Exception as e:#conversion from 2to3 did not change few except syntax
+            print(f"Error occurred:{e}")#added code
             self.data['state_on_usb_media'] = True
 
 
