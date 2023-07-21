@@ -37,7 +37,7 @@ class SuspendSRDialogue(SRDialogue):
             Data.Inst().SuspendSRSet(inSR)
             Layout.Inst().PushDialogue(InfoDialogue( Lang('Configuration Successful'),
                 Lang("Suspend SR set to '"+inSR['name_label']+"'")))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Configuration failed: ")+str(e)))
         Data.Inst().Update()
 

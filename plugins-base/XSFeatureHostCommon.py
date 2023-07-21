@@ -27,7 +27,7 @@ class HostUtils:
     
     @classmethod
     def AllowedOperations(cls):
-        return cls.operationNames.keys()
+        return list(cls.operationNames.keys())
     
     @classmethod
     def OtherConfigRemove(cls, inHostHandle, inName):

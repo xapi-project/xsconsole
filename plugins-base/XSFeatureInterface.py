@@ -160,8 +160,6 @@ class InterfaceDialogue(Dialogue):
         else:
             pif = Data.Inst().host.PIFs()[self.nic]
             pane.AddStatusField(Lang("Device",  16),  pif['device'])
-            if int(pif['VLAN']) >= 0:
-                pane.AddStatusField(Lang("VLAN",  16),  pif['VLAN'])
             pane.AddStatusField(Lang("Name",  16),  pif['metrics']['device_name'])
             pane.AddStatusField(Lang("IP Mode",  16),  self.mode)
             if self.mode == 'Static':
@@ -188,8 +186,6 @@ class InterfaceDialogue(Dialogue):
         else:
             pif = Data.Inst().host.PIFs()[self.nic]
             pane.AddStatusField(Lang("Device",  16),  pif['device'])
-            if int(pif['VLAN']) >= 0:
-                pane.AddStatusField(Lang("VLAN",  16),  pif['VLAN'])
             pane.AddStatusField(Lang("Name",  16),  pif['metrics']['device_name'])
             pane.AddStatusField(Lang("IP Address",  16),  self.IP)
             pane.AddStatusField(Lang("Netmask",  16),  self.netmask)
@@ -315,7 +311,7 @@ class InterfaceDialogue(Dialogue):
                 else:
                     self.Complete() # Disabled management interface
 
-            except Exception, e:
+            except Exception as e:
                 self.Complete(Lang("Configuration Failed: "+Lang(e)))
 
         else:
@@ -337,7 +333,7 @@ class InterfaceDialogue(Dialogue):
             try:
                 Data.Inst().NameLabelSet(nameLabel)
                 self.Complete()
-            except Exception, e:
+            except Exception as e:
                 self.Complete(Lang("Name Change Failed: ")+str(e))
 
         elif pane.CurrentInput().HandleKey(inKey):
@@ -415,7 +411,7 @@ class InterfaceDialogue(Dialogue):
             if ipAddress == '':
                 ipAddress = Lang('<Unknown>')
             Layout.Inst().PushDialogue(InfoDialogue(Lang("DHCP Renewed with IP address ")+ipAddress))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Renewal Failed"), Lang(e)))
 
     def Commit(self):
@@ -460,8 +456,6 @@ class XSFeatureInterface:
         else:
             for pif in data.derived.managementpifs([]):
                 inPane.AddStatusField(Lang('Device', 16), pif['device'])
-                if int(pif['VLAN']) >= 0:
-                    inPane.AddStatusField(Lang('VLAN', 16), pif['VLAN'])
                 inPane.AddStatusField(Lang('MAC Address', 16),  pif['MAC'])
                 inPane.AddStatusField(Lang('DHCP/Static IP', 16),  pif['ip_configuration_mode'])
 

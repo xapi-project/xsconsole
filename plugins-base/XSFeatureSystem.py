@@ -69,7 +69,7 @@ class XSFeatureSystem:
         inPane.NewLine()
         inPane.AddTitleField(Lang("Description"))
 
-        for name, value in data.derived.cpu_name_summary().iteritems():
+        for name, value in data.derived.cpu_name_summary().items():
             # Use DMI number for populated sockets, not xapi-reported number of logical cores
             inPane.AddWrappedTextField(str(data.dmi.cpu_populated_sockets())+" x "+name)
 

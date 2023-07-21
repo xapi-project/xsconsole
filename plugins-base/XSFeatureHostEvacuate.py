@@ -182,7 +182,7 @@ class HostEvacuateDialogue(Dialogue):
                     
                     message = Lang('Please allow several seconds for the pool to propagate information about the new Master')
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Host Successfully Entered Maintenance Mode"), message))
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Enter Maintenance Mode Failed to Complete"), Lang(e)))
         else:
             try:
@@ -191,7 +191,7 @@ class HostEvacuateDialogue(Dialogue):
                 vmUtils = Importer.GetResource('VMUtils')
                 vmUtils.ReinstateVMs(HotAccessor().local_host_ref(), self.evacuatedVMs)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Host Successfully Exited Maintenance Mode")))
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Exit Maintenance Mode Failed"), Lang(e)))
             
 class XSFeatureHostEvacuate:

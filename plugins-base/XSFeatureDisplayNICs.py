@@ -34,8 +34,6 @@ class XSFeatureDisplayNICs:
                 
             inPane.AddStatusField(Lang("MAC Address", 16), pif['MAC'])
             inPane.AddStatusField(Lang("Device", 16), pif['device'])
-            if int(pif['VLAN']) >= 0:
-                inPane.AddStatusField(Lang("VLAN", 16), pif['VLAN'])
             inPane.NewLine()
         
     def Register(self):

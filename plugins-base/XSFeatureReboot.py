@@ -38,13 +38,13 @@ class XSFeatureReboot:
                     Data.Inst().LocalHostDisable()
                 except XenAPI.Failure:
                     raise
-                except Exception, e:
+                except Exception as e:
                     # Ignore non-xapi failure - we want HA to veto the reboot but not other problems
                     XSLogFailure('Host disable before reboot failed', e)
                 Layout.Inst().ExitBannerSet(Lang("Rebooting..."))
                 Layout.Inst().ExitCommandSet('/sbin/shutdown -r now')
                 XSLog('Initiating reboot')
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Reboot Failed"), Lang(e)))
 
     @classmethod

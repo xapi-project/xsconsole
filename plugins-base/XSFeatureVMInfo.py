@@ -47,7 +47,7 @@ class XSFeatureVMInfo:
         else:
             try:
                 vmMetrics = HotMetrics.Inst().VMMetrics(vm.uuid())
-            except Exception, e:
+            except Exception as e:
                 XSLogFailure('VMMetrics failed', e)
                 vmMetrics = {}
             
@@ -66,7 +66,7 @@ class XSFeatureVMInfo:
                 else:
                     cpuUsageStr = Lang('<Unavailable>')
 
-            except Exception, e:
+            except Exception as e:
                 cpuUsageStr = Lang('<Unknown>')
             
             inPane.AddStatusField(Lang("CPU Usage", 16), cpuUsageStr)
@@ -80,7 +80,7 @@ class XSFeatureVMInfo:
                     memoryUsage = usedMemory / totalMemory
                     memoryUsage = max(0, min(memoryUsage, 1))
                     memoryUsageStr = "%d%% (%s)" % (int(memoryUsage * 100), SizeUtils.MemorySizeString(usedMemory))
-                except Exception, e:
+                except Exception as e:
                     memoryUsageStr = Lang('<Unavailable>')
                     
                 inPane.AddStatusField(Lang("Memory Usage", 16), memoryUsageStr)
@@ -89,7 +89,7 @@ class XSFeatureVMInfo:
                     networks = vm.guest_metrics.networks({})
                     for key in sorted(networks.keys()):
                         inPane.AddStatusField((Lang('Network ')+key).ljust(16,  ' '), networks[key])
-                except Exception, e:
+                except Exception as e:
                     inPane.AddStatusField(Lang('Network Info', 16), Lang('<Unavailable>'))
                     
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Control This Virtual Machine") } )
@@ -118,7 +118,7 @@ class XSFeatureVMInfo:
         # inList is a list of HotOpaqueRef objects
         vmList = [ HotAccessor().vm[x] for x in inList ]
         # Sort list by VM name
-        vmList.sort(lambda x,y: cmp(x.name_label(''), y.name_label('')))
+        vmList.sort(key=lambda x: x.name_label(''))
         
         for vm in vmList:
             nameLabel = vm.name_label(Lang('<Unknown>'))
@@ -141,7 +141,7 @@ class XSFeatureVMInfo:
     @classmethod
     def AllMenuRegenerator(cls, inName, inMenu):
         # Fetching all guest_vm is an expensive operation (implies xenapi.vm.get_all_records)
-        return cls.MenuRegenerator(HotAccessor().guest_vm({}).keys(), inMenu)
+        return cls.MenuRegenerator(list(HotAccessor().guest_vm({}).keys()), inMenu)
     
     def Register(self):
         Importer.RegisterMenuEntry(

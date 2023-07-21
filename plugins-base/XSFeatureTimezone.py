@@ -41,7 +41,7 @@ class TimezoneDialogue(Dialogue):
             self.cityList = []
             choiceDefs = []
             cityExp = re.compile(self.continentChoice)
-            keys = Data.Inst().timezones.cities({}).keys()
+            keys = list(Data.Inst().timezones.cities({}).keys())
             keys.sort()
             for city in keys:
                 if cityExp.match(city):
@@ -112,7 +112,7 @@ class TimezoneDialogue(Dialogue):
             message = Lang('The timezone has been set to ')+city +".\n\nLocal time is now "+data.CurrentTimeString()
             Layout.Inst().PushDialogue(InfoDialogue( Lang('Timezone Set'), message))
             XSLog(message)
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Configuration failed: ")+Lang(e)))
 
         data.Update()

@@ -45,7 +45,7 @@ def write_inventory(inventory):
 	f.close()
 
 def valid_vlan(vlan):
-	if not re.match('\d+$', vlan):
+	if not re.match(r'\d+$', vlan):
 		return False
 	if int(vlan)<0 or int(vlan)>=4095:
 		return False

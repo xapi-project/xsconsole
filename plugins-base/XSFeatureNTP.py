@@ -111,7 +111,7 @@ class NTPDialogue(Dialogue):
                 servers.append(inputValues['name'])
                 data.NTPServersSet(servers)
                 self.Commit(Lang("NTP server")+" "+inputValues['name']+" "+Lang("added"))
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
         elif pane.CurrentInput().HandleKey(inKey):
             pass # Leave handled as True
@@ -160,7 +160,7 @@ class NTPDialogue(Dialogue):
                 message = data.NTPStatus()+Lang("\n\n(Initial synchronization may take several minutes)")
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("NTP Status"), message))
 
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Operation Failed"), Lang(e)))
 
         data.Update()
@@ -183,7 +183,7 @@ class NTPDialogue(Dialogue):
                 Layout.Inst().TransientBanner(Lang("Restarting NTP daemon with new configuration..."))
                 data.RestartService('chronyd')
             Layout.Inst().PushDialogue(InfoDialogue( inMessage))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Update failed: ")+Lang(e)))
 
         data.Update()

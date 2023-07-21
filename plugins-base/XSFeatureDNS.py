@@ -106,7 +106,7 @@ class DNSDialogue(Dialogue):
                 nameservers.append(inputValues['name'])
                 data.NameserversSet(nameservers)
                 self.Commit(Lang("DNS server")+" "+inputValues['name']+" "+Lang("added"))
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
         elif pane.CurrentInput().HandleKey(inKey):
             pass # Leave handled as True
@@ -140,7 +140,7 @@ class DNSDialogue(Dialogue):
                 data.NameserversSet([])
                 self.Commit(Lang("All server entries deleted"))
 
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Operation Failed"), Lang(e)))
 
         data.Update()
@@ -160,7 +160,7 @@ class DNSDialogue(Dialogue):
         try:
             data.SaveToResolveConf()
             Layout.Inst().PushDialogue(InfoDialogue( inMessage))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Update failed: ")+Lang(e)))
 
         data.Update()

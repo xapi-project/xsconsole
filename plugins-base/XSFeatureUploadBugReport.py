@@ -42,7 +42,7 @@ class UploadBugReportDialogue(InputDialogue):
         destURL = destServer.rstrip('/')+'/'+destFilename.lstrip('/')
         proxy = ShellUtils.MakeSafeParam(inValues['proxy'])
 
-        command = "%s host-bugreport-upload host='%s' url='%s'" % (Config.Inst().XECLIPath(), hostRef, destURL)
+        command = "{} host-bugreport-upload host='{}' url='{}'".format(Config.Inst().XECLIPath(), hostRef, destURL)
         if proxy != '':
             command += " http_proxy='"+proxy+"'"
 
