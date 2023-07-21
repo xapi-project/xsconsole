@@ -56,7 +56,7 @@ class VerboseBootDialogue(Dialogue):
         
         try:
             data.SetVerboseBoot(inChoice)
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Failed: ")+Lang(e)))
         else:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Configuration Updated")))

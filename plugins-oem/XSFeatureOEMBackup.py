@@ -78,7 +78,7 @@ class OEMBackupDialogue(FileDialogue):
                     Lang("Backup Successful")))
                 XSLog('Backup successful')
 
-            except Exception, e:
+            except Exception as e:
                 try: os.unlink(filename)
                 except: pass
                 Layout.Inst().PopDialogue()
@@ -87,7 +87,7 @@ class OEMBackupDialogue(FileDialogue):
         finally:
             try:
                 self.PreExitActions()
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Backup Failed"), Lang(e)))
 
 
