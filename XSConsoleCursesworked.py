@@ -169,7 +169,7 @@ class CursesPane:
                 xPos = 0
 
             # Clip against right hand side
-            clippedStr = clippedStr[:int(self.xSize - xPos)]
+            clippedStr = clippedStr[:int(self.xSize - xPos)]#Ashwin
 
             if len(clippedStr) > 0:
                 try:
@@ -177,9 +177,9 @@ class CursesPane:
                     if isinstance(clippedStr, str):
                         encodedStr = clippedStr.encode('utf-8')
                         # Clear field here since addstr will clear len(encodedStr)-len(clippedStr) too few spaces
-                        self.win.addstr(inY, int(xPos), ' ' * len(clippedStr), CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
+                        self.win.addstr(inY, int(xPos), ' ' * len(clippedStr), CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))#Ashwin
                         self.win.refresh()
-                    self.win.addstr(inY, int(xPos), encodedStr, CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
+                    self.win.addstr(inY, int(xPos), encodedStr, CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))#Ashwin
 
                 except Exception as  e:
                     if xPos + len(inString) == self.xSize and inY + 1 == self.ySize:
@@ -213,7 +213,7 @@ class CursesPane:
                 yPos += 1
 
     def AddHCentredText(self, inString, inY, inColour = None):
-        xStart = self.xSize // 2 - len(inString) // 2
+        xStart = self.xSize / 2 - len(inString) / 2
         self.ClippedAddStr(inString, xStart, inY, inColour)
 
     def Decorate(self):
@@ -292,7 +292,7 @@ class CursesWindow(CursesPane):
         CursesPane.__init__(self, inXPos, inYPos, inXSize, inYSize, inParent.xOffset, inParent.yOffset)
 
         if inParent:
-            self.win = inParent.Win().subwin(int(self.ySize), int(self.xSize), int(self.yPos+inParent.YOffset()), int(self.xPos+inParent.XOffset()))
+            self.win = inParent.Win().subwin(int(self.ySize), int(self.xSize), int(self.yPos+inParent.YOffset()), int(self.xPos+inParent.XOffset()))#Ashwin
 
         else:
             raise Exception("Orphan windows not supported - supply parent")

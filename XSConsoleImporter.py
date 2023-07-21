@@ -47,7 +47,7 @@ class Importer:
                                 # Import using variable as module name
                                 (fileObj, pathName, description) = imp.find_module(importName, [root])
                                 imp.load_module(importName, fileObj, pathName, description)
-                            except Exception, e:
+                            except Exception as e:
                                 try: XSLogError(*traceback.format_tb(sys.exc_info()[2]))
                                 except: pass
                                 try: XSLogError("*** PlugIn '"+importName+"' failed to load: "+str(e))
@@ -113,13 +113,15 @@ class Importer:
     @classmethod
     def CallReadyHandlers(cls):
         # Sort plugins in descending priority order with a default of 1000
-        def CmpPlugin(x, y):
-            return cmp(y.get('readyhandlerpriority', 1000),
-                       x.get('readyhandlerpriority', 1000))
-
-        plugins = cls.plugIns.values()
-        plugins.sort(CmpPlugin)
-
+        def CmpPlugin(x, y):		
+           if y.get('readyhandlerpriority', 1000) < x.get('readyhandlerpriority', 1000):
+             return -1
+           elif y.get('readyhandlerpriority', 1000) == x.get('readyhandlerpriority', 1000):
+            return 0
+           else:
+             return 1
+        plugins = list(cls.plugIns.values())
+        plugins.sort(key=lambda x: CmpPlugin(x, {'readyhandlerpriority': 100}))
         for plugin in plugins:
             handler = plugin.get('readyhandler', None)
             if handler:
@@ -128,7 +130,7 @@ class Importer:
     @classmethod
     def GetResource(cls, inName): # Don't use this until all of the PlugIns have had a chance to register
         retVal = None
-        for resource in cls.resources.values():
+        for resource in list(cls.resources.values()):
             item = resource.get(inName, None)
             if item is not None:
                 retVal = item
@@ -147,7 +149,7 @@ class Importer:
     def BuildRootMenu(cls, inParent):
         retVal = RootMenu(inParent)
 
-        for name, entries in cls.menuEntries.iteritems():
+        for name, entries in list(cls.menuEntries.items()):
             for entry in entries:
                 # Create the menu that this item is in
                 retVal.CreateMenuIfNotPresent(name)
@@ -159,7 +161,7 @@ class Importer:
                 choiceDef.StatusUpdateHandlerSet(entry.get('statusupdatehandler', None))
                 retVal.AddChoice(name, choiceDef, entry.get('menupriority', None))
 
-        for entry in cls.plugIns.values():
+        for entry in list(cls.plugIns.values()):
             menuName = entry.get('menuname', None)
             if menuName is not None:
                 choiceDef = ChoiceDef(entry['menutext'], entry.get('activatehandler', None), entry.get('statushandler', None))
@@ -178,10 +180,10 @@ class Importer:
 
     @classmethod
     def Dump(cls):
-        print "Contents of PlugIn registry:"
+        print("Contents of PlugIn registry:")
         pprint(cls.plugIns)
-        print "\nRegistered menu entries:"
+        print("\nRegistered menu entries:")
         pprint(cls.menuEntries)
-        print "\nRegistered resources:"
+        print("\nRegistered resources:")
         pprint(cls.resources)
 

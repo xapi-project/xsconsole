@@ -109,7 +109,8 @@ class Auth:
                 session.close()
 
     def PAMAuthenticate(self, inUsername, inPassword):
-
+        
+          
         def PAMConv(inAuth, inQueryList, *theRest):
             # *theRest consumes the userData argument from later versions of PyPAM
             retVal = []
@@ -121,17 +122,17 @@ class Auth:
 
         auth = PAM.pam()
         auth.start('passwd')
-        auth.set_item(PAM.PAM_USER, inUsername)
-        auth.set_item(PAM.PAM_CONV, PAMConv)
+        auth.pam_set_item(PAM.PAM_USER, inUsername)
+        auth.pam_set_item(PAM.PAM_CONV, PAMConv)
 
         try:
             auth.authenticate()
             auth.acct_mgmt()
             # No exception implies a successful login
-        except Exception, e:
+        except Exception as e:
             # Display a generic message for all failures
             raise Exception(Lang("The system could not log you in.  Please check your access credentials and try again."))
-
+      
     def ProcessLogin(self, inUsername, inPassword):
         self.isAuthenticated = False
 
@@ -188,7 +189,7 @@ class Auth:
                 session = None
                 self.masterConnectionBroken = True
                 self.error = 'The master connection has timed out.'
-            except Exception,  e:
+            except Exception as  e:
                 session = None
                 self.error = e
 
@@ -198,7 +199,7 @@ class Auth:
                 try:
                     session.login_with_password('root', self.defaultPassword,'','XSConsole')
 
-                except XenAPI.Failure, e:
+                except XenAPI.Failure as e:
                     if e.details[0] != 'HOST_IS_SLAVE': # Ignore slave errors when testing
                         session = None
                         self.error = e
@@ -206,7 +207,7 @@ class Auth:
                     session = None
                     self.masterConnectionBroken = True
                     self.error = 'The master connection has timed out.'
-                except Exception, e:
+                except Exception as e:
                     session = None
                     self.error = e
         return session
@@ -218,7 +219,7 @@ class Auth:
         if inSession._session is not None:
             try:
                 inSession.logout()
-            except XenAPI.Failure, e:
+            except XenAPI.Failure as e:
                 XSLog('XAPI Failed to logout exception was ', e)
         return None
 
@@ -241,7 +242,7 @@ class Auth:
         if self.IsPasswordSet():
             try:
                 self.PAMAuthenticate('root', inOldPassword)
-            except Exception, e:
+            except Exception as e:
                 raise Exception(Lang('Old password not accepted.  Please check your access credentials and try again.'))
             self.AssertAuthenticated()
 
@@ -252,7 +253,7 @@ class Auth:
                 session.xenapi.session.change_password(inOldPassword, inNewPassword)
             finally:
                 self.CloseSession(session)
-        except Exception, e:
+        except Exception as e:
             ShellPipe("/usr/bin/passwd", "--stdin", "root").Call(inNewPassword)
             raise Exception(Lang("The underlying Xen API xapi could not be used.  Password changed successfully on this host only."))
 
