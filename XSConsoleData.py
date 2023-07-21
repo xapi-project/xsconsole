@@ -786,7 +786,7 @@ class Data:
             'keymaps' : {}
         }
 
-        keymapsPath = '/lib/kbd/keymaps/i386'
+        keymapsPath = '/lib/kbd/keymaps/legacy/i386'
         excludeExp = re.compile(re.escape(keymapsPath)+r'/include')
 
         filterExp = re.compile(r'(.*).map.gz$')
