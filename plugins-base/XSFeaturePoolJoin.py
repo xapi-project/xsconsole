@@ -102,7 +102,7 @@ class PoolJoinDialogue(Dialogue):
                 try:
                     IPUtils.AssertValidNetworkName(self.params['hostname'])
                     self.ChangeState('CONFIRM')
-                except Exception, e:
+                except Exception as e:
                     pane.InputIndexSet(None)
                     Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
 
@@ -149,7 +149,7 @@ class PoolJoinDialogue(Dialogue):
                 self.params['hostname'], self.params['username'], self.params['password'])
             Layout.Inst().PushDialogue(ProgressDialogue(task, Lang("Joining Pool with Master '")+self.params['hostname']+"'"))
 
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Host Failed to Join the Pool"), Lang(e)))
 
 class XSFeaturePoolJoin:

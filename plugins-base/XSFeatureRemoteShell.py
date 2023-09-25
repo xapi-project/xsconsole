@@ -70,7 +70,7 @@ class RemoteShellDialogue(Dialogue):
 
             Layout.Inst().PushDialogue(InfoDialogue(message))
 
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Failed: ")+Lang(e)))
 
         data.Update()

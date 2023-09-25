@@ -181,13 +181,13 @@ class RootMenu:
     def Reset(self):
         self.currentKey = 'MENU_ROOT'
         
-        for menu in self.menus.values():
+        for menu in list(self.menus.values()):
             menu.CurrentChoiceSet(0)
             
         self.CurrentMenu().HandleEnter()
         
     def AddChoice(self, inMenuName, inChoiceDef, inPriority = None):
-        if not self.menus.has_key(inMenuName):
+        if inMenuName not in self.menus:
             raise Exception(Lang("Unknown menu '")+inMenuName+"'")
         
         self.menus[inMenuName].AddChoiceDef(inChoiceDef, inPriority)

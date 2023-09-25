@@ -60,14 +60,14 @@ class SaveBugReportDialogue(FileDialogue):
                 Layout.Inst().PushDialogue(InfoDialogue(
                     Lang("Saved Bug Report")))
 
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Save Failed"), Lang(e)))
 
         finally:
             try:
                 self.PreExitActions()
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Save Failed"), Lang(e)))
 
 class XSFeatureSaveBugReport:

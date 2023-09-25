@@ -126,7 +126,7 @@ class TestNetworkDialogue(Dialogue):
             try:
                 Layout.Inst().TransientBanner(Lang('Pinging...'))
                 (success,  output) = Data.Inst().Ping(inAddress)
-            except Exception,  e:
+            except Exception as  e:
                 output = Lang(e)
 
         if success:

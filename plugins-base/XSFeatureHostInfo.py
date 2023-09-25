@@ -24,7 +24,7 @@ class XSFeatureHostInfo:
         inPane.AddTitleField("Host Performance Information")
         try:
             localHostMetrics = HotMetrics.Inst().LocalHostMetrics()
-        except Exception, e:
+        except Exception as e:
             XSLogFailure('LocalHostMetrics failed', e)
             localHostMetrics = {}
         
@@ -32,7 +32,7 @@ class XSFeatureHostInfo:
             cpuUsage = localHostMetrics['cpuusage']
             cpuUsage = max(0.0, min(1.0, cpuUsage))
             cpuUsageStr = "%d%% of %d CPUs" % (int(cpuUsage * 100), localHostMetrics['numcpus'])
-        except Exception, e:
+        except Exception as e:
             cpuUsageStr = Lang('<Unavailable>')
 
         try:
@@ -43,7 +43,7 @@ class XSFeatureHostInfo:
             # Increase memory slightly to counteract metrics error
             totalMemory *= 1.001
             memoryUsageStr = "%d%% of %s" % (int(memoryUsage * 100), SizeUtils.MemorySizeString(totalMemory))
-        except Exception, e:
+        except Exception as e:
             memoryUsageStr = Lang('<Unavailable>')
 
         inPane.AddStatusField(Lang("CPU Usage", 16), cpuUsageStr)

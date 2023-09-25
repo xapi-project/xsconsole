@@ -64,7 +64,7 @@ class App:
             # Testing - dump data and exit
             Data.Inst().Dump()
             Importer.Dump()
-            for key, value in HotData.Inst().guest_vm().iteritems():
+            for key, value in HotData.Inst().guest_vm().items():
                 localhost = HotAccessor().local_host()
                 vm = HotData.Inst().vm[key]
                 vm.metrics()
@@ -139,16 +139,16 @@ class App:
                             os.system(self.layout.ExitCommand())
                             Data.Inst().Update() # Pick up changes caused by the subshell command
 
-            except KeyboardInterrupt, e: # Catch Ctrl-C
+            except KeyboardInterrupt as e: # Catch Ctrl-C
                 XSLog('Resetting due to Ctrl-C')
                 Data.Reset()
                 sys.stderr.write("\033[H\033[J"+Lang("Resetting...")) # Clear screen and print banner
                 try:
                     time.sleep(0.5) # Prevent flicker
-                except Exception, e:
+                except Exception as e:
                     pass # Catch repeated Ctrl-C
 
-            except Exception, e:
+            except Exception as e:
                 sys.stderr.write(Lang(e)+"\n")
                 doQuit = True
                 raise
@@ -212,7 +212,7 @@ class App:
                 else:
                     gotKey = self.layout.Window(Layout.WIN_MAIN).GetKey()
 
-            except Exception, e:
+            except Exception as e:
                 gotKey = None # Catch timeout
 
             if gotKey == "\011": gotKey = "KEY_TAB"
@@ -257,7 +257,7 @@ class App:
                 try:
                     self.HandleKeypress(gotKey)
 
-                except Exception, e:
+                except Exception as e:
                     if Auth.Inst().IsTestMode():
                         raise
                     message = Lang(e) # Also logs the error

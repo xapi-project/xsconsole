@@ -59,7 +59,7 @@ class State:
                         # Version mismatch - don't use the state information
                         cls.instance = None
                         XSLog('State file version mismatch - discarding')
-            except Exception, e:
+            except Exception as e:
                 cls.instance = None
             
             if cls.instance is None:
@@ -136,7 +136,7 @@ class State:
             self.MakeSane()
             try:
                 if not os.path.isdir(self.savePath):
-                    os.mkdir(self.savePath, 0700)
+                    os.mkdir(self.savePath, 0o700)
                 
                 saveFile = open(self.SaveFilename(), "w")
                 pickler = pickle.Pickler(saveFile)
@@ -144,7 +144,7 @@ class State:
                 pickler.dump(self)
                 saveFile.close()
                 XSLog('Saved state file')
-            except Exception, e:
+            except Exception as e:
                 XSLogFailure('Failed to save state file', e)
 
 

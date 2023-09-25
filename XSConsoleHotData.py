@@ -15,7 +15,7 @@
 
 import XenAPI
 
-import commands, re, shutil, sys, socket
+import subprocess, re, shutil, sys, socket
 from pprint import pprint
 
 from XSConsoleAuth import *
@@ -61,9 +61,9 @@ class HotAccessor:
 
     def __iter__(self):
         iterData = HotData.Inst().GetData(self.name, {}, self.refs)
-        if isinstance(iterData, types.DictType):
-            self.iterKeys = iterData.keys()
-        elif isinstance(iterData, (types.ListType, types.TupleType)):
+        if isinstance(iterData, dict):
+            self.iterKeys = list(iterData.keys())
+        elif isinstance(iterData, (list, tuple)):
             self.iterKeys = iterData[:] # [:] copy is necessary
         else:
             raise Exception(Lang("Cannot iterate over type '")+str(type(iterData))+"'")
@@ -71,7 +71,7 @@ class HotAccessor:
 
     # This method will hide fields called 'next' in the xapi database.  If any appear, __iter__ will need to
     # return a new object type and this method will need to be moved into that
-    def next(self):
+    def __next__(self):
         if len(self.iterKeys) <= 0:
             raise StopIteration
         retVal = HotAccessor(self.name[:], self.refs[:]) # [:] copies the array
@@ -80,7 +80,7 @@ class HotAccessor:
 
     def __getitem__(self, inParam):
         # These are square brackets selecting a particular item from a dict using its OpaqueRef
-        if not isinstance(inParam, (types.IntType, HotOpaqueRef)):
+        if not isinstance(inParam, (int, HotOpaqueRef)):
             raise Exception('Use of HotAccessor[param] requires param of type int or HotOpaqueRef, but got '+str(type(inParam)))
         retVal = HotAccessor(self.name[:], self.refs[:])
         retVal.refs[-1] = inParam
@@ -134,7 +134,7 @@ class HotData:
         fetcher = self.fetchers[inName]
         timeNow = time.time()
         # If inRef is an array index, the result can't be cached
-        if not isinstance(inRef, types.IntType) and cacheEntry is not None and timeNow - cacheEntry.timestamp < fetcher.lifetimeSecs:
+        if not isinstance(inRef, int) and cacheEntry is not None and timeNow - cacheEntry.timestamp < fetcher.lifetimeSecs:
             retVal = cacheEntry.value
         else:
             try:
@@ -172,7 +172,7 @@ class HotData:
                         # We have a fetcher for this element, so use it
 
                         # Handle the case where itemRef is a dictionary containing the key/value pair ( current name : HotOpaqueRef )
-                        if isinstance(itemRef, types.DictType) and name in itemRef and isinstance(itemRef[name], HotOpaqueRef):
+                        if isinstance(itemRef, dict) and name in itemRef and isinstance(itemRef[name], HotOpaqueRef):
                             # This is a subitem with an OpaqueRef supplied by xapi, so fetch the obect it's referring to
                             itemRef = self.Fetch(name, itemRef[name])
                         else:
@@ -189,14 +189,14 @@ class HotData:
                         itemRef = itemRef[name] # Allow to throw if element not present
 
                     # Handle integer references as list indices
-                    if isinstance(currentRef, types.IntType):
-                        if not isinstance(itemRef, (types.ListType, types.TupleType)):
+                    if isinstance(currentRef, int):
+                        if not isinstance(itemRef, (list, tuple)):
                             raise Exception("List index supplied but element '"+'.'.join(inNames)+"' is not a list")
                         if inRefs[i] >= len(itemRef) or currentRef < -len(itemRef):
                             raise Exception("List index "+str(currentRef)+" out of range in '"+'.'.join(inNames)+"'")
                         itemRef = itemRef[currentRef]
             return itemRef
-        except Exception, e:
+        except Exception as e:
             # Data not present/fetchable, so return the default value
             return FirstValue(inDefault, None)
 
@@ -236,7 +236,7 @@ class HotData:
             retVal = self.FetchVM(inOpaqueRef)
         else:
             retVal = {}
-            for key, value in self.vm().iteritems():
+            for key, value in self.vm().items():
                 if not value.get('is_a_template', False) and not value.get('is_control_domain', False):
                     retVal[key] = value
         return retVal
@@ -253,7 +253,7 @@ class HotData:
         else:
             cpus = self.Session().xenapi.host_cpu.get_all_records()
             retVal = {}
-            for key, cpu in cpus.iteritems():
+            for key, cpu in cpus.items():
                 cpu = LocalConverter(cpu)
                 retVal[HotOpaqueRef(key, 'host_cpu')] = cpu
         return retVal
@@ -265,7 +265,7 @@ class HotData:
         running = 0
         suspended = 0
 
-        for key, vm in self.guest_vm().iteritems():
+        for key, vm in self.guest_vm().items():
             powerState = vm.get('power_state', '').lower()
             if powerState.startswith('halted'):
                 halted += 1
@@ -327,7 +327,7 @@ class HotData:
         else:
             hosts = self.Session().xenapi.host.get_all_records()
             retVal = {}
-            for key, host in hosts.iteritems():
+            for key, host in hosts.items():
                 host = LocalConverter(host)
                 retVal[HotOpaqueRef(key, 'host')] = host
         return retVal
@@ -356,7 +356,7 @@ class HotData:
         else:
             pbds = self.Session().xenapi.PBD.get_all_records()
             retVal = {}
-            for key, pbd in pbds.iteritems():
+            for key, pbd in pbds.items():
                 pbd = LocalConverter(pbd)
                 retVal[HotOpaqueRef(key, 'pbd')] = pbd
         return retVal
@@ -376,7 +376,7 @@ class HotData:
         else:
             pools = self.Session().xenapi.pool.get_all_records()
             retVal = {}
-            for key, pool in pools.iteritems():
+            for key, pool in pools.items():
                 pool = LocalConverter(pool)
                 retVal[HotOpaqueRef(key, 'pool')] = pool
         return retVal
@@ -394,7 +394,7 @@ class HotData:
         else:
             srs = self.Session().xenapi.SR.get_all_records()
             retVal = {}
-            for key, sr in srs.iteritems():
+            for key, sr in srs.items():
                 sr = LocalConverter(sr)
                 retVal[HotOpaqueRef(key, 'sr')] = sr
         return retVal
@@ -439,7 +439,7 @@ class HotData:
         else:
             vms = self.Session().xenapi.VM.get_all_records()
             retVal = {}
-            for key, vm in vms.iteritems():
+            for key, vm in vms.items():
                 vm = LocalConverter(vm)
                 retVal[HotOpaqueRef(key, 'vm')] = vm
         return retVal
@@ -449,32 +449,32 @@ class HotData:
         if len(inArgs) != 1:
             raise Exception('ConvertOpaqueRef requires a dictionary object as the first argument')
         ioObj = inArgs[0]
-        for keyword, value in inKeywords.iteritems():
+        for keyword, value in inKeywords.items():
             obj = ioObj.get(keyword, None)
             if obj is not None:
                 if isinstance(obj, str):
                     ioObj[keyword] = HotOpaqueRef(obj, value)
-                elif isinstance(obj, types.ListType):
+                elif isinstance(obj, list):
                     ioObj[keyword] = [ HotOpaqueRef(x, value) for x in obj ]
-                elif isinstance(obj, types.DictType):
+                elif isinstance(obj, dict):
                     result = {}
-                    for key, item in obj.iteritems():
+                    for key, item in obj.items():
                         result[ HotOpaqueRef(key, value) ] = item
                     ioObj[keyword] = result
 
         if Auth.Inst().IsTestMode(): # Tell the caller what they've missed, when in test mode
-            for key,value in ioObj.iteritems():
+            for key,value in ioObj.items():
                 if isinstance(value, str) and value.startswith('OpaqueRef'):
-                    print('Missed OpaqueRef string in HotData item: '+key)
-                elif isinstance(value, types.ListType):
+                    print(('Missed OpaqueRef string in HotData item: '+key))
+                elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, str) and item.startswith('OpaqueRef'):
-                            print('Missed OpaqueRef List in HotData item: '+key)
+                            print(('Missed OpaqueRef List in HotData item: '+key))
                             break
-                elif isinstance(value, types.DictType):
-                    for item in value.keys():
+                elif isinstance(value, dict):
+                    for item in list(value.keys()):
                         if isinstance(item, str) and item.startswith('OpaqueRef'):
-                            print('Missed OpaqueRef Dict in HotData item: '+key)
+                            print(('Missed OpaqueRef Dict in HotData item: '+key))
                             break
 
         return ioObj
@@ -485,5 +485,5 @@ class HotData:
         return self.session
 
     def Dump(self):
-        print "Contents of HotData cache:"
+        print("Contents of HotData cache:")
         pprint(self.data)
