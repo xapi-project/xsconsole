@@ -18,30 +18,32 @@ import string
 import os
 import shutil
 
+
 # use our own ASCII only uppercase function to avoid locale issues
 # not going to be fast but not important
 def uppercase_ASCII_string(str):
     newstr = ""
-    for i in range(0,len(str)):
-	if str[i] in string.lowercase:
-	    newstr += chr(ord(str[i])-32)
-	else:
-	    newstr += str[i]
+    for i in range(0, len(str)):
+        if str[i] in string.lowercase:
+            newstr += chr(ord(str[i]) - 32)
+        else:
+            newstr += str[i]
 
     return newstr
 
+
 class SimpleConfigFile:
-    def __str__ (self):
+    def __str__(self):
         s = ""
-        keys = self.info.keys ()
-        keys.sort ()
+        keys = list(self.info.keys())
+        keys.sort()
         for key in keys:
             # FIXME - use proper escaping
-            if type (self.info[key]) == type(""):
+            if type(self.info[key]) == type(""):
                 s = s + key + "=\"" + self.info[key] + "\"\n"
         return s
 
-    def __init__ (self):
+    def __init__(self):
         self.info = {}
 
     def write(self, file):
@@ -69,17 +71,17 @@ class SimpleConfigFile:
             value = value.replace("'", '')
             self.info[key] = value
 
-    def set (self, *args):
+    def set(self, *args):
         for (key, data) in args:
             self.info[uppercase_ASCII_string(key)] = data
 
-    def unset (self, *keys):
+    def unset(self, *keys):
         for key in keys:
             key = uppercase_ASCII_string(key)
-            if self.info.has_key (key):
-               del self.info[key]
+            if key in self.info:
+                del self.info[key]
 
-    def get (self, key):
+    def get(self, key):
         key = uppercase_ASCII_string(key)
         return self.info.get(key, "")
 
@@ -132,4 +134,3 @@ class IfcfgFile(SimpleConfigFile):
             path = os.path.join(dir, os.path.basename(self.path))
 
         SimpleConfigFile.write(self, path)
-

@@ -64,7 +64,7 @@ class App:
             # Testing - dump data and exit
             Data.Inst().Dump()
             Importer.Dump()
-            for key, value in HotData.Inst().guest_vm().iteritems():
+            for key, value in HotData.Inst().guest_vm().items():
                 localhost = HotAccessor().local_host()
                 vm = HotData.Inst().vm[key]
                 vm.metrics()

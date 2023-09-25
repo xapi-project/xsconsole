@@ -117,7 +117,7 @@ class Importer:
             return cmp(y.get('readyhandlerpriority', 1000),
                        x.get('readyhandlerpriority', 1000))
 
-        plugins = cls.plugIns.values()
+        plugins = list(cls.plugIns.values())
         plugins.sort(CmpPlugin)
 
         for plugin in plugins:
@@ -128,7 +128,7 @@ class Importer:
     @classmethod
     def GetResource(cls, inName): # Don't use this until all of the PlugIns have had a chance to register
         retVal = None
-        for resource in cls.resources.values():
+        for resource in list(cls.resources.values()):
             item = resource.get(inName, None)
             if item is not None:
                 retVal = item
@@ -147,7 +147,7 @@ class Importer:
     def BuildRootMenu(cls, inParent):
         retVal = RootMenu(inParent)
 
-        for name, entries in cls.menuEntries.iteritems():
+        for name, entries in cls.menuEntries.items():
             for entry in entries:
                 # Create the menu that this item is in
                 retVal.CreateMenuIfNotPresent(name)
@@ -159,7 +159,7 @@ class Importer:
                 choiceDef.StatusUpdateHandlerSet(entry.get('statusupdatehandler', None))
                 retVal.AddChoice(name, choiceDef, entry.get('menupriority', None))
 
-        for entry in cls.plugIns.values():
+        for entry in list(cls.plugIns.values()):
             menuName = entry.get('menuname', None)
             if menuName is not None:
                 choiceDef = ChoiceDef(entry['menutext'], entry.get('activatehandler', None), entry.get('statushandler', None))
@@ -178,10 +178,10 @@ class Importer:
 
     @classmethod
     def Dump(cls):
-        print "Contents of PlugIn registry:"
+        print("Contents of PlugIn registry:")
         pprint(cls.plugIns)
-        print "\nRegistered menu entries:"
+        print("\nRegistered menu entries:")
         pprint(cls.menuEntries)
-        print "\nRegistered resources:"
+        print("\nRegistered resources:")
         pprint(cls.resources)
 

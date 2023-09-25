@@ -14,7 +14,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import XenAPI
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import xml.dom.minidom
 
 from XSConsoleAuth import *
@@ -42,7 +42,7 @@ class HotMetrics:
         retVal = {}
         hostPrefix = r'AVERAGE:host:'+self.thisHostUUID
         cpuRE = re.compile(hostPrefix+r':cpu[0-9]+$')
-        cpuValues = [ float(v) for k, v in self.data.iteritems() if cpuRE.match(k) ]
+        cpuValues = [ float(v) for k, v in self.data.items() if cpuRE.match(k) ]
         retVal['numcpus'] = len(cpuValues)
         if len(cpuValues) == 0:
             retVal['cpuusage'] = None
@@ -67,7 +67,7 @@ class HotMetrics:
         vmPrefix = r'AVERAGE:vm:' + inUUID
 
         cpuRE = re.compile(vmPrefix+r':cpu[0-9]+$')
-        cpuValues = [ float(v) for k, v in self.data.iteritems() if cpuRE.match(k) ]
+        cpuValues = [ float(v) for k, v in self.data.items() if cpuRE.match(k) ]
         retVal['numcpus'] = len(cpuValues)
         if len(cpuValues) == 0:
             retVal['cpuusage'] = None
@@ -138,7 +138,7 @@ class HotMetrics:
 
             httpRequest = 'http://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
 
-            socket = urllib.URLopener().open(httpRequest)
+            socket = urllib.request.URLopener().open(httpRequest)
             try:
                 content = socket.read()
             finally:

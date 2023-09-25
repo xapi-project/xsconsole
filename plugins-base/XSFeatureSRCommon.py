@@ -33,7 +33,7 @@ class SRUtils:
     def AllowedOperations(cls):
         if Auth.Inst().IsTestMode():
             # Allow a lot more in test mode
-            retVal = cls.operationNames.keys()
+            retVal = list(cls.operationNames.keys())
         else:
             retVal = ['forget', 'xsconsole-detach','xsconsole-destroy']
         return retVal

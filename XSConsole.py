@@ -27,9 +27,9 @@ def main():
     if '--shelltimeout' in sys.argv:
         # Print a shell timeout value, suitable for TMOUT=`xsconsole --shelltimeout`
         if Config.Inst().AllShellsTimeout():
-            print State.Inst().AuthTimeoutSeconds()
+            print(State.Inst().AuthTimeoutSeconds())
         else:
-            print
+            print()
     else:
         app = App.Inst()
         app.Build( ['plugins-base', 'plugins-oem', 'plugins-extras'] )

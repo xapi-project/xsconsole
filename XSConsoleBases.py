@@ -22,7 +22,7 @@ from pprint import pprint
 def ParamsToAttr():
         d = inspect.currentframe().f_back.f_locals
         obj = d.pop("self")
-        for name, value in d.iteritems():
+        for name, value in d.items():
             setattr(obj, name,value)
 
 def FirstValue(*inArgs):
@@ -33,7 +33,7 @@ def FirstValue(*inArgs):
 
 class Struct:
     def __init__(self, *inArgs, **inKeywords):
-        for k, v in inKeywords.items():
+        for k, v in list(inKeywords.items()):
             setattr(self, k, v)
 
     def __repr__(self):

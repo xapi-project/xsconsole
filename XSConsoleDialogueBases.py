@@ -43,11 +43,11 @@ class Dialogue:
         return self.title
 
     def Destroy(self):
-        for pane in self.panes.values():
+        for pane in list(self.panes.values()):
             pane.Delete()
 
     def Render(self):
-        for pane in self.panes.values():
+        for pane in list(self.panes.values()):
             pane.Render()
 
     def UpdateFields(self):
@@ -55,13 +55,13 @@ class Dialogue:
 
     def NeedsCursor(self):
         retVal = False
-        for pane in self.panes.values():
+        for pane in list(self.panes.values()):
             if pane.NeedsCursor():
                 retVal = True
         return retVal
 
     def CursorOff(self):
-        for pane in self.panes.values():
+        for pane in list(self.panes.values()):
             pane.CursorOff()
 
     def Reset(self):

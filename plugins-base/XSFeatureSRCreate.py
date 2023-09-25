@@ -1187,7 +1187,7 @@ class SRNewDialogue(Dialogue):
             )
 
             # Set values in other_config only if the SR.create operation hasn't already set them
-            for key, value in FirstValue(inOtherConfig, {}).iteritems():
+            for key, value in FirstValue(inOtherConfig, {}).items():
                 try:
                     Task.Sync(lambda x:x.xenapi.SR.add_to_other_config(srRef, key, value))
                 except:
@@ -1230,7 +1230,7 @@ class SRNewDialogue(Dialogue):
                 )
 
                 # Set values in other_config only if the SR.introduce operation hasn't already set them
-                for key, value in FirstValue(inOtherConfig, {}).iteritems():
+                for key, value in FirstValue(inOtherConfig, {}).items():
                     try:
                         Task.Sync(lambda x:x.xenapi.SR.add_to_other_config(srRef, key, value))
                     except:

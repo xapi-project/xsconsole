@@ -82,14 +82,14 @@ class Language:
         elif isinstance(inLabel, Exception):
             exn_strings = []
             for arg in inLabel.args:
-                if isinstance(arg, unicode):
+                if isinstance(arg, str):
                     exn_strings.append(arg.encode('utf-8'))
                 else:
                     exn_strings.append(str(arg))
             retVal = str(tuple(exn_strings))
             cls.LogError(retVal)
         else:
-            if isinstance(inLabel, unicode):
+            if isinstance(inLabel, str):
                 inLabel = inLabel.encode('utf-8')
             retVal = inLabel
             if cls.stringHook is not None:

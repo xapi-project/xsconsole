@@ -34,7 +34,7 @@ class VMUtils:
     }
     @classmethod
     def AllowedOperations(cls):
-        return cls.operationNames.keys()
+        return list(cls.operationNames.keys())
 
     @classmethod
     def AsyncOperation(cls, inOperation, inVMHandle, inParam0 = None):

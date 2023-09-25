@@ -13,12 +13,13 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import curses, sys, commands
+import curses, sys, subprocess
 
 from XSConsoleBases import *
 from XSConsoleConfig import *
 from XSConsoleLang import *
 from XSConsoleState import *
+
 
 class CursesPalette:
     pairIndex = 1
@@ -93,7 +94,7 @@ class CursesPalette:
                          'MODAL_SELECTED', 'MODAL_FLASH', 'HELP_BASE', 'HELP_BRIGHT',
                          'HELP_FLASH', 'TOPLINE_BASE']:
                 cls.colours[name] = curses.color_pair(0)
-            for key, value in cls.colours.items():
+            for key, value in list(cls.colours.items()):
                 if key.endswith('_SELECTED'):
                     cls.colours[key] |= curses.A_REVERSE
                 elif key.endswith('_FLASH'):
@@ -174,7 +175,7 @@ class CursesPane:
             if len(clippedStr) > 0:
                 try:
                     encodedStr = clippedStr
-                    if isinstance(clippedStr, unicode):
+                    if isinstance(clippedStr, str):
                         encodedStr = clippedStr.encode('utf-8')
                         # Clear field here since addstr will clear len(encodedStr)-len(clippedStr) too few spaces
                         self.win.addstr(inY, xPos, len(clippedStr)*' ', CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
