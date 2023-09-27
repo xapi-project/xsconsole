@@ -24,7 +24,7 @@ import shutil
 def uppercase_ASCII_string(str):
     newstr = ""
     for i in range(0, len(str)):
-        if str[i] in string.lowercase:
+        if str[i].islower():
             newstr += chr(ord(str[i]) - 32)
         else:
             newstr += str[i]

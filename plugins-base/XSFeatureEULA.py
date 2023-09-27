@@ -38,7 +38,7 @@ class EULADialogue(Dialogue):
         self.maxLine = 0
         for line in contents.split('\n'):
             self.maxLine = max(self.maxLine, len(line))
-        self.padding = ' ' * max(0, (xSize - 4 - self.maxLine) / 2)
+        self.padding = ' ' * max(0, (xSize - 4 - self.maxLine) // 2)
         
         self.text = Lang("End User License Agreement")
         self.info = contents

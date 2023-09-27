@@ -127,7 +127,7 @@ class VMControlDialogue(Dialogue):
 
         choiceList = [ name for name in allowedOps if name in VMUtils.AllowedOperations() ]
         
-        choiceList.sort(lambda x, y: cmp(VMUtils.OperationPriority(x), VMUtils.OperationPriority(y)))
+        choiceList.sort(key=lambda choice: VMUtils.OperationPriority(choice))
         
         self.controlMenu = Menu()
         for choice in choiceList:
@@ -146,7 +146,7 @@ class VMControlDialogue(Dialogue):
         
         if self.state == 'MIGRATE':
             hosts = VMUtils.GetPossibleHostAccessors(self.vmHandle)
-            hosts.sort(lambda x, y: cmp(x.name_label(), y.name_label()))
+            hosts.sort(key=lambda host: host.name_label())
             self.hostMenu = Menu()
             residentHost = HotAccessor().vm[self.vmHandle].resident_on()
             for host in hosts:

@@ -197,7 +197,7 @@ class IPUtils:
         for i in ints:
             if i > 255: return False
             largest = max(largest, i)
-        if largest is 0: return False
+        if largest == 0: return False
         return True
         
     @classmethod
