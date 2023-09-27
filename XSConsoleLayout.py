@@ -122,8 +122,8 @@ class Layout:
 
         # Centralise subsequent windows
         inParent.OffsetSet(
-            (inParent.XSize() - self.APP_XSIZE) / 2,
-            (inParent.YSize() - self.APP_YSIZE) / 2)
+            (inParent.XSize() - self.APP_XSIZE) // 2,
+            (inParent.YSize() - self.APP_YSIZE) // 2)
 
     def Create(self):
         self.windows.append(CursesWindow(0,1,self.APP_XSIZE, self.APP_YSIZE-1, self.parent)) # MainWindow

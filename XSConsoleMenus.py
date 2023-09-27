@@ -67,7 +67,7 @@ class Menu:
         inChoiceDef.priority = priority # FIXME (modifies input parameter)
         self.choiceDefs.append(inChoiceDef)
 
-        self.choiceDefs.sort(lambda x, y : cmp(x.priority, y.priority))
+        self.choiceDefs.sort(key=lambda c: c.priority)
 
     def AddChoice(self, name, onAction = None, onEnter = None, priority = None, statusUpdateHandler = None, handle = None):
         choiceDef = ChoiceDef(name, onAction, onEnter, priority, statusUpdateHandler, handle)

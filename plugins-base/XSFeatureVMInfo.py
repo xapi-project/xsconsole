@@ -118,7 +118,7 @@ class XSFeatureVMInfo:
         # inList is a list of HotOpaqueRef objects
         vmList = [ HotAccessor().vm[x] for x in inList ]
         # Sort list by VM name
-        vmList.sort(lambda x,y: cmp(x.name_label(''), y.name_label('')))
+        vmList.sort(key=lambda vm: vm.name_label(''))
 
         for vm in vmList:
             nameLabel = vm.name_label(Lang('<Unknown>'))

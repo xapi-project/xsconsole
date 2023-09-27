@@ -113,12 +113,8 @@ class Importer:
     @classmethod
     def CallReadyHandlers(cls):
         # Sort plugins in descending priority order with a default of 1000
-        def CmpPlugin(x, y):
-            return cmp(y.get('readyhandlerpriority', 1000),
-                       x.get('readyhandlerpriority', 1000))
-
         plugins = list(cls.plugIns.values())
-        plugins.sort(CmpPlugin)
+        plugins.sort(key=lambda p: p.get('readyhandlerpriority', 1000), reverse=True)
 
         for plugin in plugins:
             handler = plugin.get('readyhandler', None)

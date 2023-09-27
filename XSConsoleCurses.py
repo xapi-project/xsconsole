@@ -175,8 +175,8 @@ class CursesPane:
             if len(clippedStr) > 0:
                 try:
                     encodedStr = clippedStr
-                    if isinstance(clippedStr, str):
-                        encodedStr = clippedStr.encode('utf-8')
+                    if isinstance(clippedStr, bytes):
+                        encodedStr = clippedStr.decode('utf-8')
                         # Clear field here since addstr will clear len(encodedStr)-len(clippedStr) too few spaces
                         self.win.addstr(inY, xPos, len(clippedStr)*' ', CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
                         self.win.refresh()
@@ -213,7 +213,7 @@ class CursesPane:
                 yPos += 1
 
     def AddHCentredText(self, inString, inY, inColour = None):
-        xStart = self.xSize / 2 - len(inString) / 2
+        xStart = self.xSize // 2 - len(inString) // 2
         self.ClippedAddStr(inString, xStart, inY, inColour)
 
     def Decorate(self):
