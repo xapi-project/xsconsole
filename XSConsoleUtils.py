@@ -60,6 +60,7 @@ class ShellPipe:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            universal_newlines=True,
             close_fds=True)
         self.called = False
 
