@@ -15,10 +15,7 @@
 
 import os, spwd, re, sys, time, socket
 
-try:
-    import PAM # From PyPAM RPM
-except ImportError:
-    import pam as PAM # From pip install python-pam
+import pam
 
 from XSConsoleBases import *
 from XSConsoleLang import *
@@ -109,26 +106,7 @@ class Auth:
                 session.close()
 
     def PAMAuthenticate(self, inUsername, inPassword):
-
-        def PAMConv(inAuth, inQueryList, *theRest):
-            # *theRest consumes the userData argument from later versions of PyPAM
-            retVal = []
-            for query in inQueryList:
-                if query[1] == PAM.PAM_PROMPT_ECHO_ON or query[1] == PAM.PAM_PROMPT_ECHO_OFF:
-                    # Return inPassword from the scope that encloses this function
-                    retVal.append((inPassword, 0)) # Append a tuple with two values (so double brackets)
-            return retVal
-
-        auth = PAM.pam()
-        auth.start('passwd')
-        auth.set_item(PAM.PAM_USER, inUsername)
-        auth.set_item(PAM.PAM_CONV, PAMConv)
-
-        try:
-            auth.authenticate()
-            auth.acct_mgmt()
-            # No exception implies a successful login
-        except Exception as e:
+        if not pam.authenticate(inUsername, inPassword, service="passwd"):
             # Display a generic message for all failures
             raise Exception(Lang("The system could not log you in.  Please check your access credentials and try again."))
 
