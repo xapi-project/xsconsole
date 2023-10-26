@@ -545,7 +545,7 @@ class SRNewDialogue(Dialogue):
                     Layout.Inst().TransientBanner(Lang('Probing for Storage Repositories...'))
                 self.HandleCommonData(inputValues)
                 self.HandleNFSData(inputValues)
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
@@ -563,7 +563,7 @@ class SRNewDialogue(Dialogue):
                 inputValues = pane.GetFieldValues()
                 self.HandleCommonData(inputValues)
                 self.HandleCIFSData(inputValues)
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
@@ -578,7 +578,7 @@ class SRNewDialogue(Dialogue):
                 inputValues = pane.GetFieldValues()
                 self.HandleCommonData(inputValues)
                 self.HandleISCSIData(inputValues)
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
@@ -594,7 +594,7 @@ class SRNewDialogue(Dialogue):
                 Layout.Inst().TransientBanner(Lang('Probing NetApp...'))
                 self.HandleCommonData(inputValues)
                 self.HandleNetAppData(inputValues)
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
@@ -609,7 +609,7 @@ class SRNewDialogue(Dialogue):
                 # No input fields for HBA
                 Layout.Inst().TransientBanner(Lang('Probing for HBA Devices...'))
                 self.HandleHBAData({})
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
             handled = False
@@ -631,7 +631,7 @@ class SRNewDialogue(Dialogue):
                     self.ChangeState('PROBE_HBA_SR')
                 else:
                     self.ChangeState('CONFIRM')
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
@@ -647,7 +647,7 @@ class SRNewDialogue(Dialogue):
                 Layout.Inst().TransientBanner(Lang('Probing Dell EqualLogic Server...'))
                 self.HandleCommonData(inputValues)
                 self.HandleEqualData(inputValues)
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
         else:
@@ -667,7 +667,7 @@ class SRNewDialogue(Dialogue):
                 message += Lang("IQN", 12)+iqn.name
 
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("IQN Information"), message))
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Failed: ")+Lang(e)))
             handled = True
         else:
@@ -693,7 +693,7 @@ class SRNewDialogue(Dialogue):
                     raise Exception(Lang('The number of FlexVols must be between 1 and 32'))
                 self.srParams['numflexvols'] = numFlexVols
                 self.ChangeState('PROBE_NETAPP_PROVISIONING')
-            except Exception, e:
+            except Exception as e:
                 pane.InputIndexSet(None)
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Invalid Value"), Lang(e)))
         else:
@@ -724,7 +724,7 @@ class SRNewDialogue(Dialogue):
             try:
                 # Despatch method named 'Commit'+self.srCreateType+'_'+self.variant
                 getattr(self, 'Commit'+self.createType+'_'+self.variant)()
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Operation Failed"), Lang(e)))
             handled = True
@@ -816,7 +816,7 @@ class SRNewDialogue(Dialogue):
                 self.srTypes['ISCSI'] # type
                 )
             )
-        except XenAPI.Failure, e:
+        except XenAPI.Failure as e:
             if e.details[0] != 'SR_BACKEND_FAILURE_96':
                 raise
             # Parse XML for UUID values
@@ -833,7 +833,7 @@ class SRNewDialogue(Dialogue):
                             name=iqn,
                             iqn=iqn))
 
-                    except Exception, e:
+                    except Exception as e:
                         pass # Ignore failures
 
         self.ChangeState('PROBE_ISCSI_IQN')
@@ -876,7 +876,7 @@ class SRNewDialogue(Dialogue):
                     True # shared
                     )
                 )
-            except XenAPI.Failure, e:
+            except XenAPI.Failure as e:
                 if e.details[0] != 'SR_BACKEND_FAILURE_123':
                     raise
                 # Parse XML for UUID values
@@ -897,7 +897,7 @@ class SRNewDialogue(Dialogue):
                                 raidType = raidType,
                                 asisdedup = asisdedup)) # NetApp's Advanced Single Instance Storage Deduplication, 'true' if supported
 
-                        except Exception, e:
+                        except Exception as e:
                             pass # Ignore failures
             self.ChangeState('PROBE_NETAPP_AGGREGATE')
         elif self.variant=='ATTACH':
@@ -922,7 +922,7 @@ class SRNewDialogue(Dialogue):
                         aggregate = aggregate
                     ))
 
-                except Exception, e:
+                except Exception as e:
                     pass # Ignore failures
 
             self.ChangeState('PROBE_NETAPP_SR')
@@ -940,7 +940,7 @@ class SRNewDialogue(Dialogue):
                 self.srTypes['HBA'], # type
                 )
             )
-        except XenAPI.Failure, e:
+        except XenAPI.Failure as e:
             if e.details[0] != 'SR_BACKEND_FAILURE_107':
                 raise
             # Parse XML for UUID values
@@ -954,7 +954,7 @@ class SRNewDialogue(Dialogue):
                             setattr(deviceInfo, name.lower(), str(device.getElementsByTagName(name)[0].firstChild.nodeValue.strip()))
                         self.deviceChoices.append(deviceInfo)
 
-                    except Exception, e:
+                    except Exception as e:
                         pass # Ignore failures
         self.ChangeState('PROBE_HBA_DEVICE')
 
@@ -996,7 +996,7 @@ class SRNewDialogue(Dialogue):
                     True # shared
                     )
                 )
-            except XenAPI.Failure, e:
+            except XenAPI.Failure as e:
                 if e.details[0] != 'SR_BACKEND_FAILURE_163':
                     raise
                 # Parse XML for UUID values
@@ -1010,7 +1010,7 @@ class SRNewDialogue(Dialogue):
                                 setattr(storageInfo, name.lower(), storagePool.getElementsByTagName(name)[0].firstChild.nodeValue.strip())
                             self.storagePoolChoices.append(storageInfo)
 
-                        except Exception, e:
+                        except Exception as e:
                             pass # Ignore failures
             self.ChangeState('PROBE_EQUAL_STORAGEPOOL')
         elif self.variant=='ATTACH':
@@ -1033,7 +1033,7 @@ class SRNewDialogue(Dialogue):
                         size = size
                     ))
 
-                except Exception, e:
+                except Exception as e:
                     pass # Ignore failures
 
             self.ChangeState('PROBE_EQUAL_SR')
@@ -1068,7 +1068,7 @@ class SRNewDialogue(Dialogue):
                     self.srTypes['ISCSI'] # type
                     )
                 )
-        except XenAPI.Failure, e:
+        except XenAPI.Failure as e:
             # Parse XML for UUID values
             if e.details[0] != 'SR_BACKEND_FAILURE_107':
                 raise
@@ -1082,7 +1082,7 @@ class SRNewDialogue(Dialogue):
 
                         self.lunChoices.append(record)
 
-                    except Exception, e:
+                    except Exception as e:
                         pass # Ignore failures
 
         self.ChangeState('PROBE_ISCSI_LUN')
@@ -1197,7 +1197,7 @@ class SRNewDialogue(Dialogue):
             Data.Inst().SetPoolSRIfRequired(srRef)
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Successful")))
 
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Failed"), Lang(e)))
 
     def CommitAttach(self, inType, inDeviceConfig, inOtherConfig, inContentType):
@@ -1252,7 +1252,7 @@ class SRNewDialogue(Dialogue):
                 Data.Inst().SetPoolSRIfRequired(srRef)
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Attachment Successful")))
 
-        except Exception, e:
+        except Exception as e:
             message = Lang(e)
             # Attempt to undo the work we've done, because the SR is incomplete
             try:
@@ -1263,7 +1263,7 @@ class SRNewDialogue(Dialogue):
 
                 Task.Sync(lambda x: x.xenapi.SR.forget(srRef))
 
-            except Exception, e:
+            except Exception as e:
                 message += Lang('.  Attempts to rollback also failed: ')+Lang(e)
 
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Attachment Failed"), message))

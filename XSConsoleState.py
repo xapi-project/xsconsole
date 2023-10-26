@@ -59,7 +59,7 @@ class State:
                         # Version mismatch - don't use the state information
                         cls.instance = None
                         XSLog('State file version mismatch - discarding')
-            except Exception, e:
+            except Exception as e:
                 cls.instance = None
 
             if cls.instance is None:
@@ -144,7 +144,7 @@ class State:
                 pickler.dump(self)
                 saveFile.close()
                 XSLog('Saved state file')
-            except Exception, e:
+            except Exception as e:
                 XSLogFailure('Failed to save state file', e)
 
 

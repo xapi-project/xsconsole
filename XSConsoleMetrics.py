@@ -51,12 +51,12 @@ class HotMetrics:
 
         try:
             retVal['memory_total'] = float(self.data[hostPrefix +':memory_total_kib']) * 1024.0
-        except Exception, e:
+        except Exception as e:
             retVal['memory_total'] = None
 
         try:
             retVal['memory_free'] = float(self.data[hostPrefix +':memory_free_kib']) * 1024.0
-        except Exception, e:
+        except Exception as e:
             retVal['memory_free'] = None
 
         return retVal
@@ -76,12 +76,12 @@ class HotMetrics:
 
         try:
             retVal['memory_total'] = float(self.data[vmPrefix +':memory']) # Not scaled
-        except Exception, e:
+        except Exception as e:
             retVal['memory_total'] = None
 
         try:
             retVal['memory_free'] = float(self.data[vmPrefix +':memory_internal_free']) * 1024.0 # Value is in kiB
-        except Exception, e:
+        except Exception as e:
             retVal['memory_free'] = None
 
         return retVal

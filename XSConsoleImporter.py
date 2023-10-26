@@ -47,7 +47,7 @@ class Importer:
                                 # Import using variable as module name
                                 (fileObj, pathName, description) = imp.find_module(importName, [root])
                                 imp.load_module(importName, fileObj, pathName, description)
-                            except Exception, e:
+                            except Exception as e:
                                 try: XSLogError(*traceback.format_tb(sys.exc_info()[2]))
                                 except: pass
                                 try: XSLogError("*** PlugIn '"+importName+"' failed to load: "+str(e))

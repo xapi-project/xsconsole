@@ -108,7 +108,7 @@ class XMLRPCRemoteTest:
             for i, pane in enumerate(snapshot):
                 for line in pane:
                     retVal += 'Pane '+str(i) + ':' + line + '\n'
-        except Exception, e:
+        except Exception as e:
             retVal += 'Failed: '+Lang(e)
         if len(self.errors) > 0:
             retVal += "\n\nExceptions process by Lang()\n\n" + "\n".join(self.errors)
@@ -121,14 +121,14 @@ class XMLRPCRemoteTest:
     def WrapProcedure(self, inProc): # Any return value of inProc is discarded
         try:
             inProc()
-        except Exception, e:
+        except Exception as e:
             raise xmlrpclib.Fault(1, self.ErrorString(e))
         return None
 
     def WrapFunction(self, inFunc): # inFunc returns a value
         try:
             retVal = inFunc()
-        except Exception, e:
+        except Exception as e:
             raise xmlrpclib.Fault(1, self.ErrorString(e))
         return retVal
 

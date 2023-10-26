@@ -325,7 +325,7 @@ class ClaimSRDialogue(Dialogue):
 
             try:
                 Data.Inst().SetPoolSRsFromDeviceIfNotSet(self.deviceToErase.device)
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Disk claimed, but could not set as default SR: ") + Lang(e)))
                 # Continue to reboot dialogue
 

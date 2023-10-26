@@ -69,7 +69,7 @@ class OEMRestoreDialogue(FileDialogue):
                 XSLog('Restore successful')
                 hostEnabled = False
 
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Restore Failed"), Lang(e)))
 
@@ -79,7 +79,7 @@ class OEMRestoreDialogue(FileDialogue):
                 if hostEnabled:
                     # Dont leave the host disabled if restoration has failed
                     Data.Inst().LocalHostEnable()
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Restore Failed"), Lang(e)))
 
 

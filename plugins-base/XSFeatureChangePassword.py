@@ -76,7 +76,7 @@ class ChangePasswordDialogue(Dialogue):
 
                     Auth.Inst().ChangePassword(inputValues.get('oldpassword', ''), inputValues['newpassword1'])
 
-                except Exception, e:
+                except Exception as e:
                     if self.isPasswordSet:
                         # Only remove the dialogue if this isn't the initial password set (which needs to succeed)
                         Layout.Inst().PopDialogue()

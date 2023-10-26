@@ -170,7 +170,7 @@ class DRRestoreDialogue(SRDialogue):
             if status != 0:
                 raise Exception("(%s,%s)" % (output,errput))
             Layout.Inst().PushDialogue(DRRestoreSelection(output, vdi_uuid, sr_uuid))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Metadata Restore failed: ")+Lang(e)))
         Data.Inst().Update()
 

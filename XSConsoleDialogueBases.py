@@ -204,7 +204,7 @@ class LoginDialogue(Dialogue):
                     else:
                         Layout.Inst().PushDialogue(InfoDialogue( Lang('Login Successful')))
 
-                except Exception, e:
+                except Exception as e:
                     Layout.Inst().PushDialogue(InfoDialogue( Lang('Login Failed: ')+Lang(e)))
 
                 Data.Inst().Update()
@@ -401,7 +401,7 @@ class FileDialogue(Dialogue):
             try:
                 FileUtils.USBFormat(self.vdi)
                 self.HandleDevice()
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Formatting Failed"), Lang(e)))
 
             handled = True
@@ -425,7 +425,7 @@ class FileDialogue(Dialogue):
                 FileUtils.AssertSafeLeafname(inputValues['filename'])
                 self.filename = inputValues['filename']
                 self.ChangeState('CONFIRM')
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
         elif pane.CurrentInput().HandleKey(inKey):
@@ -477,7 +477,7 @@ class FileDialogue(Dialogue):
         except USBNotMountable:
             Layout.Inst().PopDialogue()
             self.ChangeState('USBNOTMOUNTABLE')
-        except Exception, e:
+        except Exception as e:
             try:
                 self.PreExitActions()
             except Exception:
@@ -542,7 +542,7 @@ class InputDialogue(Dialogue):
                     Layout.Inst().DoUpdate()
                     title, info = self.HandleCommit(self.Pane().GetFieldValues())
                     Layout.Inst().PushDialogue(InfoDialogue( title, info))
-                except Exception, e:
+                except Exception as e:
                     Layout.Inst().PushDialogue(InfoDialogue( Lang('Failed: ')+Lang(e)))
         elif inKey == 'KEY_TAB':
             pane.ActivateNextInput()
@@ -651,7 +651,7 @@ class ProgressDialogue(Dialogue):
             durationSecs = self.task.DurationSecs()
             elapsedStr = TimeUtils.DurationString(durationSecs)
 
-        except Exception, e:
+        except Exception as e:
             progressStr = Lang('<Unavailable>')
             elapsedStr = Lang('<Unavailable>')
 
@@ -677,7 +677,7 @@ class ProgressDialogue(Dialogue):
             durationSecs = self.task.DurationSecs()
             elapsedStr = TimeUtils.DurationString(durationSecs)
 
-        except Exception, e:
+        except Exception as e:
             progressStr = Lang('<Unavailable>')
             elapsedStr = Lang('<Unavailable>')
 
@@ -702,7 +702,7 @@ class ProgressDialogue(Dialogue):
             durationSecs = self.task.DurationSecs()
             elapsedStr = TimeUtils.DurationString(durationSecs)
 
-        except Exception, e:
+        except Exception as e:
             elapsedStr = Lang(e)
 
         pane.AddWrappedTextField(Lang('Time', 16) + elapsedStr)

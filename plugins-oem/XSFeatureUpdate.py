@@ -69,7 +69,7 @@ class UpdateDialogue(FileDialogue):
                 XSLog('Software updated')
                 hostEnabled = False
 
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Software Update Failed"), Lang(e)))
 
@@ -79,7 +79,7 @@ class UpdateDialogue(FileDialogue):
                 if hostEnabled:
                     # Dont leave the host disabled if the update has failed
                     Data.Inst().LocalHostEnable()
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Software Update Failed"), Lang(e)))
 
 class XSFeatureUpdate:

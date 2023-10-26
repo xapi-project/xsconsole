@@ -130,7 +130,7 @@ class FileUtils:
             else:
                 retVal = str(int(fileSize))
 
-        except Exception, e:
+        except Exception as e:
             retVal = FirstValue(inDefault, '')
 
         return retVal
@@ -164,7 +164,7 @@ class FileUtils:
             try:
                 popenObj.wait() # Must wait for completion before mkfs
                 break
-            except IOError, e:
+            except IOError as e:
                 if e.errno != errno.EINTR: # Loop if EINTR
                     raise
 
@@ -241,17 +241,17 @@ class MountVDI:
             if status != 0:
                 try:
                     self.Unmount()
-                except Exception, e:
+                except Exception as e:
                     XSLogFailure('Device failed to unmount', e)
                 output += '\n'+self.mountDev
                 self.HandleMountFailure(output.split("\n"))
 
             self.mountedVBD = True
 
-        except Exception, e:
+        except Exception as e:
             try:
                 self.Unmount()
-            except Exception, e:
+            except Exception as e:
                 #  Report the original exception, not this one
                 XSLogFailure('Device failed to unmount', e)
             raise e
@@ -324,7 +324,7 @@ class MountVDI:
                 time.sleep(5)
                 try:
                     self.vbd = Data.Inst().UnplugVBD(self.vbd)
-                except Exception, e:
+                except Exception as e:
                     XSLogFailure('Device failed to unmount', e)
 
             self.pluggedVBD = False
@@ -364,17 +364,17 @@ class MountVDIDirectly:
             if status != 0:
                 try:
                     self.Unmount()
-                except Exception, e:
+                except Exception as e:
                     XSLogFailure('Device failed to unmount', e)
                 output += '\n'+self.mountDev
                 self.HandleMountFailure(status, output.split("\n"))
 
             self.mountedVDI = True
             XSLog('Mounted '+self.mountDev + ' on ' + self.mountPoint + ' mode ' + self.mode)
-        except Exception, e:
+        except Exception as e:
             try:
                 self.Unmount()
-            except Exception, e:
+            except Exception as e:
                 XSLogFailure('Device failed to unmount', e)
             raise e
 
