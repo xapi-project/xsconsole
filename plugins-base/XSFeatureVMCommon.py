@@ -251,7 +251,7 @@ class VMControlDialogue(Dialogue):
             task = VMUtils.AsyncOperation(self.operation, self.vmHandle, *self.opParams)
             Layout.Inst().PushDialogue(ProgressDialogue(task, messagePrefix))
 
-        except Exception, e:
+        except Exception as e:
             self.ChangeState('INITIAL')
             Layout.Inst().PushDialogue(InfoDialogue(messagePrefix + Lang("Failed"), Lang(e)))
 

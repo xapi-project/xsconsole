@@ -51,7 +51,7 @@ class DRBackupDialogue(SRDialogue):
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Backup Successful"), output))
             else:
                 raise Exception(output)
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Metadata Backup failed: ")+Lang(e)))
         Data.Inst().Update()
 

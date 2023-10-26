@@ -101,7 +101,7 @@ class KeyboardDialogue(Dialogue):
         else:
             try:
                 self.Commit(inChoice)
-            except Exception, e:
+            except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Missing keymap: ")+Lang(e)))
 
     def HandleKeymapChoice(self, inChoice):
@@ -116,7 +116,7 @@ class KeyboardDialogue(Dialogue):
             message = Lang('Keyboard type set to ')+data.KeymapToName(inKeymap)
             Layout.Inst().PushDialogue(InfoDialogue( message))
             XSLog(message)
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Configuration failed: ")+Lang(e)))
 
         data.Update()

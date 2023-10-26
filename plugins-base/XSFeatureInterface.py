@@ -315,7 +315,7 @@ class InterfaceDialogue(Dialogue):
                 else:
                     self.Complete() # Disabled management interface
 
-            except Exception, e:
+            except Exception as e:
                 self.Complete(Lang("Configuration Failed: "+Lang(e)))
 
         else:
@@ -337,7 +337,7 @@ class InterfaceDialogue(Dialogue):
             try:
                 Data.Inst().NameLabelSet(nameLabel)
                 self.Complete()
-            except Exception, e:
+            except Exception as e:
                 self.Complete(Lang("Name Change Failed: ")+str(e))
 
         elif pane.CurrentInput().HandleKey(inKey):
@@ -415,7 +415,7 @@ class InterfaceDialogue(Dialogue):
             if ipAddress == '':
                 ipAddress = Lang('<Unknown>')
             Layout.Inst().PushDialogue(InfoDialogue(Lang("DHCP Renewed with IP address ")+ipAddress))
-        except Exception, e:
+        except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Renewal Failed"), Lang(e)))
 
     def Commit(self):

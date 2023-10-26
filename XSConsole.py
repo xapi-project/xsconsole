@@ -35,7 +35,7 @@ def main():
         app.Build( ['plugins-base', 'plugins-oem', 'plugins-extras'] )
         try:
             app.Enter()
-        except Exception, e:
+        except Exception as e:
             # it may be that the screen size has changed
             app.AssertScreenSize()
             # if we get here then it was some other problem
@@ -44,7 +44,7 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except Exception, e:
+    except Exception as e:
         # Add backtrace to log
         try:
             trace = traceback.format_tb(sys.exc_info()[2])

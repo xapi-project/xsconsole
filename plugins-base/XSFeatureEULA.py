@@ -32,7 +32,7 @@ class EULADialogue(Dialogue):
                 contents = ''.join(file.readlines())
             finally:
                 file.close()
-        except Exception, e:
+        except Exception as e:
             contents = str(e)
 
         self.maxLine = 0

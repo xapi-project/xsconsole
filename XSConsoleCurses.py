@@ -180,7 +180,7 @@ class CursesPane:
                         self.win.addstr(inY, xPos, len(clippedStr)*' ', CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
                         self.win.refresh()
                     self.win.addstr(inY, xPos, encodedStr, CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
-                except Exception,  e:
+                except Exception as e:
                     if xPos + len(inString) == self.xSize and inY + 1 == self.ySize:
                         # Curses incorrectly raises an exception when writing the bottom right
                         # character in a window, but still completes the write, so ignore it

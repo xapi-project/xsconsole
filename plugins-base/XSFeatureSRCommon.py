@@ -49,7 +49,7 @@ class SRUtils:
             for pbd in sr.PBDs:
                 try:
                     Task.Sync(lambda x: x.xenapi.PBD.destroy(pbd.HotOpaqueRef().OpaqueRef()))
-                except Exception, e:
+                except Exception as e:
                     storedError = e
 
             if storedError is not None:
@@ -69,7 +69,7 @@ class SRUtils:
             for pbd in sr.PBDs:
                 try:
                     Task.Sync(lambda x: x.xenapi.PBD.plug(pbd.HotOpaqueRef().OpaqueRef()))
-                except Exception, e:
+                except Exception as e:
                     storedError = e
 
             if storedError is not None:
@@ -88,7 +88,7 @@ class SRUtils:
                 for pbd in unplugged:
                     try:
                         Task.Sync(lambda x: x.xenapi.PBD.plug(pbd.HotOpaqueRef().OpaqueRef()))
-                    except Exception, e:
+                    except Exception as e:
                         XSLogFailure('SR undo failed', e)
                 raise # Reraise the original exception
 
@@ -289,7 +289,7 @@ class SRControlDialogue(Dialogue):
             task = SRUtils.DoOperation(self.operation, self.srHandle, *self.opParams)
             Layout.Inst().PushDialogue(InfoDialogue(messagePrefix + Lang("successful"), ))
 
-        except Exception, e:
+        except Exception as e:
             self.ChangeState('INITIAL')
             Layout.Inst().PushDialogue(InfoDialogue(messagePrefix + Lang("failed"), Lang(e)))
 

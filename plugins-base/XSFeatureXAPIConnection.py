@@ -27,7 +27,7 @@ class XSFeatureXAPIConnection:
                     Layout.Inst().TransientBanner(Lang("Restarting xapi...."))
                     Data.Inst().StartXAPI()
                     XSLog('Restarted xapi')
-                except Exception, e:
+                except Exception as e:
                     XSLogFailure('Failed to restart xapi', e)
                     Layout.Inst().PushDialogue(InfoDialogue(Lang('Restart Failed'), Lang('Xapi did not restart successfully.  More information may be available in the file /var/log/xensource.log.')))
 

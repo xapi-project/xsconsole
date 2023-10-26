@@ -164,7 +164,7 @@ class Data:
             try:
                 try:
                     thisHost = self.session.xenapi.session.get_this_host(self.session._session)
-                except XenAPI.Failure, e:
+                except XenAPI.Failure as e:
                     XSLog('Data update connection failed - retrying.  Exception was:', e)
                     self.session = Auth.Inst().CloseSession(self.session)
                     self.RequireSession()
@@ -203,7 +203,7 @@ class Data:
 
                     try:
                         retVal['network'] = self.session.xenapi.network.get_record(retVal['network'])
-                    except XenAPI.Failure, e:
+                    except XenAPI.Failure as e:
                         XSLogError('Missing network record: ', e)
 
                     retVal['opaqueref'] = inPIF
@@ -306,7 +306,7 @@ class Data:
 
             except socket.timeout:
                 self.session = None
-            except Exception, e:
+            except Exception as e:
                 XSLogError('Data update failed: ', e)
 
             try:
@@ -326,7 +326,7 @@ class Data:
 
                     self.data['sr'].append(values)
 
-            except Exception, e:
+            except Exception as e:
                 XSLogError('SR data update failed: ', e)
 
         self.UpdateFromResolveConf()
@@ -1046,7 +1046,7 @@ class Data:
                 if vbd['currently_attached']:
                     self.UnplugVBD(vbd)
                 self.DestroyVBD(vbd)
-            except Exception, e:
+            except Exception as e:
                 XSLogError('VBD purge failed', e)
 
     def IsXAPIRunning(self):

@@ -92,7 +92,7 @@ class ShellPipe:
                 self.stdout += stdout.splitlines()
                 self.stderr += stderr.splitlines()
                 break
-            except IOError, e:
+            except IOError as e:
                 if e.errno != errno.EINTR: # Loop if EINTR
                     raise
             # Other exceptions propagate to the caller
@@ -143,7 +143,7 @@ class ShellUtils:
             try:
                 inPipe.wait()
                 break
-            except IOError, e:
+            except IOError as e:
                 if e.errno != errno.EINTR: # Loop if EINTR
                     raise
 
