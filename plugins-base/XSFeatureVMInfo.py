@@ -15,21 +15,21 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureVMInfo:
     @classmethod
     def ResidentStatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Virtual Machine Information"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to display detailed information about Virtual Machines running on this host."))
 
     @classmethod
     def AllStatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Virtual Machine Information"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to display detailed information about all Virtual Machines in the Pool."))
 
@@ -50,7 +50,7 @@ class XSFeatureVMInfo:
             except Exception, e:
                 XSLogFailure('VMMetrics failed', e)
                 vmMetrics = {}
-            
+
             powerState = vm.power_state(Lang('<Unknown>'))
             isRunning = powerState.lower().startswith('running')
             inPane.AddWrappedTextField(vm.name_label())
@@ -68,7 +68,7 @@ class XSFeatureVMInfo:
 
             except Exception, e:
                 cpuUsageStr = Lang('<Unknown>')
-            
+
             inPane.AddStatusField(Lang("CPU Usage", 16), cpuUsageStr)
 
             if isRunning:
@@ -82,22 +82,22 @@ class XSFeatureVMInfo:
                     memoryUsageStr = "%d%% (%s)" % (int(memoryUsage * 100), SizeUtils.MemorySizeString(usedMemory))
                 except Exception, e:
                     memoryUsageStr = Lang('<Unavailable>')
-                    
+
                 inPane.AddStatusField(Lang("Memory Usage", 16), memoryUsageStr)
-    
+
                 try:
                     networks = vm.guest_metrics.networks({})
                     for key in sorted(networks.keys()):
                         inPane.AddStatusField((Lang('Network ')+key).ljust(16,  ' '), networks[key])
                 except Exception, e:
                     inPane.AddStatusField(Lang('Network Info', 16), Lang('<Unavailable>'))
-                    
+
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Control This Virtual Machine") } )
-    
+
     @classmethod
     def ResidentActivateHandler(cls):
         Layout.Inst().TopDialogue().ChangeMenu('MENU_RESIDENTVM')
-    
+
     @classmethod
     def AllActivateHandler(cls):
         vmIDs = Task.Sync(lambda x: x.xenapi.VM.get_all_records_where('field "is_a_template" = "false" and field "is_control_domain" = "false"'))
@@ -105,12 +105,12 @@ class XSFeatureVMInfo:
             Layout.Inst().PushDialogue(InfoDialogue(Lang('This feature is unavailable in Pools with more than 100 Virtual Machines')))
         else:
             Layout.Inst().TopDialogue().ChangeMenu('MENU_ALLVM')
-    
+
     @classmethod
     def InfoActivateHandler(cls, inHandle):
         dialogue = Importer.GetResource('VMControlDialogue')
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(dialogue(inHandle)))
-    
+
     @classmethod
     def MenuRegenerator(cls, inList, inMenu):
         retVal = copy.copy(inMenu)
@@ -119,7 +119,7 @@ class XSFeatureVMInfo:
         vmList = [ HotAccessor().vm[x] for x in inList ]
         # Sort list by VM name
         vmList.sort(lambda x,y: cmp(x.name_label(''), y.name_label('')))
-        
+
         for vm in vmList:
             nameLabel = vm.name_label(Lang('<Unknown>'))
             if not vm.is_control_domain(True) and not vm.is_a_template(True):
@@ -127,22 +127,22 @@ class XSFeatureVMInfo:
                                             onAction = cls.InfoActivateHandler,
                                             statusUpdateHandler = cls.InfoStatusUpdateHandler,
                                             handle = vm.HotOpaqueRef())
-            
+
         if retVal.NumChoices() == 0:
             retVal.AddChoice(name = Lang('<No Virtual Machines Present>'),
                                         statusUpdateHandler = cls.NoVMStatusUpdateHandler)
-            
+
         return retVal
-    
+
     @classmethod
     def ResidentMenuRegenerator(cls, inName, inMenu):
         return cls.MenuRegenerator(HotAccessor().local_host.resident_VMs([]), inMenu)
-    
+
     @classmethod
     def AllMenuRegenerator(cls, inName, inMenu):
         # Fetching all guest_vm is an expensive operation (implies xenapi.vm.get_all_records)
         return cls.MenuRegenerator(HotAccessor().guest_vm({}).keys(), inMenu)
-    
+
     def Register(self):
         Importer.RegisterMenuEntry(
             self,

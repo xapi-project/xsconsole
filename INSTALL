@@ -1,6 +1,6 @@
 There are prerequisites for building a xsconsole for XenServer.
 All the following must be installed, either by visiting the
-project webpage or installing a pre-built package provided by 
+project webpage or installing a pre-built package provided by
 your OS distributor:
     * RPM build
     * Redhat rpm config (if debuginfo is required)
@@ -36,12 +36,12 @@ Follow these steps to build an RPM.
    Move xsconsole.spec    to /usr/src/redhat/SPECS/
    Move xsconsole-plugins-oem.tar.bz2 to /usr/src/redhat/SOURCES/
    Move xsconsole-plugins-oem.spec    to /usr/src/redhat/SPECS/
-	      
+
 5. To build the RPMs run:
      cd /usr/src/redhat/SPECS/
      rpmbuild -ba xsconsole.spec --target noarch
      rpmbuild -ba xsconsole-plugins-oem.spec --target noarch
-			  
+
 6. Install using
      rpm -ivh /usr/src/redhat/RPMS/noarch/xsconsole*.rpm
 

@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class UpdateDialogue(FileDialogue):
@@ -30,22 +30,22 @@ class UpdateDialogue(FileDialogue):
             'mode' : 'ro'
         }
         FileDialogue.__init__(self) # Must fill in self.custom before calling __init__
-        
+
     def DoAction(self):
         success = False
-        
+
         Layout.Inst().PopDialogue()
-        
+
         Layout.Inst().PushDialogue(BannerDialogue(
             Lang("Applying update... This may take several minutes.  Press <Ctrl-C> to abort.")))
-        
+
         hostEnabled = Data.Inst().host.enabled(False)
 
         try:
             try:
                 Layout.Inst().Refresh()
                 Layout.Inst().DoUpdate()
-                
+
                 if VMUtils.numLocalResidentVMs() > 0:
                     raise Exception(Lang("One or more Virtual Machines are running on this host.  Please migrate, shut down or suspend Virtual Machines before continuing."))
 
@@ -54,15 +54,15 @@ class UpdateDialogue(FileDialogue):
                 hostRef = Data.Inst().host.uuid(None)
                 if hostRef is None:
                     raise Exception("Internal error 1")
-                    
+
                 filename = self.vdiMount.MountedPath(self.filename)
                 FileUtils.AssertSafePath(filename)
                 command = "/opt/xensource/bin/xe update-upload file-name='"+filename+"' host-uuid="+hostRef
                 status, output = commands.getstatusoutput(command)
-                
+
                 if status != 0:
                     raise Exception(output)
-                
+
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue(
                     Lang("Update Successful"), Lang("Please reboot to use the newly installed software.")))
@@ -72,7 +72,7 @@ class UpdateDialogue(FileDialogue):
             except Exception, e:
                 Layout.Inst().PopDialogue()
                 Layout.Inst().PushDialogue(InfoDialogue( Lang("Software Update Failed"), Lang(e)))
-                
+
         finally:
             try:
                 self.PreExitActions()
@@ -91,11 +91,11 @@ class XSFeatureUpdate:
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to apply a software update."))
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Update") } )
-        
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(UpdateDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

@@ -35,6 +35,6 @@ class Struct:
     def __init__(self, *inArgs, **inKeywords):
         for k, v in inKeywords.items():
             setattr(self, k, v)
-        
+
     def __repr__(self):
         return str(self.__dict__)

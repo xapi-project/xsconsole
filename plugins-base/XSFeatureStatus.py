@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 def is_master():
@@ -38,7 +38,7 @@ class XSFeatureStatus:
             data.derived.coreversion())
         inPane.NewLine()
         inPane.AddTitleField(Lang("Management Network Parameters"))
-        
+
         if len(data.derived.managementpifs([])) == 0:
             db = HotAccessor()
             try:
@@ -61,10 +61,10 @@ class XSFeatureStatus:
             inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
             inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
             inPane.AddStatusField(Lang('Gateway', 16),  data.ManagementGateway(''))
-        
+
         inPane.NewLine()
         inPane.AddWrappedTextField(Lang('Press <Enter> to display the SSL key fingerprints for this host'))
-    
+
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh"), Lang("<Enter>") : Lang("Fingerprints")})
 
     @classmethod

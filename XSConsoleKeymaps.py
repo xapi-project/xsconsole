@@ -55,9 +55,9 @@ class Keymaps:
         Lang("US International") : 'us-acentos',
         Lang("US English") : 'us'
         }
-        
+
     @classmethod
     def NamesToMaps(cls):
         return cls.namesToMaps
-        
-        
+
+

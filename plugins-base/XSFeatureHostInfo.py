@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureHostInfo:
@@ -27,7 +27,7 @@ class XSFeatureHostInfo:
         except Exception, e:
             XSLogFailure('LocalHostMetrics failed', e)
             localHostMetrics = {}
-        
+
         try:
             cpuUsage = localHostMetrics['cpuusage']
             cpuUsage = max(0.0, min(1.0, cpuUsage))
@@ -48,11 +48,11 @@ class XSFeatureHostInfo:
 
         inPane.AddStatusField(Lang("CPU Usage", 16), cpuUsageStr)
         inPane.AddStatusField(Lang("Memory Usage", 16), memoryUsageStr)
-    
+
     @classmethod
     def ActivateHandler(cls):
         pass
-    
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

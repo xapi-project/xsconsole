@@ -15,17 +15,17 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureShutdown:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Shutdown Server"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to shutdown this server."))
-    
+
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Shutdown Server")
         } )
@@ -54,7 +54,7 @@ class XSFeatureShutdown:
         else:
             banner = Lang("Do you want to shutdown this server?")
         DialogueUtils.AuthenticatedOrPasswordUnsetOnly(lambda: Layout.Inst().PushDialogue(QuestionDialogue(banner, lambda x: cls.ShutdownReplyHandler(x))))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

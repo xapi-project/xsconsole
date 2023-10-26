@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureManagementHelp:
@@ -26,10 +26,10 @@ class XSFeatureManagementHelp:
         fullAppName = data.derived.full_app_name('')
         xenServerName = Language.Inst().Branding(data.host.software_version.product_brand(''))
         inPane.AddTitleField(Lang("Manage Server Using ")+appName)
-        
+
         inPane.AddWrappedTextField(fullAppName+Lang(" is the ")+xenServerName+
             Lang(' administration interface for the Windows(R) operating system.'))
-        
+
         inPane.NewLine()
 
         inPane.AddWrappedTextField(Lang('Press <Enter> for details of how to download and use ')+appName+
@@ -38,7 +38,7 @@ class XSFeatureManagementHelp:
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("View ")+appName+Lang(" Info")
         } )
-    
+
     @classmethod
     def ActivateHandler(cls):
         data = Data.Inst()
@@ -54,9 +54,9 @@ class XSFeatureManagementHelp:
                     Lang('/ from a web browser on your Windows(R) desktop to download the ')+appName+
                     Lang(' installer.\r\rOnce installed, the same IP address ')+data.ManagementIP('')+
                     Lang(' can be used to connect to this server from the ')+appName+' application.')
-            
+
         Layout.Inst().PushDialogue(InfoDialogue(Lang("Download and Use ")+appName, message))
-        
+
     def Register(self):
         data = Data.Inst()
         appName = data.derived.app_name('')

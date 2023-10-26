@@ -20,12 +20,12 @@ from XSConsoleHotData import *
 class Layout:
     WIN_MAIN = 0
     WIN_TOPLINE = 1
-    
+
     APP_XSIZE = 80
     APP_YSIZE = 24
-    
+
     instance = None
-    
+
     def __init__(self, inParent = None):
         self.parent = inParent
         self.windows = []
@@ -45,12 +45,12 @@ class Layout:
         if cls.instance is None:
             cls.instance = Layout()
         return cls.instance
-    
+
     @classmethod
     def NewInst(cls):
         cls.instance = Layout()
         return cls.instance
-        
+
     def ParentSet(self, inParent):
         self.parent = inParent
 
@@ -59,13 +59,13 @@ class Layout:
 
     def ExitBanner(self):
         return self.exitBanner
-        
+
     def ExitBannerSet(self,  inBanner):
         self.exitBanner = inBanner
-        
+
     def ExitCommand(self):
         return self.exitCommand
-        
+
     def ExitCommandSet(self,  inCommand):
         self.exitCommand = inCommand
         self.exitCommandIsExec = True
@@ -79,13 +79,13 @@ class Layout:
 
     def Window(self, inNum):
         return self.windows[inNum]
-    
+
     def TopDialogue(self):
         return self.dialogues[-1]
-    
+
     def PushDialogue(self, inDialogue):
         self.dialogues.append(inDialogue)
-        
+
     def PopDialogue(self):
         if len(self.dialogues) < 1:
             raise Exception("Stack underflow in PopDialogue")
@@ -97,11 +97,11 @@ class Layout:
             HotData.Inst().DeleteCache()
         self.TopDialogue().UpdateFields()
         self.Refresh()
-    
+
     def UpdateRootFields(self):
         if len(self.dialogues) > 0:
             self.dialogues[0].UpdateFields()
-    
+
     def LiveUpdateFields(self):
         needsRefresh = False
         if len(self.dialogues) > 0:
@@ -110,38 +110,38 @@ class Layout:
                 topDialogue.LiveUpdateFields()
                 needsRefresh = True
         return needsRefresh
-    
+
     def TransientBannerHandlerSet(self, inHandler):
         self.transientBannerHandler = inHandler
-    
+
     def TransientBanner(self, inMessage):
         self.transientBannerHandler(inMessage)
-    
+
     def WriteParentOffset(self, inParent):
         self.AssertScreenSize()
- 
+
         # Centralise subsequent windows
         inParent.OffsetSet(
             (inParent.XSize() - self.APP_XSIZE) / 2,
             (inParent.YSize() - self.APP_YSIZE) / 2)
-            
+
     def Create(self):
         self.windows.append(CursesWindow(0,1,self.APP_XSIZE, self.APP_YSIZE-1, self.parent)) # MainWindow
         self.windows.append(CursesWindow(0,0,self.APP_XSIZE,1, self.parent)) # Top line window
         self.windows[self.WIN_MAIN].DefaultColourSet('MAIN_BASE')
         self.windows[self.WIN_TOPLINE].DefaultColourSet('TOPLINE_BASE')
-            
+
         self.Window(self.WIN_MAIN).AddBox()
         self.Window(self.WIN_MAIN).TitleSet("Configuration")
-    
+
     def CreateRootDialogue(self, inRootDialogue):
         self.dialogues = [ inRootDialogue ]
-    
+
     def Reset(self):
         while len(self.dialogues) > 1:
             self.PopDialogue()
         self.TopDialogue().Reset()
-    
+
     def Refresh(self):
         self.Window(self.WIN_MAIN).Erase() # Unknown why main won't redraw without this
         for window in self.windows:
@@ -149,7 +149,7 @@ class Layout:
 
         for dialogue in self.dialogues:
             dialogue.Render()
-            
+
         if not self.TopDialogue().NeedsCursor():
             self.TopDialogue().CursorOff()
 
@@ -157,12 +157,12 @@ class Layout:
         for window in self.windows:
             window.Win().redrawwin()
             window.Win().refresh()
-    
+
     def Clear(self):
         for window in self.windows:
             window.Clear()
         self.Refresh()
-    
+
     def DoUpdate(self):
         curses.doupdate()
-    
+

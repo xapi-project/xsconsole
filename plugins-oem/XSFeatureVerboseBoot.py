@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class VerboseBootDialogue(Dialogue):
@@ -29,31 +29,31 @@ class VerboseBootDialogue(Dialogue):
             ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(True) ),
             ChoiceDef(Lang("Disable"), lambda: self.HandleChoice(False) )
             ])
-    
+
         self.UpdateFields()
-        
+
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Please select an option"))
         pane.AddMenuField(self.remoteShellMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 
     def HandleKey(self, inKey):
         handled = self.remoteShellMenu.HandleKey(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-                
+
     def HandleChoice(self, inChoice):
         data = Data.Inst()
         Layout.Inst().PopDialogue()
         Layout.Inst().TransientBanner(Lang("Updating..."))
-        
+
         try:
             data.SetVerboseBoot(inChoice)
         except Exception, e:
@@ -78,13 +78,13 @@ class XSFeatureVerboseBoot:
         inPane.AddWrappedTextField(Lang(
             "This option will control the level of information displayed as this server boots.  "
             "The current state of verbose boot mode is ")+message+Lang(" press <Enter>."))
-            
+
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Configure") } )
-        
+
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(VerboseBootDialogue()))
-        
+
     def Register(self):
         data = Data.Inst()
         Importer.RegisterNamedPlugIn(

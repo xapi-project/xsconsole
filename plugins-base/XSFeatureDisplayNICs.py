@@ -15,29 +15,29 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureDisplayNICs:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         data = Data.Inst()
-        
+
         inPane.AddTitleField(Lang("Network Interfaces"))
-        
+
         for pif in data.host.PIFs([]):
             inPane.AddWrappedBoldTextField(pif['metrics']['device_name'])
             if pif['metrics']['carrier']:
                 inPane.AddWrappedTextField(Lang("(connected)"))
             else:
                 inPane.AddWrappedTextField(Lang("(not connected)"))
-                
+
             inPane.AddStatusField(Lang("MAC Address", 16), pif['MAC'])
             inPane.AddStatusField(Lang("Device", 16), pif['device'])
             if int(pif['VLAN']) >= 0:
                 inPane.AddStatusField(Lang("VLAN", 16), pif['VLAN'])
             inPane.NewLine()
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

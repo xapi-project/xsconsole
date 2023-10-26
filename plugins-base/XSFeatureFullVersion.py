@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureFullVersion:
@@ -25,7 +25,7 @@ class XSFeatureFullVersion:
         inPane.AddTitleField(Lang("Software Build Information"))
         inPane.AddWrappedTextField(Language.Inst().Branding(data.derived.brand()) + ' ' +
             data.derived.fullversion())
-        
+
     @classmethod
     def ActivateHandler(cls):
         return

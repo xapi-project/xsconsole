@@ -15,17 +15,17 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureReboot:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Reboot Server"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to reboot this server."))
-    
+
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Reboot Server")
         } )
@@ -58,7 +58,7 @@ class XSFeatureReboot:
         if State.Inst().RebootMessage() is not None and not (
                State.Inst().PasswordChangeRequired() or not Auth.Inst().IsPasswordSet()):
             cls.ActivateHandler(inMessage)
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

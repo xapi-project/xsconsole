@@ -15,20 +15,20 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSMenuOEMLayout:
-            
+
     def ActivateHandler(self, inName):
         Layout.Inst().TopDialogue().ChangeMenu(inName)
 
     def Register(self):
         data = Data.Inst()
-        
+
         rootMenuDefs = [
         ]
-        
+
         priority = 850
         for menuDef in rootMenuDefs:
 

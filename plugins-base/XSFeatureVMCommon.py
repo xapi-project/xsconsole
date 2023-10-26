@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class VMUtils:
@@ -35,7 +35,7 @@ class VMUtils:
     @classmethod
     def AllowedOperations(cls):
         return cls.operationNames.keys()
-        
+
     @classmethod
     def AsyncOperation(cls, inOperation, inVMHandle, inParam0 = None):
         if inOperation == 'hard_reboot':
@@ -65,13 +65,13 @@ class VMUtils:
             task = Task.New(lambda x: x.xenapi.Async.VM.suspend(inVMHandle.OpaqueRef()))
         else:
             raise Exception("Unknown VM operation "+str(inOperation))
-        
+
         return task
-        
+
     @classmethod
     def DoOperation(cls, inOperation, inVMHandle, inParam0 = None):
         task = cls.AsyncOperation(inOperation, inVMHandle, inParam0)
-        
+
         if task is not None:
             while task.IsPending():
                 time.sleep(0.1)
@@ -126,9 +126,9 @@ class VMControlDialogue(Dialogue):
         allowedOps = vm.allowed_operations()
 
         choiceList = [ name for name in allowedOps if name in VMUtils.AllowedOperations() ]
-        
+
         choiceList.sort(lambda x, y: cmp(VMUtils.OperationPriority(x), VMUtils.OperationPriority(y)))
-        
+
         self.controlMenu = Menu()
         for choice in choiceList:
             self.controlMenu.AddChoice(name = VMUtils.OperationName(choice),
@@ -136,14 +136,14 @@ class VMControlDialogue(Dialogue):
                 handle = choice)
         if self.controlMenu.NumChoices() == 0:
             self.controlMenu.AddChoice(name = Lang('<No Operations Available>'))
-            
+
         self.ChangeState('INITIAL')
-        
+
     def BuildPane(self):
         pane = self.NewPane(DialoguePane(self.parent))
         pane.TitleSet(Lang("Virtual Machine Control"))
         pane.AddBox()
-        
+
         if self.state == 'MIGRATE':
             hosts = VMUtils.GetPossibleHostAccessors(self.vmHandle)
             hosts.sort(lambda x, y: cmp(x.name_label(), y.name_label()))
@@ -169,7 +169,7 @@ class VMControlDialogue(Dialogue):
             pane.AddTitleField(vmName+Lang(" is ")+Lang(vm.power_state('<Unknown Power State>'))+'.')
         pane.AddMenuField(self.controlMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsMIGRATE(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -177,7 +177,7 @@ class VMControlDialogue(Dialogue):
         pane.AddTitleField(Lang('Please choose a new host for this Virtual Machine'))
         pane.AddMenuField(self.hostMenu)
         pane.AddKeyHelpField( { Lang("<Up/Down>") : Lang("Select"), Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -192,9 +192,9 @@ class VMControlDialogue(Dialogue):
             pane.AddStatusField(Lang("Virtual Machine", 20), vmName)
             for values in self.extraInfo:
                 pane.AddStatusField(values[0], values[1])
-                
+
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -203,7 +203,7 @@ class VMControlDialogue(Dialogue):
         self.state = inState
         self.BuildPane()
         self.UpdateFields()
-    
+
     def HandleKeyINITIAL(self, inKey):
         return self.controlMenu.HandleKey(inKey)
 
@@ -221,26 +221,26 @@ class VMControlDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
 
         return handled
-    
+
     def HandleControlChoice(self, inChoice):
         self.operation = inChoice
         if inChoice == 'pool_migrate':
             self.ChangeState('MIGRATE')
         else:
             self.ChangeState('CONFIRM')
-        
+
     def HandleHostChoice(self, inChoice):
         self.opParams.append(inChoice)
         hostName = HotAccessor().vm[inChoice].name_label(Lang('<Unknown>'))
         self.extraInfo.append( (Lang('New Host', 20), hostName) ) # Append a tuple (so double brackets)
         self.ChangeState('CONFIRM')
-        
+
     def Commit(self):
         Layout.Inst().PopDialogue()
 
@@ -250,7 +250,7 @@ class VMControlDialogue(Dialogue):
         try:
             task = VMUtils.AsyncOperation(self.operation, self.vmHandle, *self.opParams)
             Layout.Inst().PushDialogue(ProgressDialogue(task, messagePrefix))
-            
+
         except Exception, e:
             self.ChangeState('INITIAL')
             Layout.Inst().PushDialogue(InfoDialogue(messagePrefix + Lang("Failed"), Lang(e)))

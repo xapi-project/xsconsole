@@ -26,13 +26,13 @@ from XSConsoleLang import *
 class ChoiceDef:
     def __init__(self, name, onAction = None, onEnter = None, priority = None, statusUpdateHandler = None, handle = None):
         ParamsToAttr()
-        
+
     def StatusUpdateHandler(self):
         return self.statusUpdateHandler
-        
+
     def StatusUpdateHandlerSet(self, inHandler):
         self.statusUpdateHandler = inHandler
-        
+
     def OnAction(self):
         return self.onAction
 
@@ -63,24 +63,24 @@ class Menu:
             self.defaultPriority += 100
         else:
             priority = inPriority
-        
+
         inChoiceDef.priority = priority # FIXME (modifies input parameter)
         self.choiceDefs.append(inChoiceDef)
-        
+
         self.choiceDefs.sort(lambda x, y : cmp(x.priority, y.priority))
 
     def AddChoice(self, name, onAction = None, onEnter = None, priority = None, statusUpdateHandler = None, handle = None):
         choiceDef = ChoiceDef(name, onAction, onEnter, priority, statusUpdateHandler, handle)
         self.AddChoiceDef(choiceDef)
-        
+
     def RemoveChoices(self):
         self.choiceDefs = []
         self.defaultPriority=1000
-            
+
     def CurrentChoiceSet(self,  inChoice):
         self.choiceIndex = inChoice
         # Also need to call HandleEnter
-        
+
     def CurrentChoiceDef(self):
         if self.choiceIndex >= len(self.choiceDefs):
             self.choiceIndex = max(0, len(self.choiceDefs) - 1)
@@ -151,23 +151,23 @@ class Menu:
                         self.HandleEnter()
                         handled = True
                         break
-        
+
         return handled
-        
+
 class RootMenu:
     def __init__(self, inDialogue):
         self.menus = {'MENU_ROOT' : Menu(self, None, Lang("Customize System"), [ ]) }
         self.currentKey = 'MENU_ROOT'
-    
+
     def GetMenu(self, inMenuName):
         retVal = self.menus.get(inMenuName, None)
         if retVal is None:
             raise Exception(Lang("Unknown menu '")+inMenuName+"'")
         return retVal
-        
+
     def SetMenu(self, inMenuName, inMenu):
         self.menus[inMenuName] = inMenu
-        
+
     def CurrentMenu(self):
         return self.menus[self.currentKey]
 
@@ -180,16 +180,16 @@ class RootMenu:
 
     def Reset(self):
         self.currentKey = 'MENU_ROOT'
-        
+
         for menu in self.menus.values():
             menu.CurrentChoiceSet(0)
-            
+
         self.CurrentMenu().HandleEnter()
-        
+
     def AddChoice(self, inMenuName, inChoiceDef, inPriority = None):
         if not self.menus.has_key(inMenuName):
             raise Exception(Lang("Unknown menu '")+inMenuName+"'")
-        
+
         self.menus[inMenuName].AddChoiceDef(inChoiceDef, inPriority)
 
     def CreateMenuIfNotPresent(self, inName, inTitle = None, inParent = None):

@@ -15,15 +15,15 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureSRInfo:
-    
+
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Storage Repository Information"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to display detailed information about Storage Repositories, and to Detach, Destroy or Forget Storage Repositories."))
 
@@ -51,7 +51,7 @@ class XSFeatureSRInfo:
             inPane.AddStatusField(Lang('Type', 10), srUtils.TypeName(sr.type()))
 
             inPane.AddStatusField(Lang('Shared', 10), sr.shared() and Lang('Yes') or Lang('No'))
-            
+
             attached = False
             for pbd in sr.PBDs:
                 if pbd.host.uuid() == db.local_host.uuid():
@@ -72,7 +72,7 @@ class XSFeatureSRInfo:
                         inPane.AddStatusField(Lang('Port', 10), devConfig.port())
                     if devConfig.targetIQN() is not None:
                         inPane.AddStatusField(Lang('Target IQN', 10), devConfig.targetIQN())
-            
+
 
             flags = srUtils.SRFlags(sr)
             if 'default' in flags and 'suspend' in flags and 'crashdump' in flags:
@@ -88,32 +88,32 @@ class XSFeatureSRInfo:
                 inPane.AddWarningField(Lang('This Storage Repository is detached and not usable by this host.'))
             elif not attached:
                 inPane.AddWarningField(Lang('This Storage Repository is unplugged and not usable by this host.'))
-                
+
             if sr.name_description('') != '':
                 inPane.AddWrappedBoldTextField(Lang('Description'))
                 inPane.AddWrappedTextField(sr.name_description(''))
 
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Control This Storage Repository") } )
-    
+
     @classmethod
     def ActivateHandler(cls):
         Layout.Inst().TopDialogue().ChangeMenu('MENU_SRINFO')
-    
+
     @classmethod
     def InfoActivateHandler(cls, inHandle):
         dialogue = Importer.GetResource('SRControlDialogue')
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(dialogue(inHandle)))
-    
+
     @classmethod
     def MenuRegenerator(cls, inList, inMenu):
         retVal = copy.copy(inMenu)
         retVal.RemoveChoices()
         # inList is a list of HotOpaqueRef objects
         srList = [ sr for sr in HotAccessor().visible_sr if sr.other_config({}).get('xensource_internal', '') != 'true' ]
-        
+
         # Sort list by SR shared flag then name
         srList.sort(lambda x, y: cmp(y.shared(False), x.shared(False)) or cmp (x.name_label(''), y.name_label()))
-        
+
         srUtils = Importer.GetResource('SRUtils')
         for sr in srList:
             name = srUtils.AnnotatedName(sr)
@@ -121,14 +121,14 @@ class XSFeatureSRInfo:
                                         onAction = cls.InfoActivateHandler,
                                         statusUpdateHandler = cls.InfoStatusUpdateHandler,
                                         handle = sr.HotOpaqueRef())
-            
+
         if retVal.NumChoices() == 0:
             retVal.AddChoice(name = Lang('<No Storage Repositories Present>'),
                 statusUpdateHandler = cls.NoSRStatusUpdateHandler)
-            
+
         return retVal
 
-    
+
     def Register(self):
         Importer.RegisterMenuEntry(
             self,

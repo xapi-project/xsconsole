@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class ValidateDialogue(Dialogue):
@@ -25,22 +25,22 @@ class ValidateDialogue(Dialogue):
         data = Data.Inst()
 
         pane = self.NewPane(DialoguePane(self.parent))
-        
+
         pane.TitleSet(Lang("Validate Server Configuration"))
         pane.AddBox()
-    
+
         self.vtResult = Lang("Not Present on CPU")
         for capability in data.host.capabilities([]):
             if re.match(r'hvm', capability):
                 self.vtResult = Lang("OK")
-        
+
         # If there is an SR that allows vdi_create, signal SR OK
         self.srResult = "Not Present"
         for pbd in data.host.PBDs([]):
             sr = pbd.get('SR', {})
             if 'vdi_create' in sr['allowed_operations']:
                 self.srResult = 'OK'
-        
+
         self.netResult = "Not OK"
         if len(data.derived.managementpifs([])) > 0:
             managementPIF = data.derived.managementpifs()[0]
@@ -50,12 +50,12 @@ class ValidateDialogue(Dialogue):
                 self.netResult = "Not connected"
 
         self.UpdateFields()
-        
+
     def UpdateFields(self):
         data = Data.Inst()
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang("Validation Results"))
         pane.AddStatusField(Lang("VT enabled on CPU", 50), self.vtResult)
         pane.AddStatusField(Lang("Local default Storage Repository", 50), self.srResult)
@@ -63,7 +63,7 @@ class ValidateDialogue(Dialogue):
         if self.srResult != 'OK':
             pane.NewLine()
             pane.AddWrappedTextField(Lang('A local Storage Repository is useful but not essential for ' + Language.Inst().Branding(data.host.software_version.product_brand('')) + ' operation'))
-            
+
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK") } )
 
     def HandleKey(self, inKey):
@@ -82,7 +82,7 @@ class XSFeatureValidate:
 
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to check the basic configuration of this server."))
- 
+
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Validate")
         } )
@@ -90,7 +90,7 @@ class XSFeatureValidate:
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(ValidateDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,
