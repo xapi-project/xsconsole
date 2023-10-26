@@ -25,20 +25,20 @@ def Lang(inLabel, inPad = 0):
     if inPad > 0:
         retStr = retStr.ljust(inPad, ' ')
     return retStr
-    
+
 class Language:
     instance = None
     stringHook = None
     errorHook = None
     errorLoggingHook = None
-    
+
     def __init__(self):
         self.brandingMap = Config.Inst().BrandingMap()
-    
+
     @classmethod
     def SetStringHook(cls, inHook):
         cls.stringHook = inHook
-    
+
     @classmethod
     def SetErrorHook(cls, inHook):
         cls.errorHook = inHook
@@ -52,7 +52,7 @@ class Language:
         if self.instance is None:
             self.instance = Language()
         return self.instance
-    
+
     @classmethod
     def Quantity(cls, inText, inNumber):
         if inNumber == 1:
@@ -112,19 +112,19 @@ class Language:
                 lineLength = inWidth
             else:
                 lineLength = spacePos
-            
+
             thisLine = text[:lineLength]
             thisLine = thisLine.replace("\t", " ") # Tab is used as a non-breaking space
             thisLine = thisLine.replace("\r", "RET") # Debugging
             thisLine = thisLine.strip() # Remove leading whitespace (generally the second space in a double space)
             if len(thisLine) > 0 or retPos != -1: # Only add blank lines if they follow a return
                 retArray.append(thisLine)
-            
+
             if spacePos == -1:
                 text = text[lineLength:] # Split at non-space/return, so keep
             else:
                 text = text[lineLength+1:] # Split at space or return so discard
-            
+
         return retArray
 
     def Branding(self, inText):

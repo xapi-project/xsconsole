@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class HostUtils:
@@ -24,20 +24,20 @@ class HostUtils:
         'enable' : Struct(name = Lang("Enable"), priority = 20),
         'designate_new_master' : Struct(name = Lang("Designate as new Pool Master"), priority = 30)
     }
-    
+
     @classmethod
     def AllowedOperations(cls):
         return cls.operationNames.keys()
-    
+
     @classmethod
     def OtherConfigRemove(cls, inHostHandle, inName):
         Task.Sync(lambda x: x.xenapi.host.remove_from_other_config(inHostHandle.OpaqueRef(), inName))
-    
+
     @classmethod
     def OtherConfigReplace(cls, inHostHandle, inName, inValue):
         cls.OtherConfigRemove(inHostHandle, inName)
         Task.Sync(lambda x: x.xenapi.host.add_to_other_config(inHostHandle.OpaqueRef(), inName, inValue))
-    
+
     @classmethod
     def AsyncOperation(cls, inOperation, inHostHandle, *inParams):
         if inOperation == 'evacuate':
@@ -62,13 +62,13 @@ class HostUtils:
             task = Task.New(lambda x: x.xenapi.Async.pool.eject(inHostHandle.OpaqueRef()))
         else:
             raise Exception("Unknown Host operation "+str(inOperation))
-        
+
         return task
-        
+
     @classmethod
     def DoOperation(cls, inOperation, inHostHandle):
         task = cls.AsyncOperation(inOperation, inHostHandle)
-        
+
         if task is not None:
             while task.IsPending():
                 time.sleep(0.1)

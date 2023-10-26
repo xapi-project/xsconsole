@@ -28,7 +28,7 @@ from XSConsoleLang import *
 from XSConsoleMenus import *
 
 class RootDialogue(Dialogue):
-    
+
     def __init__(self, inLayout, inParent):
         Dialogue.__init__(self, inLayout, inParent)
         menuPane = self.NewPane(DialoguePane(self.parent, PaneSizerFixed(1, 2, 39, 21)), 'menu')
@@ -50,20 +50,20 @@ class RootDialogue(Dialogue):
         menuPane.AddTitleField(currentMenu.Title())
 
         menuPane.AddMenuField(currentMenu, 16) # Allow extra height for this menu
-        
+
         statusPane = self.Pane('status')
 
         try:
             statusPane.ResetFields()
             statusPane.ResetPosition()
-            
+
             statusUpdateHandler = currentChoiceDef.StatusUpdateHandler()
             if statusUpdateHandler is not None:
                 if currentChoiceDef.handle is not None:
                     statusUpdateHandler(statusPane, currentChoiceDef.handle)
                 else:
                     statusUpdateHandler(statusPane)
-                    
+
             else:
                 raise Exception(Lang("Missing status handler"))
 
@@ -72,7 +72,7 @@ class RootDialogue(Dialogue):
             statusPane.ResetPosition()
             statusPane.AddTitleField(Lang("Information not available"))
             statusPane.AddWrappedTextField(Lang(e))
-        
+
         keyHash = { Lang("<Up/Down>") : Lang("Select") }
         if self.menu.CurrentMenu().Parent() != None:
             keyHash[ Lang("<Esc/Left>") ] = Lang("Back")
@@ -81,14 +81,14 @@ class RootDialogue(Dialogue):
                 keyHash[ Lang("<Enter>") ] = Lang("OK")
 
         menuPane.AddKeyHelpField( keyHash )
-        
+
         if statusPane.NumStaticFields() == 0: # No key help yet
             if statusPane.NeedsScroll():
                 statusPane.AddKeyHelpField( {
                     Lang("<Page Up/Down>") : Lang("Scroll"),
                     Lang("<F5>") : Lang("Refresh"),
                 })
-    
+
     def HandleKey(self, inKey):
         currentMenu = self.menu.CurrentMenu()
 
@@ -97,16 +97,16 @@ class RootDialogue(Dialogue):
         if not handled and inKey == 'KEY_PPAGE':
             self.Pane('status').ScrollPageUp()
             handled = True
-            
+
         if not handled and inKey == 'KEY_NPAGE':
             self.Pane('status').ScrollPageDown()
             handled = True
-            
+
         if handled:
             self.UpdateFields()
             self.Pane('menu').Refresh()
             self.Pane('status').Refresh()
-            
+
         return handled
 
     def ChangeMenu(self, inName):
@@ -114,7 +114,7 @@ class RootDialogue(Dialogue):
         self.menuName = inName
         self.menu.ChangeMenu(inName)
         self.menu.CurrentMenu().HandleEnter()
-    
+
     def Reset(self):
         self.menu.Reset()
         self.UpdateFields()

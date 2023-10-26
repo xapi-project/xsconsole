@@ -24,7 +24,7 @@ class State:
     savePath = '/etc/xsconsole'
     saveLeafname = 'state.txt'
     thisVersion = 9
-    
+
     #***
     #*** Increment thisVersion (above) when adding attributes to this object
     #***
@@ -38,11 +38,11 @@ class State:
         self.verboseBoot = False
         self.keymap = None
         self.sleepSeconds = 30*60
-        
+
     @classmethod
     def SaveFilename(self):
         return self.savePath+'/'+self.saveLeafname
-        
+
     @classmethod
     def Inst(cls):
         # Load the saved state if we can, otherwise create a default object
@@ -61,54 +61,54 @@ class State:
                         XSLog('State file version mismatch - discarding')
             except Exception, e:
                 cls.instance = None
-            
+
             if cls.instance is None:
                 cls.instance = State()
                 XSLog('No saved state available - using default state')
-            
+
             # Fill in pseudo-state
             cls.instance.isFirstBoot = isFirstBoot
             cls.instance.MakeSane()
-            
+
         return cls.instance
-        
+
     def AuthTimeoutSeconds(self):
         return self.authTimeoutSeconds
-        
+
     def PasswordChangeRequired(self):
         return self.passwordChangeRequired
-        
+
     def PasswordChangeRequiredSet(self, inValue):
         self.passwordChangeRequired = inValue
         self.modified = True
-    
+
     def RebootMessage(self):
         return self.rebootMessage
-        
+
     def RebootMessageSet(self, inValue):
         self.rebootMessage = inValue
         self.modified = True
-    
+
     def VerboseBoot(self):
         return self.verboseBoot
-        
+
     def VerboseBootSet(self, inValue):
         self.verboseBoot = inValue
         self.modified = True
-    
+
     def Keymap(self):
         return self.keymap
-        
+
     def KeymapSet(self, inValue):
         self.keymap = inValue
         self.modified = True
 
     def IsFirstBoot(self):
         return self.isFirstBoot
-    
+
     def WeStoppedXAPI(self):
         return self.weStoppedXAPI
-        
+
     def WeStoppedXAPISet(self, inValue):
         self.weStoppedXAPI = inValue
         self.modified = True
@@ -119,25 +119,25 @@ class State:
         if self.authTimeoutSeconds != inSeconds:
             self.authTimeoutSeconds = inSeconds
             self.modified = True
-        
+
     def AuthTimeoutMinutes(self):
         return int((self.AuthTimeoutSeconds() + 30) / 60)
-    
+
     def SleepSeconds(self):
         return self.sleepSeconds
-    
+
     def MakeSane(self):
         self.authTimeoutSeconds = int(self.authTimeoutSeconds)
         if self.authTimeoutSeconds < 60:
             AuthTimeoutSecondsSet(60)
-    
+
     def SaveIfRequired(self):
         if self.modified:
             self.MakeSane()
             try:
                 if not os.path.isdir(self.savePath):
                     os.mkdir(self.savePath, 0700)
-                
+
                 saveFile = open(self.SaveFilename(), "w")
                 pickler = pickle.Pickler(saveFile)
                 self.modified = False # Set unmodified before saving

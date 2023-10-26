@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class ChangeTimeoutDialogue(InputDialogue):
@@ -31,15 +31,15 @@ class ChangeTimeoutDialogue(InputDialogue):
             timeoutMinutes = int(inValues['timeout'])
         except Exception, e:
             raise Exception("Invalid value - please supply a numeric value")
-        
+
         Auth.Inst().TimeoutSecondsSet(timeoutMinutes * 60)
         return Lang('Timeout Change Successful'), Lang("Timeout changed to ")+inValues['timeout']+Language.Quantity(" minute",  timeoutMinutes)+'.'
-        
+
 class XSFeatureChangeTimeout:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Change Auto-Logout Time"))
-    
+
         timeout = State.Inst().AuthTimeoutMinutes()
         message = Lang("The current auto-logout time is ") + str(timeout) + " "
 
@@ -47,15 +47,15 @@ class XSFeatureChangeTimeout:
         message += Lang("Users will be automatically logged out after there has been no keyboard "
             "activity for this time.  This timeout applies to this console and to "
             "local shells.")
-    
+
         inPane.AddWrappedTextField(message)
-        
+
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Change Timeout") })
 
     @classmethod
     def ActivateHandler(cls):
         DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(ChangeTimeoutDialogue()))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

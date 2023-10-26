@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class EULADialogue(Dialogue):
@@ -34,23 +34,23 @@ class EULADialogue(Dialogue):
                 file.close()
         except Exception, e:
             contents = str(e)
-        
+
         self.maxLine = 0
         for line in contents.split('\n'):
             self.maxLine = max(self.maxLine, len(line))
         self.padding = ' ' * max(0, (xSize - 4 - self.maxLine) / 2)
-        
+
         self.text = Lang("End User License Agreement")
         self.info = contents
         paneSizer = PaneSizerFixed(0, 1, xSize, ySize - 1)
         pane = self.NewPane(DialoguePane(self.parent, paneSizer))
         pane.AddBox()
         self.UpdateFields()
-        
+
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddWrappedCentredBoldTextField(self.text)
 
         if self.info is not None:
@@ -67,7 +67,7 @@ class EULADialogue(Dialogue):
             })
 
         pane.AddKeyHelpField( helpKeys )
-        
+
     def HandleKey(self, inKey):
         handled = True
         if inKey == 'KEY_ESCAPE':
@@ -95,7 +95,7 @@ class XSFeatureEULA:
         if not Auth.Inst().IsPasswordSet():
             for eula in Config.Inst().FirstBootEULAs():
                 Layout.Inst().PushDialogue(EULADialogue(eula, *inParams))
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

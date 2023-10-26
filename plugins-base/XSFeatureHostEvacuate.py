@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class HostEvacuateDialogue(Dialogue):
@@ -31,7 +31,7 @@ class HostEvacuateDialogue(Dialogue):
         self.migrateMenu.AddChoice(name = Lang('Do Not Alter Virtual Machines'),
             onAction = self.HandleMigrateChoice,
             handle = 'NO')
-        
+
         if self.hostWasEnabled:
             if db.local_pool.master.uuid() == db.local_host.uuid():
                 # We are the pool master
@@ -67,7 +67,7 @@ class HostEvacuateDialogue(Dialogue):
                 self.hostMenu.AddChoice(name = host.name_label(),
                     onAction = self.HandleHostChoice,
                     handle = host)
-                    
+
         if self.hostMenu.NumChoices() == 0:
             self.hostMenu.AddChoice(name = Lang('<No hosts available>'))
 
@@ -86,14 +86,14 @@ class HostEvacuateDialogue(Dialogue):
         pane.AddWrappedBoldTextField(Lang("This host is the Pool Master.  To enable this host to enter Maintenance Mode, please nominate a new Master for this Pool."))
         pane.NewLine()
         pane.AddMenuField(self.hostMenu)
-        
+
         pane.AddKeyHelpField( { Lang("<Up/Down>") : Lang("Select"), Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
-    
+
+
     def UpdateFieldsMIGRATEBACK(self):
         pane = self.Pane()
         pane.ResetFields()
-        
+
         pane.AddTitleField(Lang('The following were running on this host when it entered Maintenance Mode.  Would you like reinstate them on this host?'))
         for i, vmRef in enumerate(self.evacuatedVMs):
             if i > 4:
@@ -101,11 +101,11 @@ class HostEvacuateDialogue(Dialogue):
                 break
             pane.AddWrappedTextField(HotAccessor().vm[vmRef].name_label(Lang('<Unknown>')))
 
-        
+
         pane.NewLine()
         pane.AddMenuField(self.migrateMenu)
         pane.AddKeyHelpField( { Lang("<Up/Down>") : Lang("Select"), Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFieldsCONFIRM(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -117,7 +117,7 @@ class HostEvacuateDialogue(Dialogue):
             pane.AddWrappedTextField(Lang('1.  Prevent new VMs starting on or migrating to this host'))
             pane.AddWrappedTextField(Lang('2.  Migrate ') + str(numVMs) + Language.Quantity(' Virtual Machine', numVMs) +
                 Lang(' to other hosts'))
-            
+
             if self.newMaster is not None:
                 pane.AddWrappedTextField(Lang('3.  Designate host ') + self.newMaster.name_label(Lang('<Unknown>')) +
                     Lang(' as the new Pool Master'))
@@ -125,7 +125,7 @@ class HostEvacuateDialogue(Dialogue):
             pane.AddWrappedBoldTextField(Lang('Press <F8> to exit Maintenance Mode and return this host to normal operation'))
 
         pane.AddKeyHelpField( { Lang("<F8>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
-    
+
     def UpdateFields(self):
         self.Pane().ResetPosition()
         getattr(self, 'UpdateFields'+self.state)() # Despatch method named 'UpdateFields'+self.state
@@ -134,10 +134,10 @@ class HostEvacuateDialogue(Dialogue):
         self.state = inState
         self.BuildPane()
         self.UpdateFields()
-    
+
     def HandleKeyCHOOSEMASTER(self, inKey):
         return self.hostMenu.HandleKey(inKey)
-    
+
     def HandleKeyMIGRATEBACK(self, inKey):
         return self.migrateMenu.HandleKey(inKey)
 
@@ -149,7 +149,7 @@ class HostEvacuateDialogue(Dialogue):
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
-        
+
         if not handled and inKey == 'KEY_ESCAPE':
             Layout.Inst().PopDialogue()
             handled = True
@@ -179,7 +179,7 @@ class HostEvacuateDialogue(Dialogue):
                 if self.newMaster is not None:
                     Layout.Inst().TransientBanner(Lang('Designating New Pool Master...'))
                     hostUtils.DoOperation('designate_new_master', self.newMaster.HotOpaqueRef())
-                    
+
                     message = Lang('Please allow several seconds for the pool to propagate information about the new Master')
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Host Successfully Entered Maintenance Mode"), message))
             except Exception, e:
@@ -193,18 +193,18 @@ class HostEvacuateDialogue(Dialogue):
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Host Successfully Exited Maintenance Mode")))
             except Exception, e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Exit Maintenance Mode Failed"), Lang(e)))
-            
+
 class XSFeatureHostEvacuate:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         db = HotAccessor()
         inPane.AddTitleField("Maintenance Mode")
         if db.local_host.enabled():
-            
+
             inPane.AddWrappedTextField(Lang('Entering Maintenance Mode will migrate all Virtual Machines running on this host '
                 'to other hosts in the Resource Pool.  It is used before shutting down a host for maintenance.'))
             inPane.NewLine()
-            
+
             if db.host(None) is None:
                 pass # Info not available, so print nothing
             elif len(db.host([])) > 1 and db.local_pool.master.uuid() == db.local_host.uuid():
@@ -217,7 +217,7 @@ class XSFeatureHostEvacuate:
         else:
             inPane.AddWrappedTextField(Lang('This host is already in Maintenance Mode.  Press <Enter> to '
                 'exit Maintenance Mode and return to normal operation.'))
-    
+
     @classmethod
     def ActivateHandler(cls):
         db=HotAccessor()
@@ -226,7 +226,7 @@ class XSFeatureHostEvacuate:
             Layout.Inst().PushDialogue(InfoDialogue(Lang('This host has running Virtual Machines.  Please suspend or shutdown the Virtual Machines before entering Maintenance Mode.')))
         else:
             DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(HostEvacuateDialogue()))
-    
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

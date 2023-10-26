@@ -15,14 +15,14 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class XSFeatureQuit:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Quit"))
-    
+
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to quit this console."))
 
@@ -30,7 +30,7 @@ class XSFeatureQuit:
     def ActivateHandler(cls):
         Layout.Inst().ExitBannerSet(Lang("Quitting..."))
         Layout.Inst().ExitCommandSet('') # Just exit
-        
+
     def Register(self):
         # When started from inittab, mingetty adds -f root to the command, so use this to suppress the Quit choice
         if not '-f' in sys.argv:

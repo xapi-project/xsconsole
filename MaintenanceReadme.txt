@@ -83,7 +83,7 @@ Very rarely this gives a pane height one line to short, probably because the ref
 
 6.  UpdateFields generally recreates fields from scratch, so you can't just call it whenever you like because, e.g. values in text entry fields will be lost and cursors reset.  It's fine to update the root dialogue though.
 
-7.  It's tricky to get the ncurses display to refresh without flicker.  Using the curses erase or clear methods on windows can lead to flickering redraws.  Currently only scrolling in the right hand pane of the root dialogue has this problem.  Since there's not much use of erase or clear the app does pretty minimal redraws, and things like spurious kernel message that scroll the screen can leave it in a mess for some time. 
+7.  It's tricky to get the ncurses display to refresh without flicker.  Using the curses erase or clear methods on windows can lead to flickering redraws.  Currently only scrolling in the right hand pane of the root dialogue has this problem.  Since there's not much use of erase or clear the app does pretty minimal redraws, and things like spurious kernel message that scroll the screen can leave it in a mess for some time.
 
 8.  MountVDI's Create VDB/Plug VBD/Mount VBD/Use VBD/Unmount VBD/Unplug VBD/Destroy VBD sequence failed when trying to mount empty CD drives.  Now only MountVDIDirectly is used.
 

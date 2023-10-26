@@ -15,7 +15,7 @@
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
-    
+
 from XSConsoleStandard import *
 
 class ChangePasswordDialogue(Dialogue):
@@ -31,7 +31,7 @@ class ChangePasswordDialogue(Dialogue):
         self.UpdateFields()
         if not self.isPasswordSet:
             pane.InputIndexSet(None) # Reactivate cursor if this dialogue is initially covered and revealed later
-        
+
     def UpdateFields(self):
         pane = self.Pane()
         pane.ResetFields()
@@ -46,10 +46,10 @@ class ChangePasswordDialogue(Dialogue):
             Lang("<Esc>") : Lang("Cancel"),
             Lang("<Tab>") : Lang("Next")
         })
-        
+
         if pane.InputIndex() is None:
             pane.InputIndexSet(0) # Activate first field for input
-        
+
     def HandleKey(self, inKey):
         handled = True
         pane = self.Pane()
@@ -68,14 +68,14 @@ class ChangePasswordDialogue(Dialogue):
                         # Log in automatically if we're not
                         Auth.Inst().ProcessLogin('root', inputValues.get('oldpassword', ''))
                         successMessage += Lang(".  User 'root' logged in.")
-                        
+
                     if inputValues['newpassword1'] != inputValues['newpassword2']:
                         raise Exception(Lang('New passwords do not match'))
                     if len(inputValues['newpassword1']) < 6:
                         raise Exception(Lang('New password is too short (minimum length is 6 characters)'))
 
                     Auth.Inst().ChangePassword(inputValues.get('oldpassword', ''), inputValues['newpassword1'])
-                    
+
                 except Exception, e:
                     if self.isPasswordSet:
                         # Only remove the dialogue if this isn't the initial password set (which needs to succeed)
@@ -83,15 +83,15 @@ class ChangePasswordDialogue(Dialogue):
                     else:
                         # Disable the input field so that it gets reactivated by UpdateFields  when the info box is dismissed
                         pane.InputIndexSet(None)
-                        
+
                     Layout.Inst().PushDialogue(InfoDialogue(
                         Lang('Password Change Failed: ')+Lang(e)))
-                    
+
                 else:
                     Layout.Inst().PopDialogue()
                     Layout.Inst().PushDialogue(InfoDialogue( successMessage))
                     State.Inst().PasswordChangeRequiredSet(False)
-                    
+
                 Data.Inst().Update()
 
         elif inKey == 'KEY_TAB':
@@ -108,13 +108,13 @@ class XSFeatureChangePassword:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         inPane.AddTitleField(Lang("Change Password"))
-    
+
         inPane.AddWrappedTextField(Lang("Press <Enter> to change the password for user 'root'.  "
         "This will also change the password for local and remote login shells.  "
         "If this host is in a Pool, it will change the password for the Pool."))
-        
+
         inPane.AddKeyHelpField( { Lang("<Enter>") : Lang("Change Password") })
-        
+
     @classmethod
     def ActivateHandler(cls, *inParams):
             DialogueUtils.AuthenticatedOrPasswordUnsetOnly(lambda: Layout.Inst().PushDialogue(ChangePasswordDialogue(*inParams)))
@@ -123,7 +123,7 @@ class XSFeatureChangePassword:
     def ReadyHandler(cls, *inParams):
         if State.Inst().PasswordChangeRequired() or not Auth.Inst().IsPasswordSet():
             cls.ActivateHandler(*inParams)
-        
+
     def Register(self):
         Importer.RegisterNamedPlugIn(
             self,

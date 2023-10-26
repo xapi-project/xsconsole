@@ -19,7 +19,7 @@ from XSConsoleLang import *
 
 def XSLog(*inParams):
     XSLogger.Inst().Log(syslog.LOG_INFO, *inParams)
-    
+
 def XSLogFatal(*inParams):
     XSLogger.Inst().Log(syslog.LOG_CRIT, *inParams)
 
@@ -45,7 +45,7 @@ class XSLogger:
     def Log(self, inPriority, *inParams):
         for param in inParams:
             syslog.syslog(inPriority, str(param))
-            
+
     def LogFailure(self, *inParams):
         logString = "\n".join( [ str(param) for param in inParams ] )
         message = Lang(Exception(logString)) # Translation using Lang() causes the exception tp be logged
