@@ -92,7 +92,7 @@ class DRRestoreSelection(Dialogue):
               dry_flag=""
             Layout.Inst().TransientBanner(Lang("Restoring VM Metadata.  This may take a few minutes..."))
             command = "%s/xe-restore-metadata -y %s -u %s -x %s -d %s -m %s" % (Config.Inst().HelperPath(), dry_flag, self.sr_uuid, self.vdi_uuid, self.chosen_date, chosen_mode)
-            status, output = commands.getstatusoutput(command)
+            status, output = subprocess.getstatusoutput(command)
             status = os.WEXITSTATUS(status)
             Layout.Inst().PopDialogue()
             if status == 0:

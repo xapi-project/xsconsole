@@ -16,6 +16,8 @@
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
+import subprocess
+
 from XSConsoleStandard import *
 
 class UploadBugReportDialogue(InputDialogue):
@@ -46,7 +48,7 @@ class UploadBugReportDialogue(InputDialogue):
         if proxy != '':
             command += " http_proxy='"+proxy+"'"
 
-        status, output = commands.getstatusoutput(command)
+        status, output = subprocess.getstatusoutput(command)
 
         if status != 0:
             XSLogError('Upload bugreport failed', output) # Error output can be verbose, so syslog only

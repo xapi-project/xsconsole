@@ -80,7 +80,7 @@ class FileUtils:
     @classmethod
     def SRDeviceList(self):
         retVal= []
-        status, output = commands.getstatusoutput("/opt/xensource/libexec/list_local_disks")
+        status, output = subprocess.getstatusoutput("/opt/xensource/libexec/list_local_disks")
         if status == 0:
             regExp = re.compile(r"\s*\(\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*,\s*'([^']*)'\s*\)")
             for line in output.split("\n"):
@@ -168,18 +168,18 @@ class FileUtils:
                 if e.errno != errno.EINTR: # Loop if EINTR
                     raise
 
-        status, output = commands.getstatusoutput('/bin/sync')
+        status, output = subprocess.getstatusoutput('/bin/sync')
 
         if status != 0:
             raise Exception(output)
 
         # Format the new partition with VFAT
-        status, output = commands.getstatusoutput("/sbin/mkfs.vfat -n 'XenServer Backup' -F 32 '" +partitionName + "' 2>&1")
+        status, output = subprocess.getstatusoutput("/sbin/mkfs.vfat -n 'XenServer Backup' -F 32 '" +partitionName + "' 2>&1")
 
         if status != 0:
             raise Exception(output)
 
-        status, output = commands.getstatusoutput('/bin/sync')
+        status, output = subprocess.getstatusoutput('/bin/sync')
 
         if status != 0:
             raise Exception(output)
@@ -237,7 +237,7 @@ class MountVDI:
             FileUtils.AssertSafePath(self.mountDev)
             self.mountPoint = tempfile.mkdtemp(".xsconsole")
 
-            status, output = commands.getstatusoutput("/bin/mount -t auto -o " + self.mode + ' ' +self.mountDev+" "+self.mountPoint + " 2>&1")
+            status, output = subprocess.getstatusoutput("/bin/mount -t auto -o " + self.mode + ' ' +self.mountDev+" "+self.mountPoint + " 2>&1")
             if status != 0:
                 try:
                     self.Unmount()
@@ -276,7 +276,7 @@ class MountVDI:
             raise Exception(inOutput)
 
         realDevice = FileUtils.DeviceFromVDI(self.vdi)
-        status, output = commands.getstatusoutput("/sbin/fdisk -l '" +realDevice+"'")
+        status, output = subprocess.getstatusoutput("/sbin/fdisk -l '" +realDevice+"'")
         if status != 0:
             raise Exception(output)
 
@@ -313,7 +313,7 @@ class MountVDI:
     def Unmount(self):
         status = 0
         if self.mountedVBD:
-            status, output = commands.getstatusoutput("/bin/umount '"+self.mountPoint +  "' 2>&1")
+            status, output = subprocess.getstatusoutput("/bin/umount '"+self.mountPoint +  "' 2>&1")
             os.rmdir(self.mountPoint)
             self.mountedVBD = False
         if self.pluggedVBD:
@@ -360,7 +360,7 @@ class MountVDIDirectly:
             FileUtils.AssertSafePath(self.mountDev)
             self.mountPoint = tempfile.mkdtemp(".xsconsole")
 
-            status, output = commands.getstatusoutput("/bin/mount -t auto -o " + self.mode + ' ' +self.mountDev+" "+self.mountPoint + " 2>&1")
+            status, output = subprocess.getstatusoutput("/bin/mount -t auto -o " + self.mode + ' ' +self.mountDev+" "+self.mountPoint + " 2>&1")
             if status != 0:
                 try:
                     self.Unmount()
@@ -400,7 +400,7 @@ class MountVDIDirectly:
             raise Exception(inOutput)
 
         realDevice = FileUtils.DeviceFromVDI(self.vdi)
-        status, output = commands.getstatusoutput("/sbin/fdisk -l '" +realDevice+"'")
+        status, output = subprocess.getstatusoutput("/sbin/fdisk -l '" +realDevice+"'")
         if status != 0:
             raise Exception(output)
 
@@ -437,7 +437,7 @@ class MountVDIDirectly:
     def Unmount(self):
         status = 0
         if self.mountedVDI:
-            status, output = commands.getstatusoutput("/bin/umount '"+self.mountPoint +  "' 2>&1")
+            status, output = subprocess.getstatusoutput("/bin/umount '"+self.mountPoint +  "' 2>&1")
             os.rmdir(self.mountPoint)
             self.mountedVDI = False
             XSLog('Unmounted '+self.mountPoint)
