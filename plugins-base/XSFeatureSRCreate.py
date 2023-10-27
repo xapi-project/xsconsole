@@ -16,6 +16,8 @@
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
+import subprocess
+
 from XSConsoleStandard import *
 import xml.dom.minidom
 
@@ -1286,7 +1288,7 @@ class SRNewDialogue(Dialogue):
         'user')
 
     def CommitNFS_ISO_ATTACH(self):
-        self.srParams['uuid'] = commands.getoutput('/usr/bin/uuidgen')
+        self.srParams['uuid'] = subprocess.getoutput('/usr/bin/uuidgen')
         self.CommitAttach(self.srTypes['NFS_ISO'], { # device_config
             'location':self.srParams['server']+':'+self.srParams['serverpath'],
             'options':self.srParams['options']
@@ -1298,7 +1300,7 @@ class SRNewDialogue(Dialogue):
         )
 
     def CommitCIFS_ISO_ATTACH(self):
-        self.srParams['uuid'] = commands.getoutput('/usr/bin/uuidgen')
+        self.srParams['uuid'] = subprocess.getoutput('/usr/bin/uuidgen')
         deviceConfig = {
             'location':'//'+self.srParams['server']+'/'+self.srParams['serverpath'],
             'type':'cifs',

@@ -16,6 +16,8 @@
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
+import subprocess
+
 from XSConsoleStandard import *
 
 class OEMRestoreDialogue(FileDialogue):
@@ -58,7 +60,7 @@ class OEMRestoreDialogue(FileDialogue):
                 filename = self.vdiMount.MountedPath(self.filename)
                 FileUtils.AssertSafePath(filename)
                 command = "/opt/xensource/bin/xe host-restore file-name='"+filename+"' host="+hostRef
-                status, output = commands.getstatusoutput(command)
+                status, output = subprocess.getstatusoutput(command)
 
                 if status != 0:
                     raise Exception(output)

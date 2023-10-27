@@ -15,7 +15,7 @@
 
 import XenAPI
 
-import commands, re, shutil, sys, socket
+import re, shutil, sys, socket
 from pprint import pprint
 
 from XSConsoleAuth import *

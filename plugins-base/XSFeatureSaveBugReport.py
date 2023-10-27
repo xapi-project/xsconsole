@@ -16,6 +16,8 @@
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
+import subprocess
+
 from XSConsoleStandard import *
 
 class SaveBugReportDialogue(FileDialogue):
@@ -50,7 +52,7 @@ class SaveBugReportDialogue(FileDialogue):
                 file = open(filename, "w")
                 # xen-bugtool requires a value for $USER
                 command = "( export USER=root && /usr/sbin/xen-bugtool --yestoall --silent --output=tar --outfd="+str(file.fileno()) + ' )'
-                status, output = commands.getstatusoutput(command)
+                status, output = subprocess.getstatusoutput(command)
                 file.close()
 
                 if status != 0:
