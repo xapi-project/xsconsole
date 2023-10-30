@@ -42,7 +42,7 @@ class HotMetrics:
         retVal = {}
         hostPrefix = r'AVERAGE:host:'+self.thisHostUUID
         cpuRE = re.compile(hostPrefix+r':cpu[0-9]+$')
-        cpuValues = [ float(v) for k, v in self.data.iteritems() if cpuRE.match(k) ]
+        cpuValues = [ float(v) for k, v in self.data.items() if cpuRE.match(k) ]
         retVal['numcpus'] = len(cpuValues)
         if len(cpuValues) == 0:
             retVal['cpuusage'] = None
@@ -67,7 +67,7 @@ class HotMetrics:
         vmPrefix = r'AVERAGE:vm:' + inUUID
 
         cpuRE = re.compile(vmPrefix+r':cpu[0-9]+$')
-        cpuValues = [ float(v) for k, v in self.data.iteritems() if cpuRE.match(k) ]
+        cpuValues = [ float(v) for k, v in self.data.items() if cpuRE.match(k) ]
         retVal['numcpus'] = len(cpuValues)
         if len(cpuValues) == 0:
             retVal['cpuusage'] = None

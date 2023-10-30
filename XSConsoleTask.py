@@ -144,7 +144,7 @@ class Task:
     def GarbageCollect(self):
         # This may be expensive as it must fetch status from xapi for each incomplete task
         deleteKeys = []
-        for key, value in self.taskList.iteritems():
+        for key, value in self.taskList.items():
             # Forget tasks that have of duration of greater than one day
             value.Status()
             if value.Completed() or value.DurationSecs() > 86400:

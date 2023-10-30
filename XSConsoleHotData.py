@@ -236,7 +236,7 @@ class HotData:
             retVal = self.FetchVM(inOpaqueRef)
         else:
             retVal = {}
-            for key, value in self.vm().iteritems():
+            for key, value in self.vm().items():
                 if not value.get('is_a_template', False) and not value.get('is_control_domain', False):
                     retVal[key] = value
         return retVal
@@ -253,7 +253,7 @@ class HotData:
         else:
             cpus = self.Session().xenapi.host_cpu.get_all_records()
             retVal = {}
-            for key, cpu in cpus.iteritems():
+            for key, cpu in cpus.items():
                 cpu = LocalConverter(cpu)
                 retVal[HotOpaqueRef(key, 'host_cpu')] = cpu
         return retVal
@@ -265,7 +265,7 @@ class HotData:
         running = 0
         suspended = 0
 
-        for key, vm in self.guest_vm().iteritems():
+        for key, vm in self.guest_vm().items():
             powerState = vm.get('power_state', '').lower()
             if powerState.startswith('halted'):
                 halted += 1
@@ -327,7 +327,7 @@ class HotData:
         else:
             hosts = self.Session().xenapi.host.get_all_records()
             retVal = {}
-            for key, host in hosts.iteritems():
+            for key, host in hosts.items():
                 host = LocalConverter(host)
                 retVal[HotOpaqueRef(key, 'host')] = host
         return retVal
@@ -356,7 +356,7 @@ class HotData:
         else:
             pbds = self.Session().xenapi.PBD.get_all_records()
             retVal = {}
-            for key, pbd in pbds.iteritems():
+            for key, pbd in pbds.items():
                 pbd = LocalConverter(pbd)
                 retVal[HotOpaqueRef(key, 'pbd')] = pbd
         return retVal
@@ -376,7 +376,7 @@ class HotData:
         else:
             pools = self.Session().xenapi.pool.get_all_records()
             retVal = {}
-            for key, pool in pools.iteritems():
+            for key, pool in pools.items():
                 pool = LocalConverter(pool)
                 retVal[HotOpaqueRef(key, 'pool')] = pool
         return retVal
@@ -394,7 +394,7 @@ class HotData:
         else:
             srs = self.Session().xenapi.SR.get_all_records()
             retVal = {}
-            for key, sr in srs.iteritems():
+            for key, sr in srs.items():
                 sr = LocalConverter(sr)
                 retVal[HotOpaqueRef(key, 'sr')] = sr
         return retVal
@@ -439,7 +439,7 @@ class HotData:
         else:
             vms = self.Session().xenapi.VM.get_all_records()
             retVal = {}
-            for key, vm in vms.iteritems():
+            for key, vm in vms.items():
                 vm = LocalConverter(vm)
                 retVal[HotOpaqueRef(key, 'vm')] = vm
         return retVal
@@ -449,7 +449,7 @@ class HotData:
         if len(inArgs) != 1:
             raise Exception('ConvertOpaqueRef requires a dictionary object as the first argument')
         ioObj = inArgs[0]
-        for keyword, value in inKeywords.iteritems():
+        for keyword, value in inKeywords.items():
             obj = ioObj.get(keyword, None)
             if obj is not None:
                 if isinstance(obj, str):
@@ -458,12 +458,12 @@ class HotData:
                     ioObj[keyword] = [ HotOpaqueRef(x, value) for x in obj ]
                 elif isinstance(obj, types.DictType):
                     result = {}
-                    for key, item in obj.iteritems():
+                    for key, item in obj.items():
                         result[ HotOpaqueRef(key, value) ] = item
                     ioObj[keyword] = result
 
         if Auth.Inst().IsTestMode(): # Tell the caller what they've missed, when in test mode
-            for key,value in ioObj.iteritems():
+            for key,value in ioObj.items():
                 if isinstance(value, str) and value.startswith('OpaqueRef'):
                     print('Missed OpaqueRef string in HotData item: '+key)
                 elif isinstance(value, types.ListType):
