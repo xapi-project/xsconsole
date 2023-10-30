@@ -178,10 +178,10 @@ class Importer:
 
     @classmethod
     def Dump(cls):
-        print "Contents of PlugIn registry:"
+        print("Contents of PlugIn registry:")
         pprint(cls.plugIns)
-        print "\nRegistered menu entries:"
+        print("\nRegistered menu entries:")
         pprint(cls.menuEntries)
-        print "\nRegistered resources:"
+        print("\nRegistered resources:")
         pprint(cls.resources)
 

@@ -23,10 +23,10 @@ Guidelines for using HotAccessor are:
 (v) Iteration over accessors is generally better than iteration over results, e.g. These print the same thing:
 
 for sr in HotAccessor().sr: # Iterate over HotAccessors
-  print sr.name_label()
+  print(sr.name_label())
 
 for value in HotAccessor().sr().values(): # Iterate over the returned dict of all SRs
-  print value['name_label']
+  print(value['name_label'])
 
 (vi) List comprehensions also work
 
