@@ -147,7 +147,7 @@ class Importer:
     def BuildRootMenu(cls, inParent):
         retVal = RootMenu(inParent)
 
-        for name, entries in cls.menuEntries.iteritems():
+        for name, entries in cls.menuEntries.items():
             for entry in entries:
                 # Create the menu that this item is in
                 retVal.CreateMenuIfNotPresent(name)

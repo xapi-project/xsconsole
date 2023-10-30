@@ -276,7 +276,7 @@ class FieldGroup:
 
     def GetFieldValues(self):
         retVal = {}
-        for key, field in self.inputTags.iteritems():
+        for key, field in self.inputTags.items():
             retVal[key] = field.Content()
 
         return retVal

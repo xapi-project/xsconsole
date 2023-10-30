@@ -301,7 +301,7 @@ class Data:
                     return retPool
 
                 self.data['pools'] = {}
-                for id, pool in pools.iteritems():
+                for id, pool in pools.items():
                    self.data['pools'][id] = convertPool(id, pool)
 
             except socket.timeout:
@@ -317,7 +317,7 @@ class Data:
                     pbdRefs.append(pbd['opaqueref'])
 
                 srMap= self.session.xenapi.SR.get_all_records()
-                for opaqueRef, values in srMap.iteritems():
+                for opaqueRef, values in srMap.items():
                     values['opaqueref'] = opaqueRef
                     values['islocal'] = False
                     for pbdRef in values.get('PBDs', []):
@@ -827,7 +827,7 @@ class Data:
     def KeymapToName(self, inKeymap):
         # Derive a name to present to the user
         mapName = FirstValue(inKeymap, Lang('<Default>'))
-        for key, value in self.keyboard.namestomaps({}).iteritems():
+        for key, value in self.keyboard.namestomaps({}).items():
             if value == inKeymap:
                 mapName = key
 
