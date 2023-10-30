@@ -136,7 +136,7 @@ class State:
             self.MakeSane()
             try:
                 if not os.path.isdir(self.savePath):
-                    os.mkdir(self.savePath, 0700)
+                    os.mkdir(self.savePath, 0o700)
 
                 saveFile = open(self.SaveFilename(), "w")
                 pickler = pickle.Pickler(saveFile)

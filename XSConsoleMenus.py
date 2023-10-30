@@ -187,7 +187,7 @@ class RootMenu:
         self.CurrentMenu().HandleEnter()
 
     def AddChoice(self, inMenuName, inChoiceDef, inPriority = None):
-        if not self.menus.has_key(inMenuName):
+        if inMenuName not in self.menus:
             raise Exception(Lang("Unknown menu '")+inMenuName+"'")
 
         self.menus[inMenuName].AddChoiceDef(inChoiceDef, inPriority)

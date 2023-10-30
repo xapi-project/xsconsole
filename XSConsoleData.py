@@ -623,7 +623,7 @@ class Data:
     def MultipleMatch(self, inLine, inRegExp, inKey):
         match = re.match(inRegExp, inLine)
         if match:
-            if not self.data['dmi'].has_key(inKey):
+            if inKey not in self.data['dmi']:
                 self.data['dmi'][inKey] = []
             self.data['dmi'][inKey].append(match.group(1))
 
