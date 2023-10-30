@@ -51,7 +51,7 @@ class ShellPipe:
         self.called = False
 
     def _NewPipe(self, *inParams):
-        if len(inParams) == 1 and isinstance(inParams, (types.ListType, types.TupleType)):
+        if len(inParams) == 1 and isinstance(inParams, (list, tuple)):
                 params = inParams[0]
         else:
             params = inParams
@@ -84,7 +84,7 @@ class ShellPipe:
         self.called = True
         while True:
             try:
-                if isinstance(inInput, (types.ListType, types.TupleType)):
+                if isinstance(inInput, (list, tuple)):
                     stdout, stderr = self.pipe.communicate("\n".join(inInput))
                 else:
                     stdout, stderr = self.pipe.communicate(inInput)
