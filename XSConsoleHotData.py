@@ -71,7 +71,7 @@ class HotAccessor:
 
     # This method will hide fields called 'next' in the xapi database.  If any appear, __iter__ will need to
     # return a new object type and this method will need to be moved into that
-    def next(self):
+    def __next__(self):
         if len(self.iterKeys) <= 0:
             raise StopIteration
         retVal = HotAccessor(self.name[:], self.refs[:]) # [:] copies the array
