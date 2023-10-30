@@ -61,9 +61,9 @@ class HotAccessor:
 
     def __iter__(self):
         iterData = HotData.Inst().GetData(self.name, {}, self.refs)
-        if isinstance(iterData, types.DictType):
+        if isinstance(iterData, dict):
             self.iterKeys = iterData.keys()
-        elif isinstance(iterData, (types.ListType, types.TupleType)):
+        elif isinstance(iterData, (list, tuple)):
             self.iterKeys = iterData[:] # [:] copy is necessary
         else:
             raise Exception(Lang("Cannot iterate over type '")+str(type(iterData))+"'")
@@ -80,7 +80,7 @@ class HotAccessor:
 
     def __getitem__(self, inParam):
         # These are square brackets selecting a particular item from a dict using its OpaqueRef
-        if not isinstance(inParam, (types.IntType, HotOpaqueRef)):
+        if not isinstance(inParam, (int, HotOpaqueRef)):
             raise Exception('Use of HotAccessor[param] requires param of type int or HotOpaqueRef, but got '+str(type(inParam)))
         retVal = HotAccessor(self.name[:], self.refs[:])
         retVal.refs[-1] = inParam
@@ -134,7 +134,7 @@ class HotData:
         fetcher = self.fetchers[inName]
         timeNow = time.time()
         # If inRef is an array index, the result can't be cached
-        if not isinstance(inRef, types.IntType) and cacheEntry is not None and timeNow - cacheEntry.timestamp < fetcher.lifetimeSecs:
+        if not isinstance(inRef, int) and cacheEntry is not None and timeNow - cacheEntry.timestamp < fetcher.lifetimeSecs:
             retVal = cacheEntry.value
         else:
             try:
@@ -172,7 +172,7 @@ class HotData:
                         # We have a fetcher for this element, so use it
 
                         # Handle the case where itemRef is a dictionary containing the key/value pair ( current name : HotOpaqueRef )
-                        if isinstance(itemRef, types.DictType) and name in itemRef and isinstance(itemRef[name], HotOpaqueRef):
+                        if isinstance(itemRef, dict) and name in itemRef and isinstance(itemRef[name], HotOpaqueRef):
                             # This is a subitem with an OpaqueRef supplied by xapi, so fetch the obect it's referring to
                             itemRef = self.Fetch(name, itemRef[name])
                         else:
@@ -189,8 +189,8 @@ class HotData:
                         itemRef = itemRef[name] # Allow to throw if element not present
 
                     # Handle integer references as list indices
-                    if isinstance(currentRef, types.IntType):
-                        if not isinstance(itemRef, (types.ListType, types.TupleType)):
+                    if isinstance(currentRef, int):
+                        if not isinstance(itemRef, (list, tuple)):
                             raise Exception("List index supplied but element '"+'.'.join(inNames)+"' is not a list")
                         if inRefs[i] >= len(itemRef) or currentRef < -len(itemRef):
                             raise Exception("List index "+str(currentRef)+" out of range in '"+'.'.join(inNames)+"'")
@@ -454,9 +454,9 @@ class HotData:
             if obj is not None:
                 if isinstance(obj, str):
                     ioObj[keyword] = HotOpaqueRef(obj, value)
-                elif isinstance(obj, types.ListType):
+                elif isinstance(obj, list):
                     ioObj[keyword] = [ HotOpaqueRef(x, value) for x in obj ]
-                elif isinstance(obj, types.DictType):
+                elif isinstance(obj, dict):
                     result = {}
                     for key, item in obj.items():
                         result[ HotOpaqueRef(key, value) ] = item
@@ -466,12 +466,12 @@ class HotData:
             for key,value in ioObj.items():
                 if isinstance(value, str) and value.startswith('OpaqueRef'):
                     print('Missed OpaqueRef string in HotData item: '+key)
-                elif isinstance(value, types.ListType):
+                elif isinstance(value, list):
                     for item in value:
                         if isinstance(item, str) and item.startswith('OpaqueRef'):
                             print('Missed OpaqueRef List in HotData item: '+key)
                             break
-                elif isinstance(value, types.DictType):
+                elif isinstance(value, dict):
                     for item in value.keys():
                         if isinstance(item, str) and item.startswith('OpaqueRef'):
                             print('Missed OpaqueRef Dict in HotData item: '+key)
