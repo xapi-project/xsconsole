@@ -485,5 +485,5 @@ class HotData:
         return self.session
 
     def Dump(self):
-        print "Contents of HotData cache:"
+        print("Contents of HotData cache:")
         pprint(self.data)

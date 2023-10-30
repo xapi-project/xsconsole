@@ -15,6 +15,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+from __future__ import print_function
 import sys, traceback
 
 from XSConsoleConfig import *
@@ -27,9 +28,9 @@ def main():
     if '--shelltimeout' in sys.argv:
         # Print a shell timeout value, suitable for TMOUT=`xsconsole --shelltimeout`
         if Config.Inst().AllShellsTimeout():
-            print State.Inst().AuthTimeoutSeconds()
+            print(State.Inst().AuthTimeoutSeconds())
         else:
-            print
+            print()
     else:
         app = App.Inst()
         app.Build( ['plugins-base', 'plugins-oem', 'plugins-extras'] )
