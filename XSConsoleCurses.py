@@ -212,7 +212,7 @@ class CursesPane:
                 yPos += 1
 
     def AddHCentredText(self, inString, inY, inColour = None):
-        xStart = self.xSize / 2 - len(inString) / 2
+        xStart = self.xSize // 2 - len(inString) // 2
         self.ClippedAddStr(inString, xStart, inY, inColour)
 
     def Decorate(self):

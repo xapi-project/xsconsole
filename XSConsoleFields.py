@@ -181,7 +181,7 @@ class WrappedTextField(Field):
         yPos = inYPos
         for line in self.wrappedText:
             if self.centred:
-                offset = (self.wrappedWidth - len(line)) / 2
+                offset = (self.wrappedWidth - len(line)) // 2
                 inPane.AddText(line, inXPos+offset, yPos, self.colour)
             else:
                 inPane.AddText(line, inXPos, yPos, self.colour)
