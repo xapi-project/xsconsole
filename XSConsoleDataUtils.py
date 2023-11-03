@@ -73,7 +73,7 @@ class FileUtils:
                         name =  "%-50s%10.10s%10.10s" % (nameDesc[:50], nameLabel[:10], nameSize[:10])
                         retVal.append(Struct(name = name, vdi = vdi))
 
-        retVal.sort(lambda x, y : cmp(x.vdi['name_label'], y.vdi['name_label']))
+        retVal.sort(key=lambda data: data.vdi['name_label'])
 
         return retVal
 
@@ -466,7 +466,7 @@ class SRDataUtils:
                     dataSR['opaqueref'] = sr.HotOpaqueRef().OpaqueRef()
                     retVal.append( Struct(name = name, sr = dataSR) )
 
-        retVal.sort(lambda x, y : cmp(x.name, y.name))
+        retVal.sort(key=lambda data: data.name)
 
         return retVal
 
