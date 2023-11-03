@@ -65,7 +65,7 @@ class Data:
     def GetData(self, inNames, inDefault = None):
         data = self.data
         for name in inNames:
-            if name is '__repr__':
+            if name == '__repr__':
                 # Error - missing ()
                 raise Exception('Data call Data.' + '.'.join(inNames[:-1]) + ' must end with ()')
             elif name in data:
@@ -1058,7 +1058,7 @@ class Data:
                 pidfile = "/var/run/xapi.pid"
             if pidfile:
                 # Look for any "xapi" running
-                pid = file(pidfile).read().strip()
+                pid = open(pidfile, "r").read().strip()
                 exelink = "/proc/%s/exe" % (pid)
                 if os.path.exists(exelink):
                     if os.path.basename(os.readlink(exelink)) == "xapi":
