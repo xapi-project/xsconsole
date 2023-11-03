@@ -57,8 +57,8 @@ class PaneSizerCentre(PaneSizer):
         self.xSize = min(inArranger.XBounds(), self.parent.XSize() - self.SHRINKVALUE)
         self.xSize = (self.xSize + 1) & ~1 # make xSize even
         self.ySize = min(inArranger.YBounds(), self.parent.YSize() - self.SHRINKVALUE)
-        self.xPos = self.parent.XPos() + (self.parent.XSize() - self.xSize) / 2
-        self.yPos = self.parent.YPos() + (self.parent.YSize() - self.ySize) / 2
+        self.xPos = self.parent.XPos() + (self.parent.XSize() - self.xSize) // 2
+        self.yPos = self.parent.YPos() + (self.parent.YSize() - self.ySize) // 2
 
 class DialoguePane:
     def __init__(self, inParent = None, inSizer = None):
