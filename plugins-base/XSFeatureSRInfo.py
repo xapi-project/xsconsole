@@ -112,7 +112,7 @@ class XSFeatureSRInfo:
         srList = [ sr for sr in HotAccessor().visible_sr if sr.other_config({}).get('xensource_internal', '') != 'true' ]
 
         # Sort list by SR shared flag then name
-        srList.sort(lambda x, y: cmp(y.shared(False), x.shared(False)) or cmp (x.name_label(''), y.name_label()))
+        srList.sort(key=lambda sr: (-sr.shared(False), sr.name_label('')))
 
         srUtils = Importer.GetResource('SRUtils')
         for sr in srList:

@@ -221,7 +221,7 @@ class Data:
                             pif['metrics']['device_name'] = Lang('<Unknown>')
 
                 # Sort PIFs by device name for consistent order
-                self.data['host']['PIFs'].sort(lambda x, y : cmp(x['device'], y['device']))
+                self.data['host']['PIFs'].sort(key=lambda pif: pif['device'])
 
                 def convertVBD(inVBD):
                     retVBD = self.session.xenapi.VBD.get_record(inVBD)

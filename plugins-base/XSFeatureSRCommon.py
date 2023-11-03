@@ -187,7 +187,7 @@ class SRControlDialogue(Dialogue):
 
         choiceList = [ name for name in allowedOps if name in SRUtils.AllowedOperations() ]
 
-        choiceList.sort(lambda x, y: cmp(SRUtils.OperationPriority(x), SRUtils.OperationPriority(y)))
+        choiceList.sort(key=lambda choice: SRUtils.OperationPriority(choice))
 
         self.controlMenu = Menu()
         for choice in choiceList:
