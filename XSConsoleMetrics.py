@@ -14,7 +14,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import XenAPI
-import urllib
+import urllib.request
 import xml.dom.minidom
 
 from XSConsoleAuth import *
@@ -138,9 +138,9 @@ class HotMetrics:
 
             httpRequest = 'http://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
 
-            socket = urllib.URLopener().open(httpRequest)
+            socket = urllib.request.urlopen(httpRequest)
             try:
-                content = socket.read()
+                content = socket.read().decode('utf-8')
             finally:
                 socket.close()
             retVal = self.ParseXML(content)
