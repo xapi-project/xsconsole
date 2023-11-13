@@ -113,7 +113,7 @@ class Importer:
     @classmethod
     def CallReadyHandlers(cls):
         # Sort plugins in descending priority order with a default of 1000
-        plugins = cls.plugIns.values()
+        plugins = list(cls.plugIns.values())
         plugins.sort(key=lambda p: p.get('readyhandlerpriority', 1000), reverse=True)
 
         for plugin in plugins:

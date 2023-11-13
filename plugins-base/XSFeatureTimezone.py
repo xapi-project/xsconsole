@@ -41,7 +41,7 @@ class TimezoneDialogue(Dialogue):
             self.cityList = []
             choiceDefs = []
             cityExp = re.compile(self.continentChoice)
-            keys = Data.Inst().timezones.cities({}).keys()
+            keys = list(Data.Inst().timezones.cities({}).keys())
             keys.sort()
             for city in keys:
                 if cityExp.match(city):
