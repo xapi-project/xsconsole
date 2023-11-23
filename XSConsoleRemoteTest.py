@@ -25,7 +25,7 @@ import socketserver
 import xmlrpc.server
 
 class UnixSimpleXMLRPCRequestHandler(xmlrpc.server.SimpleXMLRPCRequestHandler):
-    # Python 2.7's SimpleXMLRPCRequestHandler enables Nagle's algorithm by default
+    # Python's SimpleXMLRPCRequestHandler enables Nagle's algorithm by default
     # which fails because we're working with Unix domain sockets so disable it.
     disable_nagle_algorithm = False
 
