@@ -192,7 +192,7 @@ class Data:
                     self.data['host']['crash_dump_sr'] = None
 
                 convertCPU = lambda cpu: self.session.xenapi.host_cpu.get_record(cpu)
-                self.data['host']['host_CPUs'] = map(convertCPU, self.data['host']['host_CPUs'])
+                self.data['host']['host_CPUs'] = list(map(convertCPU, self.data['host']['host_CPUs']))
 
                 def convertPIF(inPIF):
                     retVal = self.session.xenapi.PIF.get_record(inPIF)
@@ -209,7 +209,7 @@ class Data:
                     retVal['opaqueref'] = inPIF
                     return retVal
 
-                self.data['host']['PIFs'] = map(convertPIF, self.data['host']['PIFs'])
+                self.data['host']['PIFs'] = list(map(convertPIF, self.data['host']['PIFs']))
 
                 # Create missing PIF names
                 for pif in self.data['host']['PIFs']:
@@ -230,7 +230,7 @@ class Data:
 
                 def convertVDI(inVDI):
                     retVDI = self.session.xenapi.VDI.get_record(inVDI)
-                    retVDI['VBDs'] = map(convertVBD, retVDI['VBDs'])
+                    retVDI['VBDs'] = list(map(convertVBD, retVDI['VBDs']))
                     retVDI['opaqueref'] = inVDI
                     return retVDI
 
@@ -246,14 +246,14 @@ class Data:
                     if retPBD['SR'] is not None:
                         retPBD['SR']['opaqueref'] = srRef
                         if retPBD['SR'].get('type', '') == 'udev':
-                            retPBD['SR']['VDIs'] = map(convertVDI, retPBD['SR']['VDIs'])
+                            retPBD['SR']['VDIs'] = list(map(convertVDI, retPBD['SR']['VDIs']))
                             for vdi in retPBD['SR']['VDIs']:
                                 vdi['SR'] = retPBD['SR']
 
                     retPBD['opaqueref'] = inPBD
                     return retPBD
 
-                self.data['host']['PBDs'] = map(convertPBD, self.data['host']['PBDs'])
+                self.data['host']['PBDs'] = list(map(convertPBD, self.data['host']['PBDs']))
 
                 # Only load the to DOM-0 VM to save time
                 vmList = self.data['host']['resident_VMs']

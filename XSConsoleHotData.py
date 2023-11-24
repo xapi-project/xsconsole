@@ -62,9 +62,9 @@ class HotAccessor:
     def __iter__(self):
         iterData = HotData.Inst().GetData(self.name, {}, self.refs)
         if isinstance(iterData, dict):
-            self.iterKeys = iterData.keys()
+            self.iterKeys = list(iterData.keys())
         elif isinstance(iterData, (list, tuple)):
-            self.iterKeys = iterData[:] # [:] copy is necessary
+            self.iterKeys = list(iterData[:]) # [:] copy is necessary
         else:
             raise Exception(Lang("Cannot iterate over type '")+str(type(iterData))+"'")
         return self
