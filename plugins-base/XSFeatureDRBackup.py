@@ -39,7 +39,6 @@ class DRBackupDialogue(SRDialogue):
             command = "%s/xe-backup-metadata -n -u %s" % (Config.Inst().HelperPath(), sr_uuid)
 
             status, output = subprocess.getstatusoutput(command)
-            status = os.WEXITSTATUS(status)
             initalize_vdi = ""
             if status == 3:
                initalize_vdi = "-c"
