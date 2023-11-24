@@ -382,7 +382,7 @@ class MountVDIDirectly:
         # Entered after self.Unmount has run
         if self.vdi['SR']['type'] != 'udev' or self.vdi['SR']['content_type'] != 'disk':
             # Take special action for USB devices only, i.e. don't reformat SCSI disks, etc.
-            if inStatus == 8192: # Return code for empty CD drive
+            if inStatus == 32: # 32 is the mount(8) return code for mount failure, assuming empty CD drive
                 raise Exception(Lang("Drive is empty"))
             raise Exception(inOutput)
 
