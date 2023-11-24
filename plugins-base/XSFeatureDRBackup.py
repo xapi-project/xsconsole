@@ -16,8 +16,6 @@
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
-import subprocess
-
 from XSConsoleStandard import *
 
 class DRBackupDialogue(SRDialogue):
@@ -38,7 +36,7 @@ class DRBackupDialogue(SRDialogue):
             sr_uuid = inSR['uuid']
             command = "%s/xe-backup-metadata -n -u %s" % (Config.Inst().HelperPath(), sr_uuid)
 
-            status, output = subprocess.getstatusoutput(command)
+            status, output = getstatusoutput(command)
             initalize_vdi = ""
             if status == 3:
                initalize_vdi = "-c"
@@ -47,7 +45,7 @@ class DRBackupDialogue(SRDialogue):
 
             Layout.Inst().TransientBanner(Lang("Backing up metadata... This may take several minutes."))
             command = "%s/xe-backup-metadata %s -u %s" % (Config.Inst().HelperPath(), initalize_vdi, sr_uuid)
-            status, output = subprocess.getstatusoutput(command)
+            status, output = getstatusoutput(command)
             if status == 0:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang("Backup Successful"), output))
             else:

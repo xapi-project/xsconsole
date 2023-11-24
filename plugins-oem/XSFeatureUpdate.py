@@ -16,8 +16,6 @@
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
-import subprocess
-
 from XSConsoleStandard import *
 
 class UpdateDialogue(FileDialogue):
@@ -60,7 +58,7 @@ class UpdateDialogue(FileDialogue):
                 filename = self.vdiMount.MountedPath(self.filename)
                 FileUtils.AssertSafePath(filename)
                 command = "/opt/xensource/bin/xe update-upload file-name='"+filename+"' host-uuid="+hostRef
-                status, output = subprocess.getstatusoutput(command)
+                status, output = getstatusoutput(command)
 
                 if status != 0:
                     raise Exception(output)
