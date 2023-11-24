@@ -32,18 +32,16 @@ class HotOpaqueRef:
     def __repr__(self):
         return str(self.__dict__)
 
-    # __hash__ and __cmp__ allow this object to be used as a dictionary key
+    # __hash__ and __eq__ allow this object to be used as a dictionary key
     def __hash__(self):
         return self.hash
 
-    def __cmp__(self, inOther):
+    def __eq__(self, inOther):
         if not isinstance(inOther, HotOpaqueRef):
-            return 1
+            return False
         if self.opaqueRef == inOther.opaqueRef:
-            return 0
-        if self.opaqueRef < inOther.opaqueRef:
-            return -1
-        return 1
+            return True
+        return False
 
     def OpaqueRef(self): return self.opaqueRef
     def Type(self): return self.type
