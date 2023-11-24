@@ -193,7 +193,7 @@ class IPUtils:
     def ValidateIP(cls, text):
         rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
         if not rc: return False
-        ints = map(int, rc.groups())
+        ints = list(map(int, rc.groups()))
         largest = 0
         for i in ints:
             if i > 255: return False
@@ -206,7 +206,7 @@ class IPUtils:
         rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
         if not rc:
             return False
-        ints = map(int, rc.groups())
+        ints = list(map(int, rc.groups()))
         for i in ints:
             if i > 255:
                 return False
