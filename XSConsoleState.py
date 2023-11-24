@@ -50,7 +50,7 @@ class State:
             isFirstBoot = True
             try:
                 if os.path.isfile(cls.SaveFilename()):
-                    saveFile = open(cls.SaveFilename(), "r")
+                    saveFile = open(cls.SaveFilename(), "rb")
                     unpickler = pickle.Unpickler(saveFile)
                     cls.instance = unpickler.load()
                     saveFile.close()
@@ -138,7 +138,7 @@ class State:
                 if not os.path.isdir(self.savePath):
                     os.mkdir(self.savePath, 0o700)
 
-                saveFile = open(self.SaveFilename(), "w")
+                saveFile = open(self.SaveFilename(), "wb")
                 pickler = pickle.Pickler(saveFile)
                 self.modified = False # Set unmodified before saving
                 pickler.dump(self)
