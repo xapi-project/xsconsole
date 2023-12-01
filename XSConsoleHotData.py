@@ -69,14 +69,18 @@ class HotAccessor:
             raise Exception(Lang("Cannot iterate over type '")+str(type(iterData))+"'")
         return self
 
-    # This method will hide fields called 'next' in the xapi database.  If any appear, __iter__ will need to
-    # return a new object type and this method will need to be moved into that
+    # This method will hide fields called '__next__' in the xapi database.
+    # If any appear, __iter__ will need to return a new object type
+    # and this method will need to be moved into that:
     def __next__(self):
         if len(self.iterKeys) <= 0:
             raise StopIteration
         retVal = HotAccessor(self.name[:], self.refs[:]) # [:] copies the array
         retVal.refs[-1] = self.iterKeys.pop(0)
         return retVal
+
+    if sys.version_info < (3, 0):
+        next = __next__  # Python2 iterator calls next() to get the next item.
 
     def __getitem__(self, inParam):
         # These are square brackets selecting a particular item from a dict using its OpaqueRef
