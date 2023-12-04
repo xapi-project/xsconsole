@@ -249,11 +249,12 @@ class MountVDI:
             self.mountedVBD = True
 
         except Exception as e:
+            XSLogFailure('Device failed to mount', e)
             try:
                 self.Unmount()
-            except Exception as e:
-                #  Report the original exception, not this one
-                XSLogFailure('Device failed to unmount', e)
+            except Exception as vdi_unmount_exception:
+                XSLogFailure('Device failed to unmount', vdi_unmount_exception)
+            # Report the VDI mount exception
             raise e
 
     def HandleMountFailure(self, inOutput):
@@ -372,10 +373,12 @@ class MountVDIDirectly:
             self.mountedVDI = True
             XSLog('Mounted '+self.mountDev + ' on ' + self.mountPoint + ' mode ' + self.mode)
         except Exception as e:
+            XSLogFailure('Device failed to mount', e)
             try:
                 self.Unmount()
-            except Exception as e:
-                XSLogFailure('Device failed to unmount', e)
+            except Exception as vdi_unmount_exception:
+                XSLogFailure('Device failed to unmount', vdi_unmount_exception)
+            # Report the VDI direct mount exception
             raise e
 
     def HandleMountFailure(self, inStatus, inOutput):
