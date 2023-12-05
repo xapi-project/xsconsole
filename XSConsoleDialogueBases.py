@@ -540,6 +540,12 @@ class InputDialogue(Dialogue):
                 try:
                     Layout.Inst().PopDialogue()
                     Layout.Inst().DoUpdate()
+
+                    # The next line will work only in subclasses which override HandleCommit
+                    # accordingly to return a tuple. The local self.HandleCommit returns None.
+                    # FIXME: Update the local self.HandleCommit here accordingly to reflect this:
+
+                    # pylint: disable-next=assignment-from-no-return,unpacking-non-sequence
                     title, info = self.HandleCommit(self.Pane().GetFieldValues())
                     Layout.Inst().PushDialogue(InfoDialogue( title, info))
                 except Exception as e:

@@ -190,6 +190,7 @@ class Auth:
                 self.error = 'The master connection has timed out.'
             except Exception as e:
                 session = None
+                # pylint: disable-next=redefined-variable-type  # ToString may handle it
                 self.error = e
 
             if session is None and self.testingHost is not None:
