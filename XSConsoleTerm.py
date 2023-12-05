@@ -145,7 +145,7 @@ class App:
                 sys.stderr.write("\033[H\033[J"+Lang("Resetting...")) # Clear screen and print banner
                 try:
                     time.sleep(0.5) # Prevent flicker
-                except Exception as e:
+                except Exception:
                     pass # Catch repeated Ctrl-C
 
             except Exception as e:
