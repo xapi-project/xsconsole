@@ -1109,9 +1109,9 @@ class SRNewDialogue(Dialogue):
             )
 
             xmlDoc = xml.dom.minidom.parseString(xmlResult)
-            if xmlDoc == '':
+            if xmlDoc == "":  # type:ignore[comparison-overlap] # Info: xmlDoc is not an instance of str, it can't be ""
                 self.srChoices = []
-            else:
+            else:  # and because it always returns a usable XML Document object, the list is just empty if no UUID is found:
                 self.srChoices = [ str(node.firstChild.nodeValue.strip()) for node in xmlDoc.getElementsByTagName("UUID") ]
 
             self.ChangeState('PROBE_ISCSI_SR')
@@ -1146,9 +1146,9 @@ class SRNewDialogue(Dialogue):
             )
         )
         xmlDoc = xml.dom.minidom.parseString(xmlResult)
-        if xmlDoc == '':
+        if xmlDoc == "":  # type:ignore[comparison-overlap] # Info: xmlDoc is not an instance of str, it can't be ""
             self.srChoices = []
-        else:
+        else:  # and because it always returns a usable XML Document object, the list is just empty if no UUID is found:
             self.srChoices = [ str(node.firstChild.nodeValue.strip()) for node in xmlDoc.getElementsByTagName("UUID") ]
 
         self.hbaWarn = ( self.variant == 'CREATE' and len(self.srChoices) != 0 )
