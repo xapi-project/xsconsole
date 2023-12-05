@@ -1,0 +1,132 @@
+[project]
+# https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+name = "XSConsole"
+dynamic = ["version"]
+description = "Xenserver Status Report"
+requires-python = "2.7"
+license = "GPL-2.0-or-later"
+keywords = ["xenserver", "xen-project"]
+authors = [
+    {name = "Andy Southgate"},
+]
+maintainers = [
+    {name = "Ashwin H"},
+    {name = "Bernhard Kaindl"},
+    {name = "Ross Lagerwall"},
+    {name = "Qin Zhang （张琴）"},
+]
+readme = "README.md"
+classifiers = [
+    "Environment :: Console",
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2) or later",
+    "Operating System :: POSIX :: Linux :: XenServer/XCP-ng Dom0",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: System :: Logging",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "pam",
+    "XenAPI",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest<7",
+]
+
+[project.urls]
+homepage = "https://github.com/xapi-project/xsconsole"
+repository = "https://github.com/xapi-project/xsconsole.git"
+
+[build-system]
+requires = ["setuptools>=42", "setuptools_scm[toml]"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools_scm]
+# This section is needed (can be empty) for setuptools_scm to be used by
+# "pip2 install ." in order to get the version number from the git repo.
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+line_length = 120
+py_version = 27
+profile = "black"
+combine_as_imports = true
+ensure_newline_before_comments = false
+# extra standard libraries of Py2:
+extra_standard_library = "commands"
+
+[tool.mypy]
+pretty = true
+error_summary = true
+strict_equality = true
+show_error_codes = true
+show_error_context = true
+# Check the contents of untyped functions in all modules by default:
+check_untyped_defs = true
+# scripts_are_modules = true
+python_version = "3.11"
+warn_return_any = true
+warn_unreachable = true
+warn_unused_configs = true
+warn_redundant_casts = true
+disallow_any_explicit = false
+disallow_any_generics = true
+disallow_any_unimported = true
+disallow_subclassing_any = false
+
+# Globally disabled checks which fail now. They may get fixed by later changes:
+disable_error_code = [
+    "assignment",
+    "attr-defined",
+    "has-type",
+    "import-not-found",
+    "import-untyped",  # XenAPI and pam are missing typing information for their users
+    "name-defined",
+    "operator",
+    "union-attr",
+    "unreachable",
+    "var-annotated",
+]
+
+[[tool.mypy.overrides]]
+module = ["XSConsoleRemoteTest"]
+disable_error_code = [
+    "no-any-unimported",
+]
+
+[[tool.mypy.overrides]]
+module = ["XSConsoleDataUtils"]
+disable_error_code = [
+    "arg-type",
+    "call-overload",
+    "type-var",
+]
+
+[[tool.mypy.overrides]]
+module = ["XSConsoleCurses"]
+disable_error_code = [
+    "arg-type",
+]
+
+[[tool.mypy.overrides]]
+module = ["XSConsoleImporter"]
+disable_error_code = [
+    "arg-type",
+]
+
+[[tool.mypy.overrides]]
+module = ["XSFeatureDRRestore"]
+disable_error_code = [
+    "arg-type",
+]
