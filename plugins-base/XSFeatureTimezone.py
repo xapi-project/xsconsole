@@ -49,7 +49,7 @@ class TimezoneDialogue(Dialogue):
                     choiceDefs.append(ChoiceDef(city, lambda: self.HandleCityChoice(self.cityMenu.ChoiceIndex())))
 
             if len(choiceDefs) == 0:
-                choiceDefs.append(Lang('<None available>'), None)
+                choiceDefs.append(Lang('<None available>'))
 
             self.cityMenu = Menu(self, None, Lang("Select City"), choiceDefs)
 
