@@ -138,11 +138,11 @@ class HotMetrics:
 
             httpRequest = 'http://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
 
-            socket = urllib.URLopener().open(httpRequest)
+            http_socket = urllib.URLopener().open(httpRequest)
             try:
-                content = socket.read()
+                content = http_socket.read()
             finally:
-                socket.close()
+                http_socket.close()
             retVal = self.ParseXML(content)
 
         finally:

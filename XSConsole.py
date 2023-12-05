@@ -36,7 +36,7 @@ def main():
         app.Build( ['plugins-base', 'plugins-oem', 'plugins-extras'] )
         try:
             app.Enter()
-        except Exception as e:
+        except Exception:
             # it may be that the screen size has changed
             app.AssertScreenSize()
             # if we get here then it was some other problem

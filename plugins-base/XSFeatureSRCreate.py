@@ -833,7 +833,7 @@ class SRNewDialogue(Dialogue):
                             name=iqn,
                             iqn=iqn))
 
-                    except Exception as e:
+                    except Exception:
                         pass # Ignore failures
 
         self.ChangeState('PROBE_ISCSI_IQN')
@@ -897,7 +897,7 @@ class SRNewDialogue(Dialogue):
                                 raidType = raidType,
                                 asisdedup = asisdedup)) # NetApp's Advanced Single Instance Storage Deduplication, 'true' if supported
 
-                        except Exception as e:
+                        except Exception:
                             pass # Ignore failures
             self.ChangeState('PROBE_NETAPP_AGGREGATE')
         elif self.variant=='ATTACH':
@@ -954,7 +954,7 @@ class SRNewDialogue(Dialogue):
                             setattr(deviceInfo, name.lower(), str(device.getElementsByTagName(name)[0].firstChild.nodeValue.strip()))
                         self.deviceChoices.append(deviceInfo)
 
-                    except Exception as e:
+                    except Exception:
                         pass # Ignore failures
         self.ChangeState('PROBE_HBA_DEVICE')
 
@@ -1010,7 +1010,7 @@ class SRNewDialogue(Dialogue):
                                 setattr(storageInfo, name.lower(), storagePool.getElementsByTagName(name)[0].firstChild.nodeValue.strip())
                             self.storagePoolChoices.append(storageInfo)
 
-                        except Exception as e:
+                        except Exception:
                             pass # Ignore failures
             self.ChangeState('PROBE_EQUAL_STORAGEPOOL')
         elif self.variant=='ATTACH':
@@ -1082,7 +1082,7 @@ class SRNewDialogue(Dialogue):
 
                         self.lunChoices.append(record)
 
-                    except Exception as e:
+                    except Exception:
                         pass # Ignore failures
 
         self.ChangeState('PROBE_ISCSI_LUN')
@@ -1263,8 +1263,8 @@ class SRNewDialogue(Dialogue):
 
                 Task.Sync(lambda x: x.xenapi.SR.forget(srRef))
 
-            except Exception as e:
-                message += Lang('.  Attempts to rollback also failed: ')+Lang(e)
+            except Exception as exc:
+                message += Lang(".  Attempts to rollback also failed: ") + Lang(exc)
 
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Attachment Failed"), message))
 
