@@ -18,7 +18,14 @@ if __name__ == "__main__":
 
 from XSConsoleStandard import *
 
-class VMUtils:
+
+# Note: mypy and pylint found that VMUtils is already defined by XSConsoleDataUtils.py:
+# It only provides @staticmethod VMUtils.numLocalResidentVMs(), so it is just a function.
+# TODO/FIXME: This plugin overwrites the global class for this plugin:
+
+
+# pylint: disable-next=function-redefined
+class VMUtils:  # type:ignore[no-redef]
     operationNames = {
         # Only allow start on this host
         # 'start' : Struct(name = Lang("Start"), priority = 10),
