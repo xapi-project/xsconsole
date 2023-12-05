@@ -1,0 +1,146 @@
+#
+# This is the configuration file of the pre-commit framework for this repository:
+# https://pypi.org/project/pre-commit
+#
+# pre-commit runs in the GitHub Workflow of this project on each push and PR.
+# Additionally, you can run it locally for faster fixing of issues using
+# $ pip3 install pre-commit -r requirements-dev.txt
+#
+# On the initial run, pre-commit downloads its checkers, subsequent runs are fast:
+#
+# $ pre-commit run    # automatically checks which checks are needed.
+# $ pre-commit run -a # runs all fixes and checks, even when not needed
+#
+# When this works, you can enable it as the pre-commit hook for this git clone:
+# $ pre-commit install
+#
+# You can skip checks if you commit very often you don't want them to run, e.g:
+# export SKIP=mypy,pylint;git commit -m "quick save" (or for --amend)
+#
+# For more customisation, see https://pre-commit.com/#temporarily-disabling-hooks
+# and https://pre-commit.com/#confining-hooks-to-run-at-certain-stages (e.g push)
+#
+# After this, the pre-commit fixes and checks run when you commit an update.
+#
+# You can also automatically set pre-commit as pre-commit hook for new git clones:
+# $ git config --global init.templateDir ~/.git-template
+# $ pre-commit init-templatedir ~/.git-template
+#
+# Further information:
+# https://pre-commit.com/#automatically-enabling-pre-commit-on-repositories
+# All hooks: https://pre-commit.com/hooks.html
+fail_fast: false
+default_stages: [commit, push]
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    # https://github.com/pre-commit/pre-commit-hooks/blob/main/README.md:
+    hooks:
+    -   id: no-commit-to-branch
+        name: "ensure that you don't commit to the local master branch"
+        args: [--branch, master]
+        always_run: true
+    -   id: trailing-whitespace
+        name: 'check and fix files to have no trailing whitespace'
+        exclude: install-sh
+    -   id: end-of-file-fixer
+        name: 'check and fix that files have a trailing newline'
+        exclude: |
+            (?x)^(
+                INSTALL|
+                XSConsoleAuth.py|
+                XSConsoleConfig.py|
+                XSConsoleDialoguePane.py|
+                XSConsoleImporter.py|
+                XSConsoleKeymaps.py|
+                XSConsoleLayout.py|
+                XSConsoleMetrics.py|
+                XSConsoleState.py|
+                XSConsoleTask.py|
+                XSConsoleTerm.py|
+                XSConsoleUtils.py
+            )
+    -   id: mixed-line-ending
+        args: ['--fix=lf']
+        name: 'check and fix that line endings are line feeds'
+    -   id: check-added-large-files
+        args: ['--maxkb=12']
+        name: 'check that no large files are added'
+    -   id: check-executables-have-shebangs
+    -   id: debug-statements
+        name: 'check for debugger imports and breakpoint calls'
+    -   id: check-shebang-scripts-are-executable
+        exclude: XSConsoleImporter.py
+    -   id: check-merge-conflict
+    -   id: check-yaml
+        name: 'check the syntax of yaml files'
+# Run "python3 -m pip install -r requirements-dev.txt" to run pytest or use "git commit --no-verify":
+-   repo: local
+    hooks:
+    -   id: unittest
+        name: check that the unit tests pass
+        entry: env PYTHONDEVMODE=yes python3 -m unittest discover
+        # For pytest, users need to install pytest. Then use this instead:
+        # entry: env PYTHONDEVMODE=yes python3 -m pytest
+        pass_filenames: false
+        language: system
+        types: [python]
+-   repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+    -   id: autoflake
+        name: remove unused variables and imports (when enabled later)
+        args: [
+            "--in-place",
+            # Enable those in later commits to remove unused variables and imports:
+            # "--remove-unused-variables",
+            # "--remove-all-unused-imports"
+        ]
+        language: python
+        files: \.py$
+        exclude: |
+            (?x)^(
+                simpleconfig.py|
+                XSConsoleStandard.py
+            )
+-   repo: https://github.com/akaihola/darker
+    rev: 1.7.2
+    hooks:
+    -   id: darker
+        name: format staged changes like black and isort would format them
+        args: [--skip-string-normalization, --isort, -tpy36]
+        additional_dependencies:
+          - isort
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.7.0
+    hooks:
+    -   id: mypy
+        name: run mypy to check e.g. that all expected arguments are passed to functions etc
+        additional_dependencies: [pam, pytest, types-lxml, XenAPI]
+-   repo: https://github.com/pycqa/pylint
+    rev: v3.0.2
+    hooks:
+    -   id: pylint
+        name: run pylint
+        additional_dependencies: [pam, XenAPI]
+        args: [
+            --jobs=2,  # More causes false function-redefined
+            # FIXME: Those may indicate issues, fix them:
+            --disable=access-member-before-definition,
+            --disable=arguments-differ,
+            --disable=bad-classmethod-argument,
+            --disable=no-self-argument,
+            --disable=undefined-variable,
+            --disable=unidiomatic-typecheck,
+            --disable=unspecified-encoding,
+            --disable=unused-argument,
+        ]
+        log_file: ".git/pre-commit-pylint.log"
+-   repo: local
+    hooks:
+    -   id: git-diff # For reference: https://github.com/pre-commit/pre-commit/issues/1712
+        name: When pre-commit fixers made changes, run 'git diff' to show the changes
+        entry: git diff --exit-code  # When changes were made, the exit code is needed to show them
+        language: system
+        pass_filenames: false
+        always_run: true

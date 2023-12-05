@@ -1,0 +1,344 @@
+#
+# This pylintrc targets pylint_version 1.9.5 for python2 to python3 --py3k linting:
+# pylint version 1.9.5 is the last version which supports python2 code.
+# Note: pylint version 1.9.5 needs to installed on python 2.7 for this to work.
+# It is used by the github actionm for python2 linting in .github/workflows/main.yml
+#
+# After conversion to python3 is complete and python2-compat is no longer relevant,
+# the latest pylint versions can be targeted instead.
+#
+# This pylintrc omits default values for the sake of brevity
+# and is aimed ad python2 to python3 coversion.
+# A complete .pylintrc (without manually added comments!) # can be generated using:
+# pylint --generate-rcfile >.pylintrc.full
+#
+
+[MAIN]
+
+# Analyse import fallback blocks. This can be used to support both Python 2 and
+# 3 compatible code, which means that the block might have code that exists
+# only in one or another interpreter, leading to false positives when analysed.
+# defaults to: analyse-fallback-blocks=no
+analyse-fallback-blocks=yes
+
+# A comma-separated list of package or module names from where C extensions may
+# be loaded. Extensions are loading into the active Python interpreter and may
+# run arbitrary code.
+extension-pkg-allow-list=xen.lowlevel
+extension-pkg-whitelist=lxml.etree
+
+# Return non-zero exit code if any of these messages/categories are detected,
+# even if score is above --fail-under value. Syntax same as enable. Messages
+# specified are enabled, while categories only check already-enabled messages.
+fail-on=redefined-variable-type
+
+# Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
+# number of processors available to use, and will cap the count on Windows to
+# avoid hangs.
+# defaults to: jobs=1
+jobs=0
+
+# List of plugins (as comma separated values of python module names) to load,
+# usually to register additional checkers.
+# defaults to: load-plugins=
+load-plugins=
+    pylint.extensions.check_elif,
+    pylint.extensions.bad_builtin,
+    pylint.extensions.docparams,
+    pylint.extensions.for_any_all,
+    pylint.extensions.set_membership,
+    pylint.extensions.code_style,
+    pylint.extensions.overlapping_exceptions,
+    pylint.extensions.typing,
+    pylint.extensions.redefined_variable_type,
+    pylint.extensions.comparison_placement,
+    pylint.extensions.broad_try_clause,
+    pylint.extensions.dict_init_mutate,
+    pylint.extensions.consider_refactoring_into_while_condition,
+
+# Minimum Python version to use for version dependent checks. Will default to
+# the version used to run pylint.
+py-version=2.7
+
+
+[BASIC]
+
+# Support module-level decision by the first name if module is snake or camel case
+# would be possible:
+# https://pylint.readthedocs.io/en/stable/user_guide/messages/convention/invalid-name.html#multiple-naming-styles-for-custom-regular-expressions
+# But not even consistent naming on module-level was enforced.
+# There are also 3 module-level constants using lower-case snake_case:
+argument-naming-style=any
+attr-naming-style=any
+class-naming-style=any
+const-rgx=(?:(?P<snake>[a-z_]+)|(?P<UPPER_CASE>[A-Z_]+))$
+function-naming-style=any
+method-naming-style=any
+module-naming-style=any
+variable-naming-style=any
+
+# Good variable names which should always be accepted, separated by a comma.
+good-names=e,
+           ex,
+           exc,
+           i,
+           fd,
+           j,
+           k,
+           s,
+           v,
+           Run,
+           _
+
+
+[BROAD_TRY_CLAUSE]
+
+# Maximum number of statements allowed in a try clause
+max-try-statements=33
+
+
+[DESIGN]
+
+# Maximum number of arguments for function / method.
+# defaults to: max-args=5
+max-args=10
+
+# Maximum number of attributes for a class (see R0902).
+# defaults to: max-attributes=7
+max-attributes=22
+
+# Maximum number of branch for function / method body.
+# defaults to: max-branches=12
+max-branches=64
+
+# Maximum number of locals for function / method body.
+# defaults to: max-locals=15
+max-locals=30
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods=110
+
+# Maximum number of statements in function / method body.
+max-statements=120
+
+
+[FORMAT]
+
+# Maximum number of characters on a single line.
+# defaults to: max-line-length=100
+max-line-length=120
+
+# Maximum number of lines in a module.
+# defaults to: max-module-lines=1000
+max-module-lines=2000
+
+[IMPORTS]
+
+# List of modules that can be imported at any level, not just the top level
+# one.
+allow-any-import-level=XenAPI,xen.lowlevel.xc
+
+[MESSAGES CONTROL]
+
+# Disable the message, report, category or checker with the given id(s). You
+# can either give multiple identifiers separated by comma (,) or put this
+# option multiple times (only on the command line, not in the configuration
+# file where it should appear only once). You can also use "--disable=all" to
+# disable everything first and then re-enable specific checks. For example, if
+# you want to run only the similarities checker, you can use "--disable=all
+# --enable=similarities". If you want to run only the classes checker, but have
+# no Warning level messages displayed, use "--disable=all --enable=classes
+# --disable=W".
+
+# Common checks which need to be disabled for now and shall be fixed one by one:
+disable=anomalous-backslash-in-string,
+        arguments-renamed,  # Not nice for new code, but as the code works, fix it later
+        attribute-defined-outside-init,
+        bad-builtin,  #  Replace map() with list comprehensions
+        bad-indentation,  # Fix this using a formatting tool like black
+        bare-except,
+        broad-except,
+        broad-exception-raised,
+        cell-var-from-loop,
+        chained-comparison,
+        consider-using-any-or-all,
+        consider-using-enumerate,
+        consider-using-f-string,
+        consider-using-in,  # Modernise code to use "key in dict"
+        consider-using-tuple,  # Consider using an in-place tuple instead of list
+        consider-using-with,
+        cyclic-import,
+        deprecated-lambda,
+        deprecated-module,  # TODO: Handle 3.12: imp has been removed from Python 3.12
+        duplicate-code,
+        else-if-used,
+        fixme,  # TODO: At some point, the FIXMEs should be worked on
+        import-error,
+        line-too-long,
+        missing-class-docstring,
+        missing-function-docstring,
+        missing-module-docstring,
+        multiple-imports,
+        multiple-statements,
+        no-else-raise,
+        no-else-return,
+        no-member,
+        protected-access,  # Convention to not access _session is violated
+        raise-missing-from,
+        redefined-builtin,  # TODO/FIXME: redefinitions of bytes, dir, str and type
+        simplifiable-if-statement,
+        singleton-comparison,
+        superfluous-parens,
+        # Py2 compat: Python2 requires calls to super() to have it's arguments:
+        super-with-arguments,
+        too-few-public-methods,  # From subclassing classes that pylint does not know
+        too-many-lines,
+        trailing-newlines,  # will be fixed by enabling the fixer in .pre-commit-config.yaml
+        # Skip checkers only present in newer pylint for Python3
+        unknown-option-value,
+        unnecessary-lambda,
+        unused-variable, # Fix these two by enabling autoflake autofixing in .pre-commit-config.yaml:
+        unused-wildcard-import,
+        use-set-for-membership,
+        # Skip complaining about checkers only present in older pylint for Python2
+        useless-option-value,
+        # Py2 compat: As long as we try to use conditional imports for Py2+Py3:
+        ungrouped-imports,
+        unnecessary-dunder-call,
+        unnecessary-lambda-assignment,
+        unused-import,
+        used-before-assignment,
+        useless-return,
+        wildcard-import,
+        wrong-import-order,  # Fix these two using isort:
+        wrong-import-position,
+
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time (only on the command line, not in the configuration file where
+# it should appear only once). See also the "--disable" option for examples.
+
+# Python3 conversion (--py3k) checks (this option is removed in newer pylint)
+# The checks which are commented-out have been removed from newer pylint and
+# haved been checked using python2 -m pylint --py3k. Results are being adressed.
+enable=c-extension-no-member,
+#  print-statement,
+#  parameter-unpacking,
+       unpacking-in-except,
+       old-raise-syntax,
+       backtick,
+       long-suffix,
+       old-ne-operator,
+       old-octal-literal,
+       import-star-module-level,
+       non-ascii-bytes-literal,
+       raw-checker-failed,
+       bad-inline-option,
+       locally-enabled,
+       file-ignored,
+       useless-suppression,
+       deprecated-pragma,
+       apply-builtin,
+       basestring-builtin,
+       buffer-builtin,
+       cmp-builtin,
+       coerce-builtin,
+       execfile-builtin,
+#  file-builtin,
+#  long-builtin,
+#  raw_input-builtin,
+       reduce-builtin,
+       standarderror-builtin,
+#  unicode-builtin,
+       xrange-builtin,
+       coerce-method,
+       delslice-method,
+       getslice-method,
+       setslice-method,
+#  no-absolute-import,
+       old-division,
+       dict-iter-method,
+       dict-view-method,
+       next-method-called,
+       metaclass-assignment,
+       indexing-exception,
+       raising-string,
+       reload-builtin,
+       oct-method,
+       hex-method,
+       nonzero-method,
+       cmp-method,
+       round-builtin,
+       intern-builtin,
+       unichr-builtin,
+#  dict-items-not-iterating,
+#  dict-keys-not-iterating,
+#  dict-values-not-iterating
+#  map-builtin-not-iterating,
+       zip-builtin-not-iterating,
+#  range-builtin-not-iterating,
+#  filter-builtin-not-iterating,
+       using-cmp-argument,
+       eq-without-hash,
+       div-method,
+       idiv-method,
+       rdiv-method,
+       exception-message-attribute,
+       invalid-str-codec,
+       sys-max-int,
+#  bad-python3-import,
+       deprecated-string-function,
+       deprecated-str-translate-call,
+       deprecated-itertools-function,
+       deprecated-types-field,
+# Not related to pyling --py3k, but catched a bug which no other checker found:
+       redefined-variable-type
+
+
+[PARAMETER_DOCUMENTATION]
+# xsconsole does not contain any docstrings yet:
+
+# Whether to accept totally missing parameter documentation in the docstring of
+# a function that has parameters.
+accept-no-param-doc=yes
+
+# Whether to accept totally missing raises documentation in the docstring of a
+# function that raises an exception.
+accept-no-raise-doc=yes
+
+# Whether to accept totally missing return documentation in the docstring of a
+# function that returns a statement.
+accept-no-return-doc=yes
+
+# Whether to accept totally missing yields documentation in the docstring of a
+# generator.
+accept-no-yields-doc=yes
+
+# If the docstring type cannot be guessed the specified docstring type will be
+# used.
+default-docstring-type=default
+
+
+[REFACTORING]
+
+# Maximum number of nested blocks for function / method body
+max-nested-blocks=6
+
+
+[SIMILARITIES]
+
+# Minimum lines number of a similarity.
+# defaults to: min-similarity-lines=4
+min-similarity-lines=6
+
+
+[TYPING]
+# Applications do not need runtime typing introspection:
+
+# Set to ``no`` if the app / library does **NOT** need to support runtime
+# introspection of type annotations. If you use type annotations
+# **exclusively** for type checking of an application, you're probably fine.
+# For libraries, evaluate if some users want to access the type hints at
+# runtime first, e.g., through ``typing.get_type_hints``. Applies to Python
+# versions 3.7 - 3.9
+runtime-typing=no

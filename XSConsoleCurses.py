@@ -294,7 +294,6 @@ class CursesWindow(CursesPane):
             self.win = inParent.Win().subwin(self.ySize, self.xSize, self.yPos+inParent.YOffset(), self.xPos+inParent.XOffset())
         else:
             raise Exception("Orphan windows not supported - supply parent")
-            self.win = curses.newwin(self.ySize, self.xSize, self.yPos, self.xPos) # Old behaviour
         self.win.keypad(1)
         self.title = ""
         self.hasBox = False

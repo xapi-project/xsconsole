@@ -110,10 +110,8 @@ ALL_SCRIPTS += $(addprefix plugins-extras/, $(PLUGINS_EXTRAS))
 COMMAND := xsconsole
 
 ################################################################################
-# Documents
 
-#DOCUMENTS :=
-#DOCUMENTS += LICENSE
+DEFAULT: minimaltest
 
 ################################################################################
 install-base:
@@ -148,7 +146,9 @@ install-oem:
 clean:
 	rm -f *.pyc
 	rm -f */*.pyc
-	rm -rf __pycache__
+	rm -rf __pycache__ */__pycache__
+	rm -rf .mypy_cache .pytest_cache
+	rm -rf .git/pre-commit.env .git/pre-commit-pylint.log
 
 depend:
 
@@ -159,12 +159,30 @@ test:
 all:
 
 # Convenience targets for pylint output
-pylint.html: pylint.rc $(ALL_SCRIPTS)
-	pylint --rcfile pylint.rc --output-format html $(ALL_SCRIPTS) > $@
-
-pylint.txt: pylint.rc $(ALL_SCRIPTS)
+pylint.txt: .pylintrc $(ALL_SCRIPTS)
 	if [ -f $@ ]; then mv $@ $@.tmp; fi
-	pylint --rcfile pylint.rc --output-format text $(ALL_SCRIPTS) > $@
+	pylint -j2 --output-format text $(ALL_SCRIPTS) > $@
 	# Show new/different warnings in stdout
 	if [ -f $@.tmp ]; then diff $@.tmp $@ | grep -E '^[<>]\s*[CRWE]' | cat ; fi
 	rm -f $@.tmp
+
+.git/pre-commit.env/bin/pip:
+	python3 -m virtualenv .git/pre-commit.env
+
+.git/pre-commit.env/bin/pre-commit: .git/pre-commit.env/bin/pip Makefile
+	.git/pre-commit.env/bin/pip install --quiet --upgrade pre-commit
+
+minimaltest: .git/pre-commit.env/bin/pre-commit
+	@.git/pre-commit.env/bin/pre-commit run --show-diff-on-failure || {\
+	 echo "-----------------------------------------------------------------------";\
+	 echo "If you see a diff above, it shows the changes which pre-commit made.";\
+	 echo "Run 'git add -p' to add those changes to the index and repeat the test.";\
+	 echo "-----------------------------------------------------------------------";}
+	@[ -e .git/hooks/pre-commit ] || \
+	 echo "Please run make minimaltest-install"
+
+minimaltest-install: minimaltest
+	.git/pre-commit.env/bin/pre-commit install
+
+minimaltest-uninstall: .git/pre-commit.env/bin/pre-commit
+	.git/pre-commit.env/bin/pre-commit uninstall
