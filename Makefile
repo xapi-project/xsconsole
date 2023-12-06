@@ -173,11 +173,15 @@ pylint.txt: .pylintrc $(ALL_SCRIPTS)
 	.git/pre-commit.env/bin/pip install --quiet --upgrade pre-commit
 
 minimaltest: .git/pre-commit.env/bin/pre-commit
-	@.git/pre-commit.env/bin/pre-commit run --show-diff-on-failure || {\
-	 echo "-----------------------------------------------------------------------";\
-	 echo "If you see a diff above, it shows the changes which pre-commit made.";\
-	 echo "Run 'git add -p' to add those changes to the index and repeat the test.";\
-	 echo "-----------------------------------------------------------------------";}
+	@.git/pre-commit.env/bin/pre-commit run ||                                                        \
+	{                                                                                                 \
+	 EXIT_CODE=$$?;                                                                                   \
+	 echo "----------------------------------------------------------------------------------------"; \
+	 echo "If you see the output of 'git diff' above, it shows the changes which pre-commit made.";   \
+	 echo "Run 'git add -p' to add those changes to the index and then call make minimaltest again."; \
+	 echo "----------------------------------------------------------------------------------------"; \
+	 exit $$EXIT_CODE;                                                                                \
+	}
 	@[ -e .git/hooks/pre-commit ] || \
 	 echo "Please run make minimaltest-install"
 

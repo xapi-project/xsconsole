@@ -83,7 +83,8 @@ repos:
         # For pytest, users need to install pytest. Then use this instead:
         # entry: env PYTHONDEVMODE=yes python3 -m pytest
         pass_filenames: false
-        language: system
+        additional_dependencies: [XenAPI]
+        language: python
         types: [python]
 -   repo: https://github.com/PyCQA/autoflake
     rev: v2.2.1
@@ -100,7 +101,20 @@ repos:
         files: \.py$
         exclude: |
             (?x)^(
+                # These modules import Python stdlib modules that they don't use themselfes
+                # but other XSConsole modules which wildcard-import * expect them.
+                #for other XSConsole modules:
+                # Until the nested wildcard imports are fixed, we can only exclude them:
                 simpleconfig.py|
+                XSConsoleBases.py|
+                XSConsoleCurses.py|
+                XSConsoleData.py|
+                XSConsoleHotData.py|
+                XSConsoleMenus.py|
+                XSConsoleRootDialogue.py|
+                XSConsoleState.py|
+                XSConsoleTerm.py|
+                XSConsoleUtils.py|
                 XSConsoleStandard.py
             )
 -   repo: https://github.com/akaihola/darker
@@ -140,7 +154,9 @@ repos:
     hooks:
     -   id: git-diff # For reference: https://github.com/pre-commit/pre-commit/issues/1712
         name: When pre-commit fixers made changes, run 'git diff' to show the changes
-        entry: git diff --exit-code  # When changes were made, the exit code is needed to show them
+        # --exit-code: If diffs were found, make pre-commit to show the output of "git diff"
+        # --ws-error-highlight=old: Highlight the old, removed trailing space filled in red:
+        entry: git diff --ws-error-highlight=old --exit-code
         language: system
         pass_filenames: false
         always_run: true
