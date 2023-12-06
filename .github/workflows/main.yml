@@ -1,0 +1,65 @@
+name: Run pre-commit checks and unit tests
+
+on:
+  push:
+  pull_request:
+
+concurrency:  # Cancel pending and in-progress workflows for the same PR, branch or tag:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  # No warnings for pip and pytest themselves; pytest enables warnings in conftest.py
+  PYTHONWARNINGS: ignore
+  # Development Mode for stronger checks: https://docs.python.org/3/library/devmode.html
+  PYTHONDEVMODE: yes
+jobs:
+  python-checks:
+    name: minimaltest (pre-commit)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          #: Install Python 2.7 from Ubuntu 20.04 using apt-get install
+          sudo apt-get update && sudo apt-get install -y python2
+          curl -sSL https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
+          python2 get-pip.py
+          if [ -f requirements.txt ]; then pip2 install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip2 install -r requirements-dev.txt; fi
+          pip2 install pylint==1.9.4
+
+      - name: Run python2 -m unittest discover to execute all unit and integration tests
+        run: python2 -m unittest discover
+      - name: Run pylint --py3k to check which Python3 conversions are still to do
+        env:
+          disabled: no-absolute-import,print-statement
+
+          # FIXME/TODO: These checks by pylint --py3k are currently failing:
+          py3_todo: "\
+            unicode-builtin,\
+            comprehension-escape,\
+            dict-keys-not-iterating,\
+            old-division"
+
+        run: python2 -m pylint --py3k --rcfile /dev/null -f parseable -d $disabled,$py3_todo *.py */*.py
+      # Fast, cached pre-commit setup for GitHub CI as described here:
+      # https://www.python4data.science/en/latest/productive/git/advanced/hooks/ci.html
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Setup the cache for installing pre-commit from the GitHub Action's cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          # Ensure that we don't load outdate cache if the python version or the pre-comming config changed:
+          # The cache key is the key for saving and loading the cached files:
+          # The cache key is pre-commit|<path of the Python interpreter>|<hash of .pre-commit-config.yaml>
+          key: pre-commit|${{ env.pythonLocation }}|${{ hashFiles('.pre-commit-config.yaml') }}
+      - name: Run pre-commit checks
+        uses: pre-commit/action@v3.0.0
+        env:
+          # Skip the no-commit-to-branch check inside of GitHub CI (for CI on merge to master)
+          SKIP: no-commit-to-branch
