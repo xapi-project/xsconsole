@@ -20,7 +20,6 @@ from pprint import pprint
 from XSConsoleBases import *
 from XSConsoleConfig import *
 from XSConsoleData import *
-from XSConsoleImporter import *
 from XSConsoleLang import *
 
 class ChoiceDef:

@@ -124,7 +124,7 @@ repos:
         name: run pylint
         additional_dependencies: [pam, XenAPI]
         args: [
-            --jobs=2,  # More causes false function-redefined
+            --jobs=3,
             # FIXME: Those may indicate issues, fix them:
             --disable=access-member-before-definition,
             --disable=arguments-differ,

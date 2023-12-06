@@ -21,7 +21,6 @@ from XSConsoleLog import *
 from XSConsoleMenus import *
 
 
-# pylint: disable-next=function-redefined  # function is already defined
 class Importer:
     plugIns = {}
     menuEntries = {}
