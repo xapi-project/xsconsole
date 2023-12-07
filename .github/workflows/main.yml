@@ -38,7 +38,6 @@ jobs:
 
           # FIXME/TODO: These checks by pylint --py3k are currently failing:
           py3_todo: "\
-            unicode-builtin,\
             comprehension-escape,\
             dict-keys-not-iterating,\
             old-division"
