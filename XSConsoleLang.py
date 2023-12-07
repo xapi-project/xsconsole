@@ -13,10 +13,36 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+import sys
+
+import XenAPI  # For XenAPI.Failure
+
 from XSConsoleConfig import *
 from XSConsoleLangErrors import *
 
-import XenAPI # For XenAPI.Failure
+# Assign the unicode text type to a variable for use with isinstance():
+if sys.version_info >= (3, 0):
+    text_type = str
+else:
+    text_type = unicode  # pyright:ignore[reportUndefinedVariable] # pylint: disable=unicode-builtin
+
+
+def convert_anything_to_str(arg):
+    """Converts anything into the native "str" type of the Python version, without u'str' or b'str'"""
+    if arg is None or isinstance(arg, str):
+        return arg  # Already str or None (checked by some callers), return it as-is:
+
+    # If "unicode" text or "bytes", en- or decode accordingly:
+    if isinstance(arg, (text_type, bytes)):
+        if sys.version_info > (3, 0):
+            # Python3: Decode UTF-8 bytes into the native Python3 Unicode string:
+            return arg.decode("utf-8")
+        else:
+            # Python2: Encode the unicode text into the stream of UTF-8 bytes:
+            return arg.encode("utf-8")
+
+    # Not string-like (a number or object): Get a "str" of it using str(arg):
+    return str(arg)
 
 
 # Global function
@@ -79,19 +105,18 @@ class Language:
         if isinstance(inLabel, XenAPI.Failure):
             retVal = cls.XapiError(inLabel.details)
             cls.LogError(retVal)
+
         elif isinstance(inLabel, Exception):
-            exn_strings = []
-            for arg in inLabel.args:
-                if isinstance(arg, bytes):
-                    exn_strings.append(arg.decode('utf-8'))
-                else:
-                    exn_strings.append(str(arg))
-            retVal = str(tuple(exn_strings))
+            # convert the args like "str(tuple)" would, with all args like: 'converted-to-string', :
+            retVal = ""
+            for exception_arg in inLabel.args:
+                retVal += ", " if retVal else ""
+                retVal += "'" + convert_anything_to_str(exception_arg) + "'"
+            retVal = "(" + retVal + ")"
             cls.LogError(retVal)
-        else:
-            if isinstance(inLabel, bytes):
-                inLabel = inLabel.decode('utf-8')
-            retVal = inLabel
+
+        else:  # convert anything else directly to a str and call the stringHook with it:
+            retVal = convert_anything_to_str(inLabel)
             if cls.stringHook is not None:
                 cls.stringHook(retVal)
         return retVal
