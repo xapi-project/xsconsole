@@ -13,12 +13,18 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import curses, sys
+import curses
+import locale
+import sys
 
 from XSConsoleBases import *
 from XSConsoleConfig import *
 from XSConsoleLang import *
 from XSConsoleState import *
+
+
+class Terminal:
+    charset_encoding = "utf-8"  # global: Charset encoding of the terminal: We encode to/from this charset
 
 class CursesPalette:
     pairIndex = 1
@@ -174,10 +180,19 @@ class CursesPane:
             if len(clippedStr) > 0:
                 try:
                     encodedStr = clippedStr
-                    if not isinstance(clippedStr, str):
-                        encodedStr = convert_anything_to_str(clippedStr)
+                    if sys.version_info >= (3, 0) and isinstance(clippedStr, str):
+                        # encode the string into bytes using the terminal's charset encoding
+                        encodedStr = clippedStr.encode(Terminal.charset_encoding)
+                    elif not isinstance(encodedStr, str):
+                        # encode the Python2 unicode string into bytes using the terminal's charset encoding:
+                        encodedStr = convert_anything_to_str(clippedStr, Terminal.charset_encoding)
                         # Clear field here since addstr will clear len(encodedStr)-len(clippedStr) too few spaces
-                        self.win.addstr(inY, xPos, len(clippedStr)*' ', CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
+                        self.win.addstr(
+                            inY,
+                            xPos,
+                            " " * len(encodedStr),
+                            CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)),
+                        )
                         self.win.refresh()
                     self.win.addstr(inY, xPos, encodedStr, CursesPalette.ColourAttr(FirstValue(inColour, self.defaultColour)))
                 except Exception as e:
@@ -277,12 +292,13 @@ class CursesPane:
         retVal = []
         if self.title != "":
             retVal.append(self.title)
+        # When reading bytes from the termial, decode the input bytes in the Terinal's charset encoding to str:
         if self.hasBox:
             for i in range(1, self.ySize - 1):
-                retVal.append(convert_anything_to_str(self.win.instr(i, 1, self.xSize - 2)))  # instr() -> bytes -> str
+                retVal.append(convert_anything_to_str(self.win.instr(i, 1, self.xSize - 2), Terminal.charset_encoding))
         else:
             for i in range(self.ySize):
-                retVal.append(convert_anything_to_str(self.win.instr(i, 0, self.xSize)))  # win.instr() -> bytes -> str
+                retVal.append(convert_anything_to_str(self.win.instr(i, 0, self.xSize), Terminal.charset_encoding))
 
         return retVal
 
@@ -305,8 +321,34 @@ class CursesWindow(CursesPane):
 
 class CursesScreen(CursesPane):
     def __init__(self):
+        # Set the locale for all categories to the user's default settings (specified in the
+        # LANG and LC_* environment variables) and get the user's preferred charset encoding:
+        # Needed by python2-curses to support more of UTF-8 than just lower-case latin chars:
+
+        preferred_charset_encoding_by_user = locale.getpreferredencoding()
+        if preferred_charset_encoding_by_user != "UTF-8":
+            locale.setlocale(locale.LC_ALL, 'en_US')
+        else:
+            locale.setlocale(locale.LC_ALL, "")
 
         self.win = curses.initscr()
+
+        # XTerm (and it's the clones, that's nearly all major other terminal emuluations)
+        # follows the ISO 2022 standard for character set switching. Traditionally, xsconsole
+        # switched XTerm-compatibles unto ISO-8859-1 mode, which is not a perfect match for
+        # Xen-API names which are exclusively UTF-8. Default to UTF-8 mode, unless the users's
+        # locale charset environment is configured to use an ISO-8809-1 or -15(1 plus Euro sign):
+
+        if preferred_charset_encoding_by_user in ("ISO-8859-1", "ISO-8859-15"):
+            sys.stdout.write("\033%@")  # Put the terminal into ISO 8859-1 mode
+            Terminal.charset_encoding = preferred_charset_encoding_by_user
+        else:
+            sys.stdout.write("\033%G")  # Put the terminal into UTF-8 mode (default enconding)
+            Terminal.charset_encoding = "utf-8"
+
+        # Helpful for clarity when debugging:
+        # self.win.addstr(Terminal.charset_encoding)
+        # self.win.refresh()
 
         (ySize, xSize) = self.win.getmaxyx()
         CursesPane.__init__(self, 0, 0, xSize, ySize, 0, 0)
