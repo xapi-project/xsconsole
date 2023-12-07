@@ -73,7 +73,6 @@ Join the XSConsole community by creating issues in the repository to report bugs
 - **As per this agreement**, until that point, changes supporting **only Python3.6+** must go to a **py3 feature branch**.
 - The list of `TODOs` remaining for the Python3 upgrade checks (`pylint --py3k`) to be fulfilled is at [line 40 of `.github/workflows/main.yml`](https://github.com/xenserver-next/xsconsole/blob/master/.github/workflows/main.yml#L40).
   Currently, the list of `pylint --py3k` `TODOs` is:
-  - `unicode-builtin` (a PR using a function for Py2 and Py3 is working and is coming next)
   - `comprehension-escape`
   - `dict-keys-not-iterating`
   - `old-division`
