@@ -169,7 +169,7 @@ class VMControlDialogue(Dialogue):
         pane.ResetFields()
 
         vm = HotAccessor().guest_vm[self.vmHandle]
-        vmName = vm.name_label(None)
+        vmName = convert_anything_to_str(vm.name_label(None))
         if vmName is None:
             pane.AddTitleField(Lang("The Virtual Machine is no longer present"))
         else:
@@ -190,7 +190,7 @@ class VMControlDialogue(Dialogue):
         pane.ResetFields()
 
         vm = HotAccessor().vm[self.vmHandle]
-        vmName = vm.name_label(None)
+        vmName = convert_anything_to_str(vm.name_label(None))
         if vmName is None:
             pane.AddTitleField(Lang("The Virtual Machine is no longer present"))
         else:
@@ -252,7 +252,7 @@ class VMControlDialogue(Dialogue):
         Layout.Inst().PopDialogue()
 
         operationName = VMUtils.OperationName(self.operation)
-        vmName = HotAccessor().guest_vm[self.vmHandle].name_label(Lang('<Unknown>'))
+        vmName = convert_anything_to_str(HotAccessor().guest_vm[self.vmHandle].name_label(Lang('<Unknown>')))
         messagePrefix = operationName + Lang(' operation on ') + vmName + ' '
         try:
             task = VMUtils.AsyncOperation(self.operation, self.vmHandle, *self.opParams)
