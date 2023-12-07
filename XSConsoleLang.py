@@ -27,7 +27,7 @@ else:
     text_type = unicode  # pyright:ignore[reportUndefinedVariable] # pylint: disable=unicode-builtin
 
 
-def convert_anything_to_str(arg):
+def convert_anything_to_str(arg, encoding="utf-8"):
     """Converts anything into the native "str" type of the Python version, without u'str' or b'str'"""
     if arg is None or isinstance(arg, str):
         return arg  # Already str or None (checked by some callers), return it as-is:
@@ -36,10 +36,9 @@ def convert_anything_to_str(arg):
     if isinstance(arg, (text_type, bytes)):
         if sys.version_info > (3, 0):
             # Python3: Decode UTF-8 bytes into the native Python3 Unicode string:
-            return arg.decode("utf-8")
+            return arg.decode(encoding)
         else:
-            # Python2: Encode the unicode text into the stream of UTF-8 bytes:
-            return arg.encode("utf-8")
+            return arg.encode(encoding)
 
     # Not string-like (a number or object): Get a "str" of it using str(arg):
     return str(arg)
