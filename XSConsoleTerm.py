@@ -83,7 +83,6 @@ class App:
         while not doQuit:
             try:
                 try:
-                    sys.stdout.write("\033%@") # Select default character set, ISO 8859-1 (ISO 2022)
                     if os.path.isfile("/bin/setfont"):
                         os.system("/bin/setfont") # Restore the default font
                     if '-f' in sys.argv:
