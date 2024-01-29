@@ -14,15 +14,21 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import xml.dom.minidom
+import sys
 
 from XSConsoleAuth import *
 from XSConsoleBases import *
 from XSConsoleLang import *
 
-try:
-    from urllib import URLopener  # pylint: disable=no-name-in-module # for Python2
-except ImportError:
-    from urllib.request import URLopener
+if sys.version_info[0] == 2:
+    # Python 2
+    from urllib import URLopener
+    
+    def urlopen(url):
+       return URLopener().open(url)
+else:
+    # Python 3
+    from urllib.request import urlopen
 
 
 class HotMetrics:
@@ -101,7 +107,7 @@ class HotMetrics:
         xmlDoc = xml.dom.minidom.parseString(inXML)
         metaNode = xmlDoc.getElementsByTagName('meta')[0]
         valuesNode = xmlDoc.getElementsByTagName('data')[0]
-
+        
         meta = Struct()
         # Values comments out below are currently not required
         # for name in ('start', 'end', 'rows', 'columns'):
@@ -142,9 +148,9 @@ class HotMetrics:
 
             httpRequest = 'http://localhost/rrd_updates?session_id=%s&start=%s&host=true' % (sessionID, int(time.time()) - self.SNAPSHOT_SECS)
 
-            http_socket = URLopener().open(httpRequest)
+            http_socket = urlopen(httpRequest)
             try:
-                content = http_socket.read()
+                content = http_socket.read().decode('utf-8')
             finally:
                 http_socket.close()
             retVal = self.ParseXML(content)
