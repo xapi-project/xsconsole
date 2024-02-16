@@ -23,7 +23,7 @@ from XSConsoleLang import *
 if sys.version_info[0] == 2:
     # Python 2
     from urllib import URLopener
-    
+
     def urlopen(url):
        return URLopener().open(url)
 else:
@@ -107,7 +107,7 @@ class HotMetrics:
         xmlDoc = xml.dom.minidom.parseString(inXML)
         metaNode = xmlDoc.getElementsByTagName('meta')[0]
         valuesNode = xmlDoc.getElementsByTagName('data')[0]
-        
+
         meta = Struct()
         # Values comments out below are currently not required
         # for name in ('start', 'end', 'rows', 'columns'):
