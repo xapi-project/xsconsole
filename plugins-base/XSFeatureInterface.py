@@ -54,7 +54,7 @@ class InterfaceDialogue(Dialogue):
         self.nicMenu = Menu(self, None, "Configure Management Interface", choiceDefs)
 
         mode_choicedefs = []
-        if(currentPIF['primary_address_type'].lower() == 'ipv6'):
+        if(currentPIF and currentPIF['primary_address_type'].lower() == 'ipv6'):
             mode_choicedefs.append(ChoiceDef(Lang("Autoconf"), lambda : self.HandleModeChoice("AUTOCONF") ))
         mode_choicedefs.append(ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP2') ))
         mode_choicedefs.append(ChoiceDef(Lang("DHCP with Manually Assigned Hostname"),
