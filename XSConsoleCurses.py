@@ -326,7 +326,7 @@ class CursesScreen(CursesPane):
         # Needed by python2-curses to support more of UTF-8 than just lower-case latin chars:
 
         preferred_charset_encoding_by_user = locale.getpreferredencoding()
-        if preferred_charset_encoding_by_user != "UTF-8":
+        if preferred_charset_encoding_by_user.upper() != "UTF-8":
             locale.setlocale(locale.LC_ALL, 'en_US')
         else:
             locale.setlocale(locale.LC_ALL, "")
