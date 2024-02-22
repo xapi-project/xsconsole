@@ -1229,10 +1229,6 @@ class Data:
         if status != 0:
             raise Exception(output)
 
-    def NTPStatus(self):
-        status, output = getstatusoutput("/usr/bin/ntpstat")
-        return output
-
     def SetVerboseBoot(self, inVerbose):
         if inVerbose:
             name = 'noisy'
