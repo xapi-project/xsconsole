@@ -25,6 +25,13 @@ from XSConsoleUtils import *
 
 import XenAPI
 
+
+if sys.version_info >= (3, 0):
+    getTimeStamp = time.monotonic
+else:
+    getTimeStamp = time.time
+
+
 class Auth:
     instance = None
 
@@ -68,7 +75,7 @@ class Auth:
 
     def AuthAge(self):
         if self.isAuthenticated:
-            retVal = time.time() - self.authTimestampSeconds
+            retVal = getTimeStamp() - self.authTimestampSeconds
         else:
             raise Exception("Cannot get age - not authenticated")
         return retVal
@@ -77,7 +84,7 @@ class Auth:
         if self.isAuthenticated:
             if self.AuthAge() <= State.Inst().AuthTimeoutSeconds():
                 # Auth still valid, so update timestamp to now
-                self.authTimestampSeconds = time.time()
+                self.authTimestampSeconds = getTimeStamp()
 
     def LoggedInUsername(self):
         if (self.isAuthenticated):
@@ -126,7 +133,7 @@ class Auth:
         if self.testingHost is not None:
             # Store password when testing only
             self.loggedInPassword = inPassword
-        self.authTimestampSeconds = time.time()
+        self.authTimestampSeconds = getTimeStamp()
         self.isAuthenticated = True
         XSLog('User authenticated successfully')
 

@@ -30,6 +30,13 @@ from XSConsoleRemoteTest import *
 from XSConsoleRootDialogue import *
 from XSConsoleState import *
 
+
+if sys.version_info >= (3, 0):
+    getTimeStamp = time.monotonic
+else:
+    getTimeStamp = time.time
+
+
 class App:
     __instance = None
 
@@ -53,9 +60,9 @@ class App:
             Importer.ImportRelativeDir(dir)
 
     def Enter(self):
-        startTime = time.time()
+        startTime = getTimeStamp()
         Data.Inst().Update()
-        elapsedTime = time.time() - startTime
+        elapsedTime = getTimeStamp() - startTime
         XSLog('Loaded initial xapi and system data in %.3f seconds' % elapsedTime)
 
         doQuit = False
@@ -158,7 +165,7 @@ class App:
     def HandleKeypress(self, inKeypress):
         handled = True
         Auth.Inst().KeepAlive()
-        self.lastWakeSeconds = time.time()
+        self.lastWakeSeconds = getTimeStamp()
         if self.layout.TopDialogue().HandleKey(inKeypress):
             State.Inst().SaveIfRequired()
             self.needsRefresh = True
@@ -180,7 +187,7 @@ class App:
 
     def MainLoop(self):
         doQuit= False
-        startSeconds = time.time()
+        startSeconds = getTimeStamp()
         lastDataUpdateSeconds = startSeconds
         lastScreenUpdateSeconds = startSeconds
         lastGarbageCollectSeconds = startSeconds
@@ -193,7 +200,7 @@ class App:
         while not doQuit:
             self.needsRefresh = False
             gotTestCommand = RemoteTest.Inst().Poll()
-            secondsNow = time.time()
+            secondsNow = getTimeStamp()
             try:
                 if gotTestCommand:
                     gotKey = None # Prevent delay whilst waiting for a keypress
@@ -205,7 +212,7 @@ class App:
                     XSLog('Entering sleep due to inactivity - xsconsole is now blocked waiting for a keypress')
                     self.layout.Window(Layout.WIN_MAIN).GetKeyBlocking()
                     XSLog('Exiting sleep')
-                    self.lastWakeSeconds = time.time()
+                    self.lastWakeSeconds = getTimeStamp()
                     self.needsRefresh = True
                     Layout.Inst().PopDialogue()
                 else:
@@ -234,7 +241,7 @@ class App:
                     gotKey = None
                     break
 
-            secondsNow = time.time()
+            secondsNow = getTimeStamp()
             secondsRunning = secondsNow - startSeconds
 
             if data.host.address('') == '' or len(data.derived.managementpifs([])) == 0:
