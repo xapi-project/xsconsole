@@ -15,7 +15,8 @@
 
 import XenAPI
 import datetime
-import subprocess, re, shutil, sys, tempfile, socket, os
+import time
+import subprocess, re, shutil, sys, tempfile, socket, os, stat
 from pprint import pprint
 from simpleconfig import SimpleConfigFile
 
@@ -486,9 +487,25 @@ class Data:
             self.ScanHostname(output.split("\n"))
 
     def UpdateFromNTPConf(self):
+        if not 'ntp' in self.data:
+            self.data['ntp'] = {}
+
         (status, output) = getstatusoutput("/bin/cat /etc/chrony.conf")
         if status == 0:
             self.ScanNTPConf(output.split("\n"))
+
+        self.data['ntp']['method'] = ""
+        chronyPerm = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
+        if chronyPerm & stat.S_IXUSR and chronyPerm & stat.S_IXGRP and chronyPerm & stat.S_IXOTH:
+            self.data['ntp']['method'] = "DHCP"
+        elif self.data['ntp']['servers']:
+            self.data['ntp']['method'] = "Manual"
+
+            servers = self.data['ntp']['servers']
+            if len(servers) == 4 and all("centos.pool.ntp.org" in server for server in self.data['ntp']['servers']):
+                self.data['ntp']['method'] = "Default"
+        else:
+            self.data['ntp']['method'] = "Disabled"
 
     def StringToBool(self, inString):
         return inString.lower().startswith('true')
@@ -528,16 +545,94 @@ class Data:
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
 
-        file = None
         try:
-            file = open("/etc/chrony.conf", "w")
-            for other in self.ntp.othercontents([]):
-                file.write(other+"\n")
-            for server in self.ntp.servers([]):
-                file.write("server "+server+" iburst\n")
+            with open("/etc/chrony.conf", "w") as confFile:
+              for other in self.ntp.othercontents([]):
+                  confFile.write(other + "\n")
+              for server in self.ntp.servers([]):
+                  confFile.write("server " + server + " iburst\n")
         finally:
-            if file is not None: file.close()
             self.UpdateFromNTPConf()
+
+        # Force chronyd to update the time
+        if self.data['ntp']['method'] != "Disabled":
+            servers = self.data['ntp']['servers']
+            if self.data['ntp']['method'] == "DHCP":
+                servers = self.GetDHClientInterfaces()
+
+            if servers:
+                self.StopService("chronyd")
+                getoutput("chronyd -q 'server %s iburst'" % servers[0])  # Update the clock and exit
+                getoutput("hwclock -w")  # Sync hwclock with date set by chronyd
+                self.StartService("chronyd")
+
+    def AddDHCPNTP(self):
+        # Double-check authentication
+        Auth.Inst().AssertAuthenticated()
+
+        oldPermissions = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
+        newPermissions = oldPermissions | (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        os.chmod("/etc/dhcp/dhclient.d/chrony.sh", newPermissions)
+
+        interfaces = self.GetDHClientInterfaces()
+        for interface in interfaces:
+            ntpServer = self.GetDHCPNTPServer(interface)
+
+            with open("/var/lib/dhclient/chrony.servers.%s" % interface, "w") as chronyFile:
+                chronyFile.write("%s iburst prefer\n" % ntpServer)
+
+    def ResetDefaultNTPServers(self):
+        # Double-check authentication
+        Auth.Inst().AssertAuthenticated()
+
+        Data.Inst().NTPServersSet(["0.centos.pool.ntp.org",
+                                    "1.centos.pool.ntp.org",
+                                    "2.centos.pool.ntp.org",
+                                    "3.centos.pool.ntp.org"])
+
+    def GetDHClientInterfaces(self):
+        (status, output) = getstatusoutput("ls /var/lib/xcp/ | grep leases")
+        if status != 0:
+          return []
+
+        dhclientFiles = output.splitlines()
+        pattern = "dhclient-(.*).leases"
+        interfaces = []
+        for dhclientFile in dhclientFiles:
+            match = re.match(pattern, dhclientFile)
+            if match:
+                interfaces.append(match.group(1))
+
+        return interfaces
+
+    def GetDHCPNTPServer(self, interface):
+        ntpServer = getoutput("grep ntp-servers /var/lib/xcp/dhclient-%s.leases | tail -1 | awk '{{ print ( $3 ) }}'" % interface).strip()[:-1]
+        return ntpServer
+
+    def RemoveDHCPNTP(self):
+        # Double-check authentication
+        Auth.Inst().AssertAuthenticated()
+
+        oldPermissions = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
+        newPermissions = oldPermissions & ~(stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+        os.chmod("/etc/dhcp/dhclient.d/chrony.sh", newPermissions)
+
+        getstatusoutput("rm -f /var/lib/dhclient/chrony.servers.*")
+
+    def SetTimeManually(self, date):
+        # Double-check authentication
+        Auth.Inst().AssertAuthenticated()
+
+        self.NTPServersSet([])
+        self.RemoveDHCPNTP()
+        self.SaveToNTPConf()
+
+        self.DisableService("chrony-wait")
+        self.DisableService("chronyd")
+
+        timestring = date.strftime("%Y-%m-%d %H:%M:00")
+        getstatusoutput("date --set='%s'" % timestring)
+        getstatusoutput("hwclock --utc --systohc")
 
     def SaveToResolveConf(self):
         # Double-check authentication
@@ -724,9 +819,6 @@ class Data:
         self.data['sysconfig']['network']['hostname'] = inLines[0]
 
     def ScanNTPConf(self, inLines):
-        if not 'ntp' in self.data:
-            self.data['ntp'] = {}
-
         self.data['ntp']['servers'] = []
         self.data['ntp']['othercontents'] = []
 
@@ -952,6 +1044,12 @@ class Data:
         finally:
             # Network reconfigured so this link is potentially no longer valid
             self.session = Auth.Inst().CloseSession(self.session)
+
+    def AdjustNTPForStaticNetwork(self):
+        self.RemoveDHCPNTP()
+        if not self.data['ntp']['servers']: # No NTP servers after removing DHCP
+            self.ResetDefaultNTPServers()
+            self.SaveToNTPConf()
 
     def LocalHostEnable(self):
         Auth.Inst().AssertAuthenticatedOrPasswordUnset()
