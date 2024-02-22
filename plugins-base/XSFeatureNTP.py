@@ -41,10 +41,6 @@ class NTPDialogue(Dialogue):
         if usingDHCP:
             choiceDefs.insert(0, ChoiceDef(Lang("Use DHCP NTP Servers"), lambda: self.HandleInitialChoice('DHCP')))
 
-        if Auth.Inst().IsTestMode():
-            # Show Status is a testing-only function
-            choiceDefs.append(ChoiceDef(Lang("Show Status (ntpstat)"), lambda: self.HandleInitialChoice('STATUS') ))
-
         self.initialMenu = Menu(self, None, Lang("Configure Network Time"), choiceDefs)
 
     def CreateMANUALPane(self):
@@ -164,10 +160,6 @@ class NTPDialogue(Dialogue):
                 self.ChangeState("MANUAL")
             elif inChoice == "NONE":
                 self.ChangeState("NONE")
-
-            elif inChoice == "STATUS":
-                message = data.NTPStatus()+Lang("\n\n(Initial synchronization may take several minutes)")
-                Layout.Inst().PushDialogue( Lang("NTP Status"), message))
 
         except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Operation Failed"), Lang(e)))
