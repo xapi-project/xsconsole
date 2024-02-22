@@ -52,6 +52,7 @@ class XSMenuLayout:
 
     def UpdateFieldsNETWORK(self, inPane):
         data = Data.Inst()
+        data.UpdateFromNTPConf()
 
         inPane.AddTitleField(Lang("Network and Management Interface"))
 
@@ -62,10 +63,6 @@ class XSMenuLayout:
             inPane.AddWrappedTextField(Lang("Currently, no management interface is configured."))
         else:
             inPane.AddTitleField(Lang("Current Management Interface"))
-            if data.chkconfig.chronyd(False):
-                ntpState = 'Enabled'
-            else:
-                ntpState = 'Disabled'
 
             for pif in data.derived.managementpifs([]):
                 inPane.AddStatusField(Lang('Device', 16), pif['device'])
@@ -78,7 +75,8 @@ class XSMenuLayout:
                 inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))
                 inPane.AddStatusField(Lang('Gateway', 16),  data.ManagementGateway(''))
                 inPane.AddStatusField(Lang('Hostname', 16),  data.host.hostname(''))
-                inPane.AddStatusField(Lang('NTP', 16),  ntpState)
+
+                inPane.AddStatusField(Lang('NTP', 16),  data.ntp.method(''))
 
         inPane.AddKeyHelpField( { Lang("<F5>") : Lang("Refresh")})
 

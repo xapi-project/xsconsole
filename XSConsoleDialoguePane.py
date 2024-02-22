@@ -190,10 +190,10 @@ class DialoguePane:
         self.AddBodyFieldObj(TextField(str(inName), self.brightColour, Field.FLOW_RIGHT))
         self.AddBodyFieldObj(WrappedTextField(str(inValue), self.baseColour, Field.FLOW_RETURN))
 
-    def AddInputField(self, inName, inValue, inLabel, inLengthLimit = None):
+    def AddInputField(self, inName, inValue, inLabel, inLengthLimit = None, inputWidth=INPUT_FIELD_DEFAULT_WIDTH, flow=Field.FLOW_RETURN):
         self.AddBodyFieldObj(TextField(str(inName), self.brightColour, Field.FLOW_RIGHT))
         self.AddInputFieldObj(InputField(str(inValue), self.highlightColour, self.selectedColour,
-            Field.FLOW_RETURN, inLengthLimit), inLabel)
+            flow, inLengthLimit, width=inputWidth), inLabel)
 
     def AddPasswordField(self, inName, inValue, inLabel, inLengthLimit = None):
         self.AddBodyFieldObj(TextField(str(inName), self.brightColour, Field.FLOW_RIGHT))

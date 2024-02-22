@@ -423,11 +423,15 @@ class InterfaceDialogue(Dialogue):
         if self.nic is None:
             self.mode = None
             data.DisableManagement()
+            data.AdjustNTPForStaticNetwork()
+            Layout.Inst().PushDialogue(InfoDialogue(Lang("Removed DHCP NTP server")))
         else:
             pif = data.host.PIFs()[self.nic]
             if self.mode.lower().startswith('static'):
                 # Comma-separated list of nameserver IPs
                 dns = ','.join(data.dns.nameservers([]))
+                data.AdjustNTPForStaticNetwork()
+                Layout.Inst().PushDialogue(InfoDialogue(Lang("Removed DHCP NTP server")))
             else:
                 dns = ''
 
