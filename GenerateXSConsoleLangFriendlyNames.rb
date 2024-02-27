@@ -50,7 +50,7 @@ header = [
 "class LangFriendlyNames:",
 "  @classmethod",
 "  def Translate(cls, inTag):",
-"    return cls.friendlyNamesMap.get(inTag, inTag)",
+"    return cls.friendlyNamesMap.get(inTag, None)",
 "",
 "  friendlyNamesMap = {"
 ]
