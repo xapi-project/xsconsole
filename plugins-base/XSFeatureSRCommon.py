@@ -154,7 +154,8 @@ class SRUtils:
 
     @classmethod
     def TypeName(cls, inSRType):
-        return LangFriendlyNames.Translate('Label-SR.SRTypes-'+inSRType)
+        translated = LangFriendlyNames.Translate('Label-SR.SRTypes-' + inSRType)
+        return translated or inSRType
 
     @classmethod
     def IsDetachable(cls, inSR):
