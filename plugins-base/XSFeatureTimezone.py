@@ -17,6 +17,7 @@ if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
 
 from XSConsoleStandard import *
+import time
 
 class TimezoneDialogue(Dialogue):
     def __init__(self):
@@ -109,6 +110,7 @@ class TimezoneDialogue(Dialogue):
         Layout.Inst().PopDialogue()
         try:
             data.TimezoneSet(city)
+            time.tzset()
             message = Lang('The timezone has been set to ')+city +".\n\nLocal time is now "+data.CurrentTimeString()
             Layout.Inst().PushDialogue(InfoDialogue( Lang('Timezone Set'), message))
             XSLog(message)
