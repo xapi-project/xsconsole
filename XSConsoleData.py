@@ -496,13 +496,20 @@ class Data:
 
         self.data['ntp']['method'] = ""
         chronyPerm = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
-        if chronyPerm & stat.S_IXUSR and chronyPerm & stat.S_IXGRP and chronyPerm & stat.S_IXOTH:
+        if (
+            chronyPerm & stat.S_IXUSR
+            and chronyPerm & stat.S_IXGRP
+            and chronyPerm & stat.S_IXOTH
+        ):
             self.data['ntp']['method'] = "DHCP"
         elif self.data['ntp']['servers']:
             self.data['ntp']['method'] = "Manual"
 
             servers = self.data['ntp']['servers']
-            if len(servers) == 4 and all("centos.pool.ntp.org" in server for server in self.data['ntp']['servers']):
+            if len(servers) == 4 and all(
+                "centos.pool.ntp.org" in server
+                for server in self.data['ntp']['servers']
+            ):
                 self.data['ntp']['method'] = "Default"
         else:
             self.data['ntp']['method'] = "Disabled"
@@ -547,10 +554,10 @@ class Data:
 
         try:
             with open("/etc/chrony.conf", "w") as confFile:
-              for other in self.ntp.othercontents([]):
-                  confFile.write(other + "\n")
-              for server in self.ntp.servers([]):
-                  confFile.write("server " + server + " iburst\n")
+                for other in self.ntp.othercontents([]):
+                    confFile.write(other + "\n")
+                for server in self.ntp.servers([]):
+                    confFile.write("server " + server + " iburst\n")
         finally:
             self.UpdateFromNTPConf()
 
@@ -585,15 +592,19 @@ class Data:
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
 
-        Data.Inst().NTPServersSet(["0.centos.pool.ntp.org",
-                                    "1.centos.pool.ntp.org",
-                                    "2.centos.pool.ntp.org",
-                                    "3.centos.pool.ntp.org"])
+        Data.Inst().NTPServersSet(
+            [
+                "0.centos.pool.ntp.org",
+                "1.centos.pool.ntp.org",
+                "2.centos.pool.ntp.org",
+                "3.centos.pool.ntp.org",
+            ]
+        )
 
     def GetDHClientInterfaces(self):
         (status, output) = getstatusoutput("ls /var/lib/xcp/ | grep leases")
         if status != 0:
-          return []
+            return []
 
         dhclientFiles = output.splitlines()
         pattern = "dhclient-(.*).leases"
