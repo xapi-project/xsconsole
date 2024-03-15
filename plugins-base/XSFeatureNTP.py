@@ -30,16 +30,31 @@ class NTPDialogue(Dialogue):
 
     def CreateINITIALPane(self):
         choiceDefs = [
-            ChoiceDef(Lang("Use Default NTP Servers"), lambda: self.HandleInitialChoice('DEFAULT') ),
-            ChoiceDef(Lang("Provide NTP Servers Manually"), lambda: self.HandleInitialChoice('MANUAL') ),
-            ChoiceDef(Lang("Disable NTP (Manual Time Entry)"), lambda: self.HandleInitialChoice('NONE') )
+            ChoiceDef(
+                Lang("Use Default NTP Servers"),
+                lambda: self.HandleInitialChoice('DEFAULT'),
+            ),
+            ChoiceDef(
+                Lang("Provide NTP Servers Manually"),
+                lambda: self.HandleInitialChoice('MANUAL'),
+            ),
+            ChoiceDef(
+                Lang("Disable NTP (Manual Time Entry)"),
+                lambda: self.HandleInitialChoice('NONE'),
+            ),
         ]
 
         data = Data.Inst()
         pifs = data.derived.managementpifs([])
         usingDHCP = any("dhcp" in pif['ip_configuration_mode'].lower() for pif in pifs)
         if usingDHCP:
-            choiceDefs.insert(0, ChoiceDef(Lang("Use DHCP NTP Servers"), lambda: self.HandleInitialChoice('DHCP')))
+            choiceDefs.insert(
+                0,
+                ChoiceDef(
+                    Lang("Use DHCP NTP Servers"),
+                    lambda: self.HandleInitialChoice('DHCP'),
+                ),
+            )
 
         self.initialMenu = Menu(self, None, Lang("Configure Network Time"), choiceDefs)
 
@@ -53,8 +68,17 @@ class NTPDialogue(Dialogue):
 
         servers = data.ntp.servers([])
         if data.ntp.method("") == "Manual" and len(servers) > 0:
-            choiceDefs.append(ChoiceDef(Lang("Remove Server"), lambda: self.HandleManualChoice("REMOVE")))
-            choiceDefs.append(ChoiceDef(Lang("Remove All Servers"), lambda: self.HandleManualChoice("REMOVEALL")))
+            choiceDefs.append(
+                ChoiceDef(
+                    Lang("Remove Server"), lambda: self.HandleManualChoice("REMOVE")
+                )
+            )
+            choiceDefs.append(
+                ChoiceDef(
+                    Lang("Remove All Servers"),
+                    lambda: self.HandleManualChoice("REMOVEALL"),
+                )
+            )
 
         self.manualMenu = Menu(self, None, Lang("Configure Network Time"), choiceDefs)
 
@@ -88,7 +112,9 @@ class NTPDialogue(Dialogue):
         pane.AddTitleField(Lang("Please Select an Option"))
         self.CreateMANUALPane()
         pane.AddMenuField(self.manualMenu)
-        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
+        pane.AddKeyHelpField(
+            {Lang("<Enter>"): Lang("OK"), Lang("<Esc>"): Lang("Cancel")}
+        )
 
     def UpdateFieldsNONE(self):
         now = datetime.datetime.now()
@@ -132,7 +158,12 @@ class NTPDialogue(Dialogue):
         choiceDefs = []
         for server in Data.Inst().ntp.servers([]):
             XSLog("Adding server to remove menu: " + server)
-            choiceDefs.append(ChoiceDef(Lang(server), lambda: self.HandleRemoveChoice(self.removeMenu.ChoiceIndex())))
+            choiceDefs.append(
+                ChoiceDef(
+                    Lang(server),
+                    lambda: self.HandleRemoveChoice(self.removeMenu.ChoiceIndex()),
+                )
+            )
 
         self.removeMenu = Menu(self, None, Lang("Remove NTP Server"), choiceDefs)
 
