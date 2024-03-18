@@ -569,8 +569,10 @@ class Data:
 
             if servers:
                 self.StopService("chronyd")
-                getoutput("chronyd -q 'server %s iburst'" % servers[0])  # Update the clock and exit
-                getoutput("hwclock -w")  # Sync hwclock with date set by chronyd
+                # Single shot time update like: `ntpdate servers[0]`
+                getoutput("chronyd -q 'server %s iburst'" % servers[0])
+                # Write the system time (set by the single shot NTP) to the HW clock
+                getoutput("hwclock -w")
                 self.StartService("chronyd")
 
     def AddDHCPNTP(self):
