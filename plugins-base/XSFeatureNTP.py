@@ -67,7 +67,7 @@ class NTPDialogue(Dialogue):
         data.UpdateFromNTPConf()
 
         servers = data.ntp.servers([])
-        if data.ntp.method("") == "Manual" and len(servers) > 0:
+        if len(servers) > 0:
             choiceDefs.append(
                 ChoiceDef(
                     Lang("Remove Server"), lambda: self.HandleManualChoice("REMOVE")
@@ -302,9 +302,6 @@ class NTPDialogue(Dialogue):
                 IPUtils.AssertValidNetworkName(inputValues['name'])
 
                 data=Data.Inst()
-                if data.ntp.method("") == "Default":
-                    data.NTPServersSet([server for server in data.ntp.servers([]) if not inDefaultNTPDomains(server)])
-
                 data.RemoveDHCPNTP()
 
                 servers = data.ntp.servers([])
