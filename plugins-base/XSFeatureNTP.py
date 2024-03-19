@@ -303,7 +303,7 @@ class NTPDialogue(Dialogue):
 
                 data=Data.Inst()
                 if data.ntp.method("") == "Default":
-                    data.NTPServersSet([server for server in data.ntp.servers([]) if "centos.pool.ntp.org" not in server])
+                    data.NTPServersSet([server for server in data.ntp.servers([]) if not inDefaultNTPDomains(server)])
 
                 data.RemoveDHCPNTP()
 
