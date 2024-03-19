@@ -17,6 +17,7 @@ import re, signal, string, subprocess, time, types
 from pprint import pprint
 
 from XSConsoleBases import *
+from XSConsoleConstants import *
 from XSConsoleLang import *
 
 # Utils that need to access Data must go in XSConsoleDataUtils,
@@ -329,4 +330,8 @@ class SizeUtils:
     @classmethod
     def DiskSizeString(cls, inBytes):
         return cls.BinarySizeString(inBytes)+' ('+cls.DecimalSizeString(inBytes)+')'
+
+
+def inDefaultNTPDomains(ntpServer):
+    return any(ntpServer.endswith(defaultDomain) for defaultDomain in DEFAULT_NTP_DOMAINS)
 

@@ -490,9 +490,9 @@ class Data:
         if not 'ntp' in self.data:
             self.data['ntp'] = {}
 
-        (status, output) = getstatusoutput("/bin/cat /etc/chrony.conf")
-        if status == 0:
-            self.ScanNTPConf(output.split("\n"))
+        if os.path.isfile("/etc/chrony.conf"):
+            with open("/etc/chrony.conf", "r") as confFile:
+                self.ScanNTPConf(confFile.read().splitlines())
 
         self.data['ntp']['method'] = ""
         chronyPerm = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
@@ -507,7 +507,7 @@ class Data:
 
             servers = self.data['ntp']['servers']
             if len(servers) == 4 and all(
-                "centos.pool.ntp.org" in server
+                inDefaultNTPDomains(server)
                 for server in self.data['ntp']['servers']
             ):
                 self.data['ntp']['method'] = "Default"
@@ -563,17 +563,10 @@ class Data:
 
         # Force chronyd to update the time
         if self.data['ntp']['method'] != "Disabled":
-            servers = self.data['ntp']['servers']
-            if self.data['ntp']['method'] == "DHCP":
-                servers = self.GetDHClientInterfaces()
-
-            if servers:
-                self.StopService("chronyd")
-                # Single shot time update like: `ntpdate servers[0]`
-                getoutput("chronyd -q 'server %s iburst'" % servers[0])
-                # Write the system time (set by the single shot NTP) to the HW clock
-                getoutput("hwclock -w")
-                self.StartService("chronyd")
+            # Prompt chrony to update the time immediately
+            getoutput("chronyc makestep")
+            # Write the system time (set by the single shot NTP) to the HW clock
+            getoutput("hwclock -w")
 
     def AddDHCPNTP(self):
         # Double-check authentication
@@ -590,28 +583,27 @@ class Data:
             with open("/var/lib/dhclient/chrony.servers.%s" % interface, "w") as chronyFile:
                 chronyFile.write("%s iburst prefer\n" % ntpServer)
 
+        # Ensure chrony is enabled
+        self.EnableService("chronyd")
+        self.EnableService("chrony-wait")
+
     def ResetDefaultNTPServers(self):
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
 
         Data.Inst().NTPServersSet(
-            [
-                "0.centos.pool.ntp.org",
-                "1.centos.pool.ntp.org",
-                "2.centos.pool.ntp.org",
-                "3.centos.pool.ntp.org",
-            ]
+            ["%d%s" % (i, DEFAULT_NTP_DOMAINS[0]) for i in range(4)]
         )
 
     def GetDHClientInterfaces(self):
-        (status, output) = getstatusoutput("ls /var/lib/xcp/ | grep leases")
-        if status != 0:
+        try:
+            leases = [filename for filename in os.listdir("/var/lib/xcp") if "leases" in filename]
+        except OSError:
             return []
 
-        dhclientFiles = output.splitlines()
         pattern = "dhclient-(.*).leases"
         interfaces = []
-        for dhclientFile in dhclientFiles:
+        for dhclientFile in leases:
             match = re.match(pattern, dhclientFile)
             if match:
                 interfaces.append(match.group(1))
@@ -619,7 +611,21 @@ class Data:
         return interfaces
 
     def GetDHCPNTPServer(self, interface):
-        ntpServer = getoutput("grep ntp-servers /var/lib/xcp/dhclient-%s.leases | tail -1 | awk '{{ print ( $3 ) }}'" % interface).strip()[:-1]
+        expectedLeaseFile = "/var/lib/xcp/dhclient-%s.leases" % interface
+        if not os.path.isfile(expectedLeaseFile):
+            return None
+
+        with open(expectedLeaseFile, "r") as leaseFile:
+            data = leaseFile.read().splitlines()
+
+        ntpServerLines = [line for line in data if "ntp-servers" in line]
+
+        # Extract <ip-addr> from "  option ntp-servers <ip-addr>;"
+        try:
+            ntpServer = ntpServerLines[-1].split()[-1][:-1]
+        except:
+            ntpServer = None
+
         return ntpServer
 
     def RemoveDHCPNTP(self):
