@@ -12,6 +12,25 @@
 # You should have received a copy of the GNU General Public License along
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+"""
+Implement NTP control in xsconsole to match the NTP options available in the
+host-installer.
+
+The NTP dialogue is a state machine with the following states:
+- DHCP - Use DHCP server as NTP server
+- Default - Use the default centos pool NTP servers
+- Manual - Use manually specified NTP servers
+- None - Set time manually, no NTP
+
+When someone moves away from the the default NTP servers
+- but is not disabling NTP or using the DHCP -
+then the method is registered as "Manual":
+
+The state or method "Manual" simply means:
+- Not using DHCP (via dhclient)
+- Has at least one NTP server
+- And not using exactly the default servers
+"""
 
 if __name__ == "__main__":
     raise Exception("This script is a plugin for xsconsole and cannot run independently")
@@ -29,6 +48,18 @@ class NTPDialogue(Dialogue):
         self.ChangeState("INITIAL")
 
     def CreateINITIALPane(self):
+        """
+        Create the initial menu for the NTP dialogue.
+
+        This menu allows the user to select the NTP configuration method.
+
+        The options are:
+        - Use Default NTP Servers
+        - Provide NTP Servers Manually
+        - Disable NTP (Manual Time Entry)
+        - Use DHCP NTP Servers (only shown if DHCP is enabled)
+        """
+
         choiceDefs = [
             ChoiceDef(
                 Lang("Use Default NTP Servers"),
@@ -59,6 +90,18 @@ class NTPDialogue(Dialogue):
         self.initialMenu = Menu(self, None, Lang("Configure Network Time"), choiceDefs)
 
     def CreateMANUALPane(self):
+        """
+        Create the manual menu for the NTP dialogue.
+
+        This menu allows the user to add or remove NTP servers manually.
+        It is only available if the user has selected the option
+        "Provide NTP Servers Manually" in the initial menu.
+
+        The options are:
+        - Add New Server
+        - Remove Server (only shown if servers are already configured)
+        - Remove All Servers (only shown if servers are already configured)
+        """
         choiceDefs = [
             ChoiceDef(Lang("Add New Server"), lambda: self.HandleManualChoice("ADD"))
         ]
@@ -106,6 +149,10 @@ class NTPDialogue(Dialogue):
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 
     def UpdateFieldsMANUAL(self):
+        """
+        Update the dialogue pane to add or remove NTP servers manually.
+        See CreateMANUALPane() for details.
+        """
         pane = self.Pane()
         pane.ResetFields()
 
@@ -117,6 +164,8 @@ class NTPDialogue(Dialogue):
         )
 
     def UpdateFieldsNONE(self):
+        """Update the dialogue pane to set the time manually."""
+
         now = datetime.datetime.now()
 
         pane = self.Pane()
@@ -170,7 +219,13 @@ class NTPDialogue(Dialogue):
         pane.AddMenuField(self.removeMenu)
         pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
 
-    def HandleInitialChoice(self, inChoice):
+    def HandleInitialChoice(self, inChoice):  # type: (str) -> None
+        """
+        Handle the user's choice of NTP configuration method in the initial menu.
+
+        param: inChoice: The user's choice of NTP configuration method.
+        inChoice is one of "DHCP", "DEFAULT", "MANUAL", or "NONE".
+        """
         data = Data.Inst()
         try:
             if inChoice == "DHCP":
@@ -198,6 +253,12 @@ class NTPDialogue(Dialogue):
         data.Update()
 
     def HandleManualChoice(self, inChoice):
+        """
+        Handle the user's choice of within the manual NTP configuration method.
+
+        param: inChoice: The user's choice of NTP configuration method.
+        inChoice is one of "ADD", "REMOVE", or "REMOVEALL".
+        """
         data = Data.Inst()
         try:
             if inChoice == "ADD":
@@ -216,6 +277,11 @@ class NTPDialogue(Dialogue):
         data.Update()
 
     def HandleRemoveChoice(self, inChoice):
+        """
+        Handle the user's choice of NTP server to remove.
+
+        param: inChoice: The index of the NTP server to remove.
+        """
         data = Data.Inst()
         servers = data.ntp.servers([])
         thisServer = servers[inChoice]
@@ -228,7 +294,12 @@ class NTPDialogue(Dialogue):
         self.Commit(Lang("NTP server %s deleted" % thisServer))
         data.Update()
 
-    def HandleKey(self, inKey): # Route any menu key presses to the current state handler
+    def HandleKey(self, inKey):
+        """
+        Route any menu key presses to the current state handler
+
+        param: inKey: The key that was pressed
+        """
         handled = False
         if hasattr(self, 'HandleKey'+self.state):
             handled = getattr(self, 'HandleKey'+self.state)(inKey)
@@ -240,12 +311,16 @@ class NTPDialogue(Dialogue):
         return handled
 
     def HandleKeyINITIAL(self, inKey):
+        """Handle key presses when the user is selecting the NTP configuration method."""
         return self.initialMenu.HandleKey(inKey)
 
     def HandleKeyMANUAL(self, inKey):
+        """Handle key presses when the user is setting the NTP servers manually."""
         return self.manualMenu.HandleKey(inKey)
 
     def HandleKeyNONE(self, inKey):
+        """Handle key presses when the user is setting the time manually."""
+
         handled = True
         pane = self.Pane()
         if pane.CurrentInput() is None:
