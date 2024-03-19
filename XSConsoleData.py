@@ -506,7 +506,7 @@ class Data:
             self.data['ntp']['method'] = "Manual"
 
             servers = self.data['ntp']['servers']
-            if len(servers) == 4 and all(
+            if len(servers) == NUM_DEFAULT_NTP_SERVERS and all(
                 inDefaultNTPDomains(server)
                 for server in self.data['ntp']['servers']
             ):
@@ -590,10 +590,7 @@ class Data:
     def ResetDefaultNTPServers(self):
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
-
-        Data.Inst().NTPServersSet(
-            ["%d%s" % (i, DEFAULT_NTP_DOMAINS[0]) for i in range(4)]
-        )
+        Data.Inst().NTPServersSet(DEFAULT_NTP_SERVERS)
 
     def GetDHClientInterfaces(self):
         try:
