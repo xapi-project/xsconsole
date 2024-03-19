@@ -903,6 +903,8 @@ class Data:
             cfg.info["ZONE"] = inTimezone
             cfg.write('/etc/sysconfig/clock')
 
+        time.tzset()
+
     def CurrentTimeString(self):
         return getoutput('/bin/date -R')
 
