@@ -1172,9 +1172,8 @@ class SRNewDialogue(Dialogue):
 
     def CommitCreate(self, inType, inDeviceConfig, inOtherConfig = None):
         Layout.Inst().PopDialogue()
-        Layout.Inst().TransientBanner(Lang('Creating Storage Repository...'))
         try:
-            srRef = Task.Sync(lambda x: x.xenapi.SR.create(
+            async_task = Task.New(lambda x: x.xenapi.Async.SR.create(
                 HotAccessor().local_host_ref().OpaqueRef(), # host
                 inDeviceConfig,
                 '0', # physical_size
@@ -1185,17 +1184,27 @@ class SRNewDialogue(Dialogue):
                 True # shared
                 )
             )
+            messagePrefix = Lang('Creating Storage Repository')
+            # Call back for when the SR.create operation completes
+            def create_sr_complete_callback(async_task, inOtherConfig):
+                srRef = async_task.Result()
+                if not srRef:
+                    Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Failed"), async_task.Message()))
+                else:
+                    # Set values in other_config only if the SR.create operation hasn't already set them
+                    for key, value in FirstValue(inOtherConfig, {}).items():
+                        try:
+                            Task.Sync(lambda x:x.xenapi.SR.add_to_other_config(srRef.OpaqueRef(), key, value))
+                        except Exception:
+                            pass #  Ignore failure
 
-            # Set values in other_config only if the SR.create operation hasn't already set them
-            for key, value in FirstValue(inOtherConfig, {}).iteritems():
-                try:
-                    Task.Sync(lambda x:x.xenapi.SR.add_to_other_config(srRef, key, value))
-                except:
-                    pass #  Ignore failure
+                    Data.Inst().Update()
+                    Data.Inst().SetPoolSRIfRequired(srRef.OpaqueRef())
+                    Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Successful")))
 
-            Data.Inst().Update()
-            Data.Inst().SetPoolSRIfRequired(srRef)
-            Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Successful")))
+            Layout.Inst().PushDialogue(ProgressDialogue(async_task, messagePrefix,
+                                                        create_sr_complete_callback,
+                                                        inOtherConfig))
 
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Failed"), Lang(e)))

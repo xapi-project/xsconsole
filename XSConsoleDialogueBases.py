@@ -628,10 +628,14 @@ class SRDialogue(Dialogue):
         self.DoAction(self.choices[inChoice].sr)
 
 class ProgressDialogue(Dialogue):
-    def __init__(self, inTask, inText):
+    def __init__(self, inTask, inText, *args, OnComplete=None):
         Dialogue.__init__(self)
         self.task = inTask
         self.text = inText
+        # OnComplete is a function to call when the task completes
+        # Used for getting task result and do something after the task completes
+        self.OnComplete = OnComplete
+        self.args = args # Arguments to pass to OnComplete
 
         self.ChangeState('INITIAL')
 
@@ -739,6 +743,8 @@ class ProgressDialogue(Dialogue):
     def HandleCompletion(self):
         # This method is called from UpdateFields, so shouldn't pop the dialogue, etc.
         self.ChangeState('COMPLETE')
+        if self.OnComplete:
+            self.OnComplete(self.task, *self.args)
 
 class DialogueUtils:
     # Helper for activate
