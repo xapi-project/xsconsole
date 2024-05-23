@@ -25,6 +25,7 @@ class TaskEntry:
         self.completed = False
         self.creationTime = None
         self.finishTime = None
+        self.result = None
 
     def Completed(self):
         return self.completed
@@ -37,6 +38,10 @@ class TaskEntry:
 
         self.creationTime = TimeUtils.DateTimeToSecs(self.session.xenapi.task.get_created(self.hotOpaqueRef.OpaqueRef()))
         self.finishTime = TimeUtils.DateTimeToSecs(self.session.xenapi.task.get_finished(self.hotOpaqueRef.OpaqueRef()))
+        if inStatus.startswith('success'):
+            result = self.session.xenapi.task.get_result(self.hotOpaqueRef.OpaqueRef())
+            result = result.replace("<value>", "").replace("</value>", "")
+            self.result = HotOpaqueRef(result, 'any')
         if inStatus.startswith('failure'):
             self.errorInfo = self.session.xenapi.task.get_error_info(self.hotOpaqueRef.OpaqueRef())
 
@@ -53,11 +58,7 @@ class TaskEntry:
         return status
 
     def Result(self):
-        if self.Completed():
-            result = self.completionStatus
-        else:
-            result= self.session.xenapi.task.get_status(self.hotOpaqueRef.OpaqueRef())
-        return HotOpaqueRef(result, 'any')
+        return self.result
 
     def CanCancel(self):
         if self.Completed():
