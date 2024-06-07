@@ -1203,8 +1203,8 @@ class SRNewDialogue(Dialogue):
                     Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Successful")))
 
             Layout.Inst().PushDialogue(ProgressDialogue(async_task, messagePrefix,
-                                                        create_sr_complete_callback,
-                                                        inOtherConfig))
+                                                        inOtherConfig,
+                                                        OnComplete=create_sr_complete_callback))
 
         except Exception, e:
             Layout.Inst().PushDialogue(InfoDialogue(Lang("Storage Repository Creation Failed"), Lang(e)))
