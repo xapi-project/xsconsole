@@ -628,13 +628,13 @@ class SRDialogue(Dialogue):
         self.DoAction(self.choices[inChoice].sr)
 
 class ProgressDialogue(Dialogue):
-    def __init__(self, inTask, inText, *args, OnComplete=None):
+    def __init__(self, inTask, inText, *args, **kwargs):
         Dialogue.__init__(self)
         self.task = inTask
         self.text = inText
         # OnComplete is a function to call when the task completes
         # Used for getting task result and do something after the task completes
-        self.OnComplete = OnComplete
+        self.OnComplete = kwargs.get('OnComplete', None)
         self.args = args # Arguments to pass to OnComplete
 
         self.ChangeState('INITIAL')
