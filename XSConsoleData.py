@@ -209,8 +209,7 @@ class Data:
                     # NULL or dangling reference
                     self.data['host']['crash_dump_sr'] = None
 
-                convertCPU = lambda cpu: self.session.xenapi.host_cpu.get_record(cpu)
-                self.data['host']['host_CPUs'] = list(map(convertCPU, self.data['host']['host_CPUs']))
+                self.UpdateHostCPUs()
 
                 def convertPIF(inPIF):
                     retVal = self.session.xenapi.PIF.get_record(inPIF)
@@ -359,6 +358,17 @@ class Data:
         self.ScanService('chronyd')
 
         self.DeriveData()
+
+    def UpdateHostCPUs(self):
+        convertCPU = lambda cpu: self.session.xenapi.host_cpu.get_record(cpu)
+        hostCPUs = list(map(convertCPU, self.data['host']['host_CPUs']))
+
+        self.data['host']['host_CPUs'] = []
+        for cpu in hostCPUs:
+            if 'HANDLE_INVALID' in cpu:
+                XSLogError('xenapi host_cpu: ' + ', '.join(cpu))
+            else:
+                self.data['host']['host_CPUs'].append(cpu)
 
     def DeriveData(self):
         self.data.update({
