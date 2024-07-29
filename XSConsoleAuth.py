@@ -113,7 +113,7 @@ class Auth:
                 session.close()
 
     def PAMAuthenticate(self, inUsername, inPassword):
-        if not pam.authenticate(inUsername, inPassword, service="passwd"):
+        if not pam.authenticate(inUsername, inPassword, service="password-auth"):
             # Display a generic message for all failures
             raise Exception(Lang("The system could not log you in.  Please check your access credentials and try again."))
 
