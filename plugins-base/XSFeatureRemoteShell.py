@@ -57,11 +57,9 @@ class RemoteShellDialogue(Dialogue):
         try:
             message = Lang("Configuration Successful")
             if inChoice:
-                data.EnableService('sshd')
-                data.StartService('sshd')
+                data.EnableSSH()
             else:
-                data.DisableService('sshd')
-                data.StopService('sshd')
+                data.DisableSSH()
 
                 if ShellPipe(['/sbin/pidof', 'sshd']).CallRC() == 0: # If PIDs are available
                     message = Lang("New connections via the remote shell are now disabled, but there are "

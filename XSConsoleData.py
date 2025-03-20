@@ -1101,6 +1101,16 @@ class Data:
         self.RequireSession()
         self.session.xenapi.host.disable(self.host.opaqueref())
 
+    def EnableSSH(self):
+        Auth.Inst().AssertAuthenticatedOrPasswordUnset()
+        self.RequireSession()
+        self.session.xenapi.host.enable_ssh(self.host.opaqueref())
+
+    def DisableSSH(self):
+        Auth.Inst().AssertAuthenticatedOrPasswordUnset()
+        self.RequireSession()
+        self.session.xenapi.host.disable_ssh(self.host.opaqueref())
+
     def Ping(self,  inDest):
         # Must be careful that no unsanitised data is passed to the command
         if not re.match(r'[0-9a-zA-Z][-0-9a-zA-Z.]*$',  inDest):
