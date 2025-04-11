@@ -22,7 +22,7 @@ pool_conf = '%s/pool.conf' % (Config.Inst().XCPConfigDir())
 interface_reconfigure = '%s/interface-reconfigure' % (Config.Inst().LibexecPath())
 inventory_file = '/etc/xensource-inventory'
 management_conf = '/etc/firstboot.d/data/management.conf'
-network_reset = '/tmp/network-reset'
+network_reset = '/var/tmp/network-reset'
 
 def read_dict_file(fname):
 	f = open(fname, 'r')
