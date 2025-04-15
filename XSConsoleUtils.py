@@ -13,7 +13,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import re, signal, string, subprocess, time, types
+import re, signal, socket, string, subprocess, time, types
 from pprint import pprint
 
 from XSConsoleBases import *
@@ -191,27 +191,28 @@ class TimeUtils:
 
 class IPUtils:
     @classmethod
+    def ValidateIPFamily(cls, text, family):
+        try:
+            socket.inet_pton(family, text)
+            return True
+        except socket.error:
+            return False
+
+    @classmethod
+    def ValidateIPv4(cls, text):
+        return cls.ValidateIPFamily(text, socket.AF_INET)
+
+    @classmethod
+    def ValidateIPv6(cls, text):
+        return cls.ValidateIPFamily(text, socket.AF_INET6)
+
+    @classmethod
     def ValidateIP(cls, text):
-        rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
-        if not rc: return False
-        ints = list(map(int, rc.groups()))
-        largest = 0
-        for i in ints:
-            if i > 255: return False
-            largest = max(largest, i)
-        if largest == 0: return False
-        return True
+        return cls.ValidateIPv4(text) or cls.ValidateIPv6(text)
 
     @classmethod
     def ValidateNetmask(cls, text):
-        rc = re.match("^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$", text)
-        if not rc:
-            return False
-        ints = list(map(int, rc.groups()))
-        for i in ints:
-            if i > 255:
-                return False
-        return True
+        return cls.ValidateIPv4(text) or (int(text) > 4 and int(text) < 128)
 
     @classmethod
     def AssertValidNetmask(cls, inIP):
@@ -228,7 +229,7 @@ class IPUtils:
     @classmethod
     def AssertValidHostname(cls, inName):
         # Allow 0-9, A-Z, a-z and hyphen, but disallow hyphen at start and end
-        if not re.match(r'[0-9A-Za-z]([-0-9A-Za-z]{0,61}[0-9A-Za-z]|)$', inName):
+        if not (re.match(r'[0-9A-Za-z]([-0-9A-Za-z]{0,61}[0-9A-Za-z]|)$', inName) or cls.AssertValidIP(inName)):
             raise Exception(Lang('Invalid hostname'))
         return inName
 
