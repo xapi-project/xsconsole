@@ -47,7 +47,7 @@ class InterfaceDialogue(Dialogue):
 
         if len(choiceDefs) == 0:
             XSLog('Configure Management Interface found no PIFs to present')
-            choiceDefs.append(ChoiceDef(Lang("<No interfaces present>"), None))
+            choiceDefs.append(ChoiceDef(Lang("<Couldn't retrieve data about existing interfaces>"), None))
         else:
             choiceDefs.append(ChoiceDef(Lang("Disable Management Interface"), lambda: self.HandleNICChoice(None)))
 
