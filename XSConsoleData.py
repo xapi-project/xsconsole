@@ -1099,6 +1099,16 @@ class Data:
         self.RequireSession()
         self.session.xenapi.host.disable_ssh(self.host.opaqueref())
 
+    def GetSSHAutoMode(self):
+        Auth.Inst().AssertAuthenticatedOrPasswordUnset()
+        self.RequireSession()
+        return self.session.xenapi.host.get_ssh_auto_mode(self.host.opaqueref())
+
+    def SetSSHAutoMode(self, inMode):
+        Auth.Inst().AssertAuthenticatedOrPasswordUnset()
+        self.RequireSession()
+        self.session.xenapi.host.set_ssh_auto_mode(self.host.opaqueref(), inMode)
+
     def Ping(self,  inDest):
         # Must be careful that no unsanitised data is passed to the command
         if not re.match(r'[0-9a-zA-Z][-0-9a-zA-Z.]*$',  inDest):
