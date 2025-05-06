@@ -23,6 +23,9 @@ interface_reconfigure = '%s/interface-reconfigure' % (Config.Inst().LibexecPath(
 inventory_file = '/etc/xensource-inventory'
 management_conf = '/etc/firstboot.d/data/management.conf'
 network_reset = '/var/tmp/network-reset'
+# The existence of this directory determines if the device renaming happened or not.
+# The renaming will get devices named like eth0, eth1, etc.
+interface_rename_dir = '/etc/sysconfig/network-scripts/interface-rename-data'
 
 def read_dict_file(fname):
 	f = open(fname, 'r')
@@ -74,7 +77,12 @@ class NetworkResetDialogue(Dialogue):
 			conf = read_management_conf()
 			self.device = conf['LABEL']
 		except:
-			self.device = "eth0"
+			if os.path.exists(interface_rename_dir):
+				self.device = "eth0"
+			else:
+				# Something is wrong as no mgmt device in management_conf file.
+				# Leave it empty to ensure that the user must specify one.
+				self.device = ""
 
 		try:
 			conf = read_management_conf()
@@ -335,11 +343,16 @@ class NetworkResetDialogue(Dialogue):
 			finally:
 				f.close()
 
-		# Construct bridge name for management interface based on convention
-		if self.device[:3] == 'eth':
-			bridge = 'xenbr' + self.device[3:]
-		else:
-			bridge = 'br' + self.device
+		renamed = os.path.exists(interface_rename_dir)
+
+		if renamed:
+			# Construct bridge name for management interface based on convention
+			if self.device[:3] == 'eth':
+				bridge = 'xenbr' + self.device[3:]
+			else:
+				bridge = 'br' + self.device
+		# Else, the device name will not be like eth<N>. And networkd will
+		# determine the bridge name.
 
 		# Ensure xapi is not running
 		os.system('service xapi stop >/dev/null 2>/dev/null')
@@ -357,14 +370,16 @@ class NetworkResetDialogue(Dialogue):
 			try: os.remove('/var/xapi/networkd.db')
 			except: pass
 
-		# Update interfaces in inventory file
-		inventory = read_inventory()
-		if self.vlan:
-			inventory['MANAGEMENT_INTERFACE'] = 'xentemp'
-		else:
-			inventory['MANAGEMENT_INTERFACE'] = bridge
-		inventory['CURRENT_INTERFACES'] = ''
-		write_inventory(inventory)
+		if renamed:
+			# Update interfaces in inventory file
+			inventory = read_inventory()
+			if self.vlan:
+				inventory['MANAGEMENT_INTERFACE'] = 'xentemp'
+			else:
+				inventory['MANAGEMENT_INTERFACE'] = bridge
+			inventory['CURRENT_INTERFACES'] = ''
+			write_inventory(inventory)
+		# Else, networkd will update the inventory file.
 
 		# Rewrite firstboot management.conf file, which will be picked it by xcp-networkd on restart (if used)
 		f = open(management_conf, 'w')
@@ -403,7 +418,9 @@ class NetworkResetDialogue(Dialogue):
 		# Reset the domain 0 network interface naming configuration
 		# back to a fresh-install state for the currently-installed
 		# hardware.
-		os.system("/etc/sysconfig/network-scripts/interface-rename.py --reset-to-install")
+		if renamed:
+			os.system("/etc/sysconfig/network-scripts/interface-rename.py --reset-to-install")
+		# Else, networkd will do the reset during starting up
 
 class XSFeatureNetworkReset:
 	@classmethod
