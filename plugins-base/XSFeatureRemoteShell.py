@@ -18,6 +18,68 @@ if __name__ == "__main__":
 
 from XSConsoleStandard import *
 
+DISABLE = 0
+ENABLE = 1
+AUTO = 2
+
+class DisableOptionsDialogue(Dialogue):
+    def __init__(self):
+        Dialogue.__init__(self)
+
+        pane = self.NewPane(DialoguePane(self.parent))
+        pane.TitleSet(Lang("Auto-mode Options"))
+        pane.AddBox()
+
+        self.disableMenu = Menu(self, None, Lang("Disable Options"), [
+            ChoiceDef(Lang("Standard Disable"), lambda: self.HandleChoice(DISABLE)),
+            ChoiceDef(Lang("Disable and Turn on Auto-mode"), lambda: self.HandleChoice(AUTO))
+            ])
+
+        self.UpdateFields()
+
+    def UpdateFields(self):
+        pane = self.Pane()
+        pane.ResetFields()
+
+        pane.AddTitleField(Lang("When auto-mode is enabled: SSH is disabled when XAPI is running properly, "
+                        "and enabled when XAPI is down for emergency troubleshooting."))
+        pane.AddMenuField(self.disableMenu)
+        pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
+
+    def HandleKey(self, inKey):
+        handled = self.disableMenu.HandleKey(inKey)
+
+        if not handled and inKey == 'KEY_ESCAPE':
+            Layout.Inst().PopDialogue()
+            handled = True
+
+        return handled
+
+    def HandleChoice(self, inChoice):
+        data = Data.Inst()
+        Layout.Inst().PopDialogue()
+
+        try:
+            message = Lang("Configuration Successful")
+            data.DisableSSH()
+
+            if ShellPipe(['/sbin/pidof', 'sshd-session']).CallRC() == 0: # If PIDs are available
+                message = Lang("New connections via the remote shell are now disabled, but there are "
+                    "ssh connections still ongoing.  If necessary, use 'killall sshd-session' from the Local "
+                    "Command Shell to terminate them.")
+            if inChoice == AUTO:
+                data.SetSSHAutoMode(True)
+                message = Lang("Auto configuration for ssh xapi console has been set. New connections via "
+                        "the remote shell will be enabled/disabled based on the state of the xapi")
+
+            Layout.Inst().PushDialogue(InfoDialogue(message))
+
+        except Exception as e:
+            Layout.Inst().PushDialogue(InfoDialogue(Lang("Failed: ")+Lang(e)))
+
+        data.Update()
+
+
 class RemoteShellDialogue(Dialogue):
     def __init__(self):
         Dialogue.__init__(self)
@@ -27,8 +89,8 @@ class RemoteShellDialogue(Dialogue):
         pane.AddBox()
 
         self.remoteShellMenu = Menu(self, None, Lang("Configure Remote Shell"), [
-            ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(True) ),
-            ChoiceDef(Lang("Disable"), lambda: self.HandleChoice(False) )
+            ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(ENABLE)),
+            ChoiceDef(Lang("Disable"), lambda: self.HandleDisable())
             ])
 
         self.UpdateFields()
@@ -50,28 +112,24 @@ class RemoteShellDialogue(Dialogue):
 
         return handled
 
-    def HandleChoice(self,  inChoice):
+    def HandleChoice(self, inChoice):
         data = Data.Inst()
         Layout.Inst().PopDialogue()
 
         try:
             message = Lang("Configuration Successful")
-            if inChoice:
+            if inChoice == ENABLE:
                 data.EnableSSH()
-            else:
-                data.DisableSSH()
-
-                if ShellPipe(['/sbin/pidof', 'sshd']).CallRC() == 0: # If PIDs are available
-                    message = Lang("New connections via the remote shell are now disabled, but there are "
-                        "ssh connections still ongoing.  If necessary, use 'killall sshd' from the Local "
-                        "Command Shell to terminate them.")
-
-            Layout.Inst().PushDialogue(InfoDialogue(message))
+                Layout.Inst().PushDialogue(InfoDialogue(message))
 
         except Exception as e:
-            Layout.Inst().PushDialogue(InfoDialogue( Lang("Failed: ")+Lang(e)))
+            Layout.Inst().PushDialogue(InfoDialogue(Lang("Failed: ")+Lang(e)))
 
         data.Update()
+
+    def HandleDisable(self):
+        Layout.Inst().PopDialogue()
+        Layout.Inst().PushDialogue(DisableOptionsDialogue())
 
 
 class XSFeatureRemoteShell:
@@ -106,7 +164,7 @@ class XSFeatureRemoteShell:
             {
                 'menuname' : 'MENU_REMOTE',
                 'menupriority' : 100,
-                'menutext' : Lang('Enable/Disable Remote Shell') ,
+                'menutext' : Lang('Enable/Disable/Auto Remote Shell') ,
                 'statusupdatehandler' : self.StatusUpdateHandler,
                 'activatehandler' : self.ActivateHandler
             }
