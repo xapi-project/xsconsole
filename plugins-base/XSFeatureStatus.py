@@ -75,8 +75,9 @@ class XSFeatureStatus:
         message = ''
         message += Lang('Key fingerprint shown when connecting from '+appName+' (https)\n\n')
         message += data.sslfingerprint('')+'\n\n'
-        message += Lang('Key fingerprint shown when logging in remotely (ssh)\n\n')
-        message += data.sshfingerprint('')
+        message += Lang('Key fingerprints shown when logging in remotely (ssh)\n\n')
+        for fingerprint in data.sshfingerprint(''):
+            message += fingerprint + '\n'
 
         Layout.Inst().PushDialogue(InfoDialogue(Lang("SSL Key Fingerprints"), message))
 

@@ -22,7 +22,7 @@ pool_conf = '%s/pool.conf' % (Config.Inst().XCPConfigDir())
 interface_reconfigure = '%s/interface-reconfigure' % (Config.Inst().LibexecPath())
 inventory_file = '/etc/xensource-inventory'
 management_conf = '/etc/firstboot.d/data/management.conf'
-network_reset = '/tmp/network-reset'
+network_reset = '/var/tmp/network-reset'
 
 def read_dict_file(fname):
 	f = open(fname, 'r')
@@ -63,7 +63,8 @@ class NetworkResetDialogue(Dialogue):
 		f = open(pool_conf, 'r')
 		try:
 			l = f.readline()
-			ls = l.split(':')
+			# split "slave:ipaddress" such that IPv6 address is preserved
+			ls = l.split(':', maxsplit=1)
 			if ls[0] == 'slave':
 				self.master_ip = ls[1]
 		finally:

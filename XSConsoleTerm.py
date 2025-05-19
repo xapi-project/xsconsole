@@ -290,8 +290,8 @@ class App:
             # if gotKey is not None:
             #     bannerStr = gotKey
 
-            timeStr = time.strftime(" %H:%M:%S ", time.localtime())
-            statusLine = ("%-35s%10.10s%35.35s" % (bannerStr[:35], timeStr[:10], hostStr[:35]))
+            timeStr = time.strftime(" %H:%M:%S %Z [UTC%z] ", time.localtime())
+            statusLine = ("%-25s%28.28s%27.27s" % (bannerStr[:25], timeStr[:28], hostStr[:27]))
             self.renderer.RenderStatus(self.layout.Window(Layout.WIN_TOPLINE), statusLine)
 
             if self.needsRefresh:

@@ -148,10 +148,22 @@ class Data:
             else:
                 self.data['sslfingerprint'] = "<Unknown>"
 
-        try:
-            self.data['sshfingerprint'] = ShellPipe('/usr/bin/ssh-keygen', '-lf', '/etc/ssh/ssh_host_rsa_key.pub').AllOutput()[0].split(' ')[1]
-        except:
-            self.data['sshfingerprint'] = Lang('<Unknown>')
+        def get_ssh_key(filename):
+            fingerprints = ShellPipe('/usr/bin/ssh-keygen', '-lf', filename).AllOutput()[0].split(' ')
+            return fingerprints[1] + ' ' + fingerprints[-1]
+
+        keytypes = ['rsa', 'ed25519', 'ecdsa']
+        fingerprints = []
+        for keytype in keytypes:
+            try:
+                fingerprints.append(get_ssh_key('/etc/ssh/ssh_host_%s_key.pub' % keytype))
+            except:
+                pass
+
+        if not fingerprints:
+            self.data['sshfingerprint'] = [Lang('<Unknown>')]
+        else:
+            self.data['sshfingerprint'] = fingerprints
 
         try:
             self.data['state_on_usb_media'] = ( ShellPipe('/bin/bash', '-c', 'source /opt/xensource/libexec/oem-functions; if state_on_usb_media; then exit 1; else exit 0; fi').CallRC() != 0 )
