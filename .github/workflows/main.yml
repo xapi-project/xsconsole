@@ -15,14 +15,14 @@ env:
 jobs:
   python-checks:
     name: minimaltest (pre-commit)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Install dependencies
         run: |
-          #: Install Python 2.7 from Ubuntu 20.04 using apt-get install
+          #: Install Python 2.7 from Ubuntu 22.04 using apt-get install
           sudo apt-get update && sudo apt-get install -y python2
           curl -sSL https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
           python2 get-pip.py
