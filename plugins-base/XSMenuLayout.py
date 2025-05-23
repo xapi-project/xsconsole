@@ -173,6 +173,13 @@ class XSMenuLayout:
             "From this menu you can backup and restore the system database and Virtual Machine metadata, and apply "
             "software updates to the system."))
 
+    def UpdateFieldsDMV(self, inPane):
+        inPane.AddTitleField(Lang("Multi Version Drivers"))
+
+        inPane.AddWrappedTextField(Lang(
+            "From this menu you can list variants for a device driver, and select one specific variant, and "
+            "view the driver status (which is active, which is selected)."))
+
     def ActivateHandler(self, inName):
         Layout.Inst().TopDialogue().ChangeMenu(inName)
 
@@ -180,6 +187,8 @@ class XSMenuLayout:
         data = Data.Inst()
 
         rootMenuDefs = [
+            [ 'MENU_DMV', Lang("Multi Version Drivers"),
+                lambda: self.ActivateHandler('MENU_DMV'), self.UpdateFieldsDMV ],
             [ 'MENU_NETWORK', Lang("Network and Management Interface"),
                 lambda: self.ActivateHandler('MENU_NETWORK'), self.UpdateFieldsNETWORK ],
             [ 'MENU_AUTH', Lang("Authentication"),
