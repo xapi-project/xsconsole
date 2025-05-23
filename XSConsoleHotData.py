@@ -227,6 +227,7 @@ class HotData:
         self.AddFetcher('sr', self.FetchSR, 5)
         self.AddFetcher('visible_sr', self.FetchVisibleSR, 5) # Derived
         self.AddFetcher('vm', self.FetchVM, 5)
+        self.AddFetcher('dmv', self.FetchDMVDrivers, 60)
 
     def FetchVMGuestMetrics(self, inOpaqueRef):
         retVal = self.Session().xenapi.VM_guest_metrics.get_record(inOpaqueRef.OpaqueRef())
@@ -332,6 +333,26 @@ class HotData:
             for key, host in hosts.items():
                 host = LocalConverter(host)
                 retVal[HotOpaqueRef(key, 'host')] = host
+        return retVal
+
+    def FetchDMVDrivers(self, inOpaqueRef):
+        def LocalConverter(inHostDriver):
+            return HotData.ConvertOpaqueRefs(inHostDriver,
+                host='host',
+                variants='variants',
+                active_variant='active_variant',
+                selected_variant='selected_variant'
+                )
+
+        if inOpaqueRef is not None:
+            driver = self.Session().xenapi.Host_driver.get_record(inOpaqueRef.OpaqueRef())
+            retVal = LocalConverter(driver)
+        else:
+            drivers = self.Session().xenapi.Host_driver.get_all_records()
+            retVal = {}
+            for key, driver in drivers.items():
+                driver = LocalConverter(driver)
+                retVal[HotOpaqueRef(key, 'driver')] = driver
         return retVal
 
     def FetchMetrics(self, inOpaqueRef):
