@@ -31,7 +31,7 @@ class DisableOptionsDialogue(Dialogue):
         pane.AddBox()
 
         self.disableMenu = Menu(self, None, Lang("Disable Options"), [
-            ChoiceDef(Lang("Standard Disable"), lambda: self.HandleChoice(DISABLE)),
+            ChoiceDef(Lang("Always Disable"), lambda: self.HandleChoice(DISABLE)),
             ChoiceDef(Lang("Disable and Turn on Auto-mode"), lambda: self.HandleChoice(AUTO))
             ])
 
@@ -69,8 +69,8 @@ class DisableOptionsDialogue(Dialogue):
                     "Command Shell to terminate them.")
             if inChoice == AUTO:
                 data.SetSSHAutoMode(True)
-                message = Lang("Auto configuration for ssh xapi console has been set. New connections via "
-                        "the remote shell will be enabled/disabled based on the state of the xapi")
+                message = Lang("SSH auto-mode has been configured. For security,"
+                        "SSH is normally disabled and will only be enabled in case of emergency.")
 
             Layout.Inst().PushDialogue(InfoDialogue(message))
 
