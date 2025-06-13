@@ -46,6 +46,7 @@ SCRIPTS += XSConsoleUtils.py
 SCRIPTS += simpleconfig.py
 
 PLUGINS_BASE :=
+PLUGINS_BASE += XSFeatureDMV.py
 PLUGINS_BASE += XSFeatureChangePassword.py
 PLUGINS_BASE += XSFeatureChangeTimeout.py
 PLUGINS_BASE += XSFeatureCrashDumpSR.py
