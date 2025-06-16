@@ -214,21 +214,21 @@ class DriverSelectDialogue(Dialogue):
 class XSFeatureDMV:
     @classmethod
     def PresentStatusUpdateHandler(cls, inPane):
-        inPane.AddTitleField(Lang("Multi Version Driver Information"))
+        inPane.AddTitleField(Lang("Driver Variants Information"))
 
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to display detailed information about hardware present driver variants on this host."))
 
     @classmethod
     def AllStatusUpdateHandler(cls, inPane):
-        inPane.AddTitleField(Lang("Multi Version Driver Information"))
+        inPane.AddTitleField(Lang("Driver Variants Information"))
 
         inPane.AddWrappedTextField(Lang(
             "Press <Enter> to display detailed information about all driver variants on this host."))
 
     @classmethod
     def NoDMVStatusUpdateHandler(cls, inPane):
-        inPane.AddTitleField(Lang("Multi Version Drivers Information"))
+        inPane.AddTitleField(Lang("Driver Variants Information"))
 
         inPane.AddWrappedTextField(Lang("There are no Multi Version Drivers on this host."))
 
@@ -378,7 +378,7 @@ class XSFeatureDMV:
             'MENU_DMV', # Name of the menu this item is part of
             {
                 'menuname' : 'MENU_PRESENTDRV', # Name of the menu this item leads to when selected
-                'menutext' : Lang('Drivers With Present Devices'),
+                'menutext' : Lang('Available Hardware Driver Variants'),
                 'menupriority' : 100,
                 'menuregenerator' : XSFeatureDMV.PresentMenuRegenerator,
                 'activatehandler' : XSFeatureDMV.PresentActivateHandler,
@@ -391,7 +391,7 @@ class XSFeatureDMV:
             'MENU_DMV', # Name of the menu this item is part of
             {
                 'menuname' : 'MENU_ALLDRV', # Name of the menu this item leads to when selected
-                'menutext' : Lang('All Drivers'),
+                'menutext' : Lang('All Driver Variants'),
                 'menupriority' : 300,
                 'menuregenerator' : XSFeatureDMV.AllMenuRegenerator,
                 'activatehandler' : XSFeatureDMV.AllActivateHandler,
