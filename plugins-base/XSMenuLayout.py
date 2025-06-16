@@ -174,7 +174,7 @@ class XSMenuLayout:
             "software updates to the system."))
 
     def UpdateFieldsDMV(self, inPane):
-        inPane.AddTitleField(Lang("Multi Version Drivers"))
+        inPane.AddTitleField(Lang("Hardware Driver Variants"))
 
         inPane.AddWrappedTextField(Lang(
             "From this menu you can list variants for a device driver, and select one specific variant, and "
@@ -187,7 +187,7 @@ class XSMenuLayout:
         data = Data.Inst()
 
         rootMenuDefs = [
-            [ 'MENU_DMV', Lang("Multi Version Drivers"),
+            [ 'MENU_DMV', Lang("Hardware Driver Variants"),
                 lambda: self.ActivateHandler('MENU_DMV'), self.UpdateFieldsDMV ],
             [ 'MENU_NETWORK', Lang("Network and Management Interface"),
                 lambda: self.ActivateHandler('MENU_NETWORK'), self.UpdateFieldsNETWORK ],
