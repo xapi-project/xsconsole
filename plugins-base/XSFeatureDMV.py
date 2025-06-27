@@ -1,4 +1,4 @@
-# Copyright (c) 2008-2009 Citrix Systems Inc.
+# Copyright (c) 2025 Cloud Software Group, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
