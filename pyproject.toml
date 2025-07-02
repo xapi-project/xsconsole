@@ -3,7 +3,7 @@
 name = "XSConsole"
 dynamic = ["version"]
 description = "Xenserver Status Report"
-requires-python = "2.7"
+requires-python = ">=2.7, <3.12"
 license = "GPL-2.0-or-later"
 keywords = ["xenserver", "xen-project"]
 authors = [
