@@ -56,6 +56,8 @@ class DMVUtils:
         variantRef = driver.selected_variant(None)
         if variantRef is None:
             return None
+        if variantRef.OpaqueRef() == "OpaqueRef:NULL":
+            return None
         variant = Task.Sync(lambda x: x.xenapi.Driver_variant.get_record(variantRef.OpaqueRef()))
         return variant['uuid']
 
