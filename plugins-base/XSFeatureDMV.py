@@ -66,8 +66,8 @@ class DMVUtils:
         driver = HotAccessor().dmv[inDMVHandle]
         driverRef = driver.HotOpaqueRef().OpaqueRef()
 
-        # This is an immediate operation, cannot be executed in async mode.
-        Task.Sync(lambda x: x.xenapi.Host_driver.select(driverRef, variantRef))
+        task = Task.New(lambda x: x.xenapi.Async.Host_driver.select(driverRef, variantRef))
+        return task
 
 class DriverSelectDialogue(Dialogue):
     def __init__(self, inDMVHandle):
@@ -206,11 +206,11 @@ class DriverSelectDialogue(Dialogue):
 
         messagePrefix = Lang('Selecting variant ') + variantName + Lang(' for driver ') + driverName + Lang(' ')
         try:
-            DMVUtils.DoSelect(self.dmvHandle, self.selectedVariantOpaqueRef)
+            task = DMVUtils.DoSelect(self.dmvHandle, self.selectedVariantOpaqueRef)
+            Layout.Inst().PushDialogue(ProgressDialogue(task, messagePrefix))
 
-            promptMessage = Lang('successful.\n\nPlease reboot host to enable the selected variant.')
-            Layout.Inst().PushDialogue(InfoDialogue(messagePrefix + promptMessage))
         except Exception as e:
+            self.ChangState('INITIAL')
             Layout.Inst().PushDialogue(InfoDialogue(messagePrefix + Lang("Failed."), Lang(e)))
 
 class XSFeatureDMV:
