@@ -18,11 +18,10 @@ if __name__ == "__main__":
 
 from XSConsoleStandard import *
 
-SSH_MODE_DISABLE = 0
-SSH_MODE_ENABLE = 1
-SSH_MODE_AUTO = 2
-
 class DisableOptionsDialogue(Dialogue):
+    SSH_MODE_DISABLE = 0
+    SSH_MODE_AUTO = 2
+
     def __init__(self):
         Dialogue.__init__(self)
 
@@ -31,8 +30,8 @@ class DisableOptionsDialogue(Dialogue):
         pane.AddBox()
 
         self.disableMenu = Menu(self, None, Lang("Disable Options"), [
-            ChoiceDef(Lang("Always Disable"), lambda: self.HandleChoice(SSH_MODE_DISABLE)),
-            ChoiceDef(Lang("Disable and Turn on Auto-mode"), lambda: self.HandleChoice(SSH_MODE_AUTO))
+            ChoiceDef(Lang("Always Disable"), lambda: self.HandleChoice(self.SSH_MODE_DISABLE)),
+            ChoiceDef(Lang("Disable and Turn on Auto-mode"), lambda: self.HandleChoice(self.SSH_MODE_AUTO))
             ])
 
         self.UpdateFields()
@@ -67,7 +66,7 @@ class DisableOptionsDialogue(Dialogue):
                 message = Lang("New connections via the remote shell are now disabled, but there are "
                     "ssh connections still ongoing.  If necessary, use 'killall sshd-session' from the Local "
                     "Command Shell to terminate them.")
-            if inChoice == SSH_MODE_AUTO:
+            if inChoice == self.SSH_MODE_AUTO:
                 data.SetSSHAutoMode(True)
                 message = Lang("SSH auto-mode has been configured. For security,"
                         "SSH is normally disabled and will only be enabled in case of emergency.")
@@ -81,6 +80,8 @@ class DisableOptionsDialogue(Dialogue):
 
 
 class RemoteShellDialogue(Dialogue):
+    SSH_MODE_ENABLE = 1
+
     def __init__(self):
         Dialogue.__init__(self)
 
@@ -89,7 +90,7 @@ class RemoteShellDialogue(Dialogue):
         pane.AddBox()
 
         self.remoteShellMenu = Menu(self, None, Lang("Configure Remote Shell"), [
-            ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(SSH_MODE_ENABLE)),
+            ChoiceDef(Lang("Enable"), lambda: self.HandleChoice(self.SSH_MODE_ENABLE)),
             ChoiceDef(Lang("Disable"), lambda: self.HandleDisable())
             ])
 
@@ -118,7 +119,7 @@ class RemoteShellDialogue(Dialogue):
 
         try:
             message = Lang("Configuration Successful")
-            if inChoice == SSH_MODE_ENABLE:
+            if inChoice == self.SSH_MODE_ENABLE:
                 data.EnableSSH()
                 Layout.Inst().PushDialogue(InfoDialogue(message))
 
