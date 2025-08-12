@@ -370,16 +370,19 @@ class NetworkResetDialogue(Dialogue):
 			try: os.remove('/var/xapi/networkd.db')
 			except: pass
 
+		inventory = read_inventory()
 		if renamed:
 			# Update interfaces in inventory file
-			inventory = read_inventory()
 			if self.vlan:
 				inventory['MANAGEMENT_INTERFACE'] = 'xentemp'
 			else:
 				inventory['MANAGEMENT_INTERFACE'] = bridge
-			inventory['CURRENT_INTERFACES'] = ''
-			write_inventory(inventory)
-		# Else, networkd will update the inventory file.
+		else:
+			# networkd will determine the bridge name and update to inventory file.
+			inventory['MANAGEMENT_INTERFACE'] = ''
+
+		inventory['CURRENT_INTERFACES'] = ''
+		write_inventory(inventory)
 
 		# Rewrite firstboot management.conf file, which will be picked it by xcp-networkd on restart (if used)
 		f = open(management_conf, 'w')
