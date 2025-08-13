@@ -366,18 +366,23 @@ class NetworkResetDialogue(Dialogue):
 		inventory['CURRENT_INTERFACES'] = ''
 		write_inventory(inventory)
 
+		ipv6 = self.IP.find(':') > -1
+
 		# Rewrite firstboot management.conf file, which will be picked it by xcp-networkd on restart (if used)
 		f = open(management_conf, 'w')
 		try:
 			f.write("LABEL='" + self.device + "'\n")
-			f.write("MODE='" + self.mode + "'\n")
+			f.write(("MODEV6" if ipv6 else "MODE") + "='" + self.mode + "'\n")
 			if self.vlan != '':
 				f.write("VLAN='" + self.vlan + "'\n")
 			if self.mode == 'static':
-				f.write("IP='" + self.IP + "'\n")
-				f.write("NETMASK='" + self.netmask + "'\n")
+				if ipv6:
+					f.write("IPv6='" + self.IP + "/" + self.netmask + "'\n")
+				else:
+					f.write("IP='" + self.IP + "'\n")
+					f.write("NETMASK='" + self.netmask + "'\n")
 				if self.gateway != '':
-					f.write("GATEWAY='" + self.gateway + "'\n")
+					f.write(("IPv6_GATEWAY" if ipv6 else "GATEWAY") + "='" + self.gateway + "'\n")
 				if self.dns != '':
 					f.write("DNS='" + self.dns + "'\n")
 		finally:
@@ -387,14 +392,17 @@ class NetworkResetDialogue(Dialogue):
 		f = open(network_reset, 'w')
 		try:
 			f.write('DEVICE=' + self.device + '\n')
-			f.write('MODE=' + self.mode + '\n')
+			f.write(('MODE_V6' if ipv6 else 'MODE') + '=' + self.mode + '\n')
 			if self.vlan != '':
 				f.write('VLAN=' + self.vlan + '\n')
 			if self.mode == 'static':
-				f.write('IP=' + self.IP + '\n')
-				f.write('NETMASK=' + self.netmask + '\n')
+				if ipv6:
+					f.write('IPV6=' + self.IP + '/' + self.netmask + '\n')
+				else:
+					f.write('IP=' + self.IP + '\n')
+					f.write('NETMASK=' + self.netmask + '\n')
 				if self.gateway != '':
-					f.write('GATEWAY=' + self.gateway + '\n')
+					f.write(('GATEWAY_V6' if ipv6 else 'GATEWAY') + '=' + self.gateway + '\n')
 				if self.dns != '':
 					f.write('DNS=' + self.dns + '\n')
 		finally:

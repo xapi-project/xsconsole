@@ -53,11 +53,14 @@ class InterfaceDialogue(Dialogue):
 
         self.nicMenu = Menu(self, None, "Configure Management Interface", choiceDefs)
 
-        self.modeMenu = Menu(self, None, Lang("Select IP Address Configuration Mode"), [
-            ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP2') ),
-            ChoiceDef(Lang("DHCP with Manually Assigned Hostname"), lambda: self.HandleModeChoice('DHCPMANUAL') ),
-            ChoiceDef(Lang("Static"), lambda: self.HandleModeChoice('STATIC') )
-            ])
+        mode_choicedefs = []
+        if(currentPIF and currentPIF['primary_address_type'].lower() == 'ipv6'):
+            mode_choicedefs.append(ChoiceDef(Lang("Autoconf"), lambda : self.HandleModeChoice("AUTOCONF") ))
+        mode_choicedefs.append(ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP2') ))
+        mode_choicedefs.append(ChoiceDef(Lang("DHCP with Manually Assigned Hostname"),
+                                         lambda: self.HandleModeChoice('DHCPMANUAL') ))
+        mode_choicedefs.append(ChoiceDef(Lang("Static"), lambda: self.HandleModeChoice('STATIC') ))
+        self.modeMenu = Menu(self, None, Lang("Select IP Address Configuration Mode"), mode_choicedefs)
 
         self.postDHCPMenu = Menu(self, None, Lang("Accept or Edit"), [
             ChoiceDef(Lang("Continue With DHCP Enabled"), lambda: self.HandlePostDHCPChoice('CONTINUE') ),
@@ -83,11 +86,17 @@ class InterfaceDialogue(Dialogue):
         self.hostname = data.host.hostname('')
 
         if currentPIF is not None:
-            if 'ip_configuration_mode' in currentPIF: self.mode = currentPIF['ip_configuration_mode']
+            ipv6 = currentPIF['primary_address_type'].lower() == 'ipv6'
+            configuration_mode_key = 'ipv6_configuration_mode' if ipv6 else 'ip_configuration_mode'
+            if configuration_mode_key in currentPIF:
+                self.mode = currentPIF[configuration_mode_key]
             if self.mode.lower().startswith('static'):
-                if 'IP' in currentPIF: self.IP = currentPIF['IP']
-                if 'netmask' in currentPIF: self.netmask = currentPIF['netmask']
-                if 'gateway' in currentPIF: self.gateway = currentPIF['gateway']
+                if 'IP' in currentPIF:
+                    self.IP = currentPIF['IPv6'][0].split('/')[0] if ipv6 else currentPIF['IP']
+                if 'netmask' in currentPIF:
+                    self.netmask = currentPIF['IPv6'][0].split('/')[1] if ipv6 else currentPIF['netmask']
+                if 'gateway' in currentPIF:
+                    self.gateway = currentPIF['ipv6_gateway'] if ipv6 else currentPIF['gateway']
 
         # Make the menu current choices point to our best guess of current choices
         if self.nic is not None:
@@ -169,8 +178,10 @@ class InterfaceDialogue(Dialogue):
                 pane.AddStatusField(Lang("Netmask",  16),  self.netmask)
                 pane.AddStatusField(Lang("Gateway",  16),  self.gateway)
 
-            if self.mode != 'Static' and self.hostname == '':
+            if self.mode == 'DHCP' and self.hostname == '':
                 pane.AddStatusField(Lang("Hostname",  16), Lang("Assigned by DHCP"))
+            elif self.mode == 'Autoconf' and self.hostname == '':
+                pane.AddStatusField(Lang("Hostname", 16), Lang("Automatically assigned"))
             else:
                 pane.AddStatusField(Lang("Hostname",  16), self.hostname)
 
@@ -376,6 +387,9 @@ class InterfaceDialogue(Dialogue):
             self.hostname = Data.Inst().host.hostname('')
             self.mode = 'Static'
             self.ChangeState('STATICIP')
+        elif inChoice == 'AUTOCONF':
+            self.mode = 'Autoconf'
+            self.ChangeState('PRECOMMIT')
 
     def HandlePostDHCPChoice(self,  inChoice):
         if inChoice == 'CONTINUE':
@@ -463,11 +477,13 @@ class XSFeatureInterface:
             inPane.AddWrappedTextField(Lang("<No interface configured>"))
         else:
             for pif in data.derived.managementpifs([]):
+                ipv6 = pif['primary_address_type'].lower() == 'ipv6'
+                configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
                 inPane.AddStatusField(Lang('Device', 16), pif['device'])
                 if int(pif['VLAN']) >= 0:
                     inPane.AddStatusField(Lang('VLAN', 16), pif['VLAN'])
                 inPane.AddStatusField(Lang('MAC Address', 16),  pif['MAC'])
-                inPane.AddStatusField(Lang('DHCP/Static IP', 16),  pif['ip_configuration_mode'])
+                inPane.AddStatusField(Lang('DHCP/Static IP', 16),  configuration_mode)
 
                 inPane.AddStatusField(Lang('IP address', 16), data.ManagementIP(''))
                 inPane.AddStatusField(Lang('Netmask', 16),  data.ManagementNetmask(''))

@@ -179,7 +179,9 @@ class XSFeatureDNS:
             inPane.AddWrappedTextField(str(dns))
         inPane.NewLine()
         for pif in data.derived.managementpifs([]):
-            if pif['ip_configuration_mode'].lower().startswith('static'):
+            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
+            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+            if configuration_mode.lower().startswith('static'):
                 inPane.AddKeyHelpField( { Lang("Enter") : Lang("Update DNS Servers") })
                 break
         inPane.AddKeyHelpField( {
@@ -203,7 +205,9 @@ class XSFeatureDNS:
     def ActivateHandler(cls):
         data = Data.Inst()
         for pif in data.derived.managementpifs([]):
-            if pif['ip_configuration_mode'].lower().startswith('static'):
+            ipv6 = pif['primary_address_type'].lower() == 'ipv6'
+            configuration_mode = pif['ipv6_configuration_mode'] if ipv6 else pif['ip_configuration_mode']
+            if configuration_mode.lower().startswith('static'):
                 DialogueUtils.AuthenticatedOnly(lambda: Layout.Inst().PushDialogue(DNSDialogue()))
                 return
 
