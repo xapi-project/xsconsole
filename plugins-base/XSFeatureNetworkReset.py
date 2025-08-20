@@ -22,9 +22,8 @@ pool_conf = '%s/pool.conf' % (Config.Inst().XCPConfigDir())
 inventory_file = '/etc/xensource-inventory'
 management_conf = '/etc/firstboot.d/data/management.conf'
 network_reset = '/var/tmp/network-reset'
-# The existence of this directory determines if the device renaming happened or not.
-# The renaming will get devices named like eth0, eth1, etc.
-interface_rename_dir = '/etc/sysconfig/network-scripts/interface-rename-data'
+rename_script = '/etc/sysconfig/network-scripts/interface-rename.py'
+rename_script_exists = os.path.exists(rename_script)
 
 def read_dict_file(fname):
 	f = open(fname, 'r')
@@ -333,6 +332,15 @@ class NetworkResetDialogue(Dialogue):
 			self.mode = 'static'
 			self.ChangeState('STATICIP')
 
+	def get_bridge_name(self):
+		# Construct bridge name for management interface based on convention
+		if self.vlan:
+			return 'xentemp'
+		if self.device[:3] == 'eth':
+			return 'xenbr' + self.device[3:]
+		else:
+			return 'br' + self.device
+
 	def Commit(self):
 		# Update master's IP, if needed and given
 		if self.master_ip != None:
@@ -342,17 +350,6 @@ class NetworkResetDialogue(Dialogue):
 			finally:
 				f.close()
 
-		renamed = os.path.exists(interface_rename_dir)
-
-		if renamed:
-			# Construct bridge name for management interface based on convention
-			if self.device[:3] == 'eth':
-				bridge = 'xenbr' + self.device[3:]
-			else:
-				bridge = 'br' + self.device
-		# Else, the device name will not be like eth<N>. And networkd will
-		# determine the bridge name.
-
 		# Ensure xapi is not running
 		os.system('service xapi stop >/dev/null 2>/dev/null')
 
@@ -361,17 +358,10 @@ class NetworkResetDialogue(Dialogue):
 		try: os.remove('/var/xapi/networkd.db')
 		except: pass
 
+		# Update interfaces in inventory file
 		inventory = read_inventory()
-		if renamed:
-			# Update interfaces in inventory file
-			if self.vlan:
-				inventory['MANAGEMENT_INTERFACE'] = 'xentemp'
-			else:
-				inventory['MANAGEMENT_INTERFACE'] = bridge
-		else:
-			# networkd will determine the bridge name and update to inventory file.
-			inventory['MANAGEMENT_INTERFACE'] = ''
-
+		bridge = self.get_bridge_name() if rename_script_exists else ''
+		inventory['MANAGEMENT_INTERFACE'] = bridge
 		inventory['CURRENT_INTERFACES'] = ''
 		write_inventory(inventory)
 
@@ -412,7 +402,7 @@ class NetworkResetDialogue(Dialogue):
 		# Reset the domain 0 network interface naming configuration
 		# back to a fresh-install state for the currently-installed
 		# hardware.
-		if renamed:
+		if rename_script_exists:
 			os.system("/etc/sysconfig/network-scripts/interface-rename.py --reset-to-install")
 		# Else, networkd will do the reset during starting up
 
