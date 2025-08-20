@@ -19,7 +19,6 @@ if __name__ == "__main__":
 from XSConsoleStandard import *
 
 pool_conf = '%s/pool.conf' % (Config.Inst().XCPConfigDir())
-interface_reconfigure = '%s/interface-reconfigure' % (Config.Inst().LibexecPath())
 inventory_file = '/etc/xensource-inventory'
 management_conf = '/etc/firstboot.d/data/management.conf'
 network_reset = '/var/tmp/network-reset'
@@ -358,17 +357,9 @@ class NetworkResetDialogue(Dialogue):
 		os.system('service xapi stop >/dev/null 2>/dev/null')
 
 		# Reconfigure new management interface
-		if os.access('/tmp/do-not-use-networkd', os.F_OK):
-			if_args = ' --force ' + bridge + ' rewrite --mac=x --device=' + self.device + ' --mode=' + self.mode
-			if self.mode == 'static':
-				if_args += ' --ip=' + self.IP + ' --netmask=' + self.netmask
-				if self.gateway != '':
-					if_args += ' --gateway=' + self.gateway
-			os.system(interface_reconfigure + if_args + ' >/dev/null 2>/dev/null')
-		else:
-			os.system('service xcp-networkd stop >/dev/null 2>/dev/null')
-			try: os.remove('/var/xapi/networkd.db')
-			except: pass
+		os.system('service xcp-networkd stop >/dev/null 2>/dev/null')
+		try: os.remove('/var/xapi/networkd.db')
+		except: pass
 
 		inventory = read_inventory()
 		if renamed:
