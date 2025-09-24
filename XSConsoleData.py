@@ -602,8 +602,8 @@ class Data:
         for interface in interfaces:
             ntpServer = self.GetDHCPNTPServer(interface)
 
-            with open("/var/lib/dhclient/chrony.servers.%s" % interface, "w") as chronyFile:
-                chronyFile.write("%s iburst prefer\n" % ntpServer)
+            with open("/run/chrony-dhcp/%s.sources" % interface, "w") as chronyFile:
+                chronyFile.write("server %s iburst prefer\n" % ntpServer)
 
         # Ensure chrony is enabled
         self.EnableService("chronyd")
@@ -655,7 +655,7 @@ class Data:
         newPermissions = oldPermissions & ~(stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
         os.chmod("/etc/dhcp/dhclient.d/chrony.sh", newPermissions)
 
-        getstatusoutput("rm -f /var/lib/dhclient/chrony.servers.*")
+        getstatusoutput("rm -f /run/chrony-dhcp/*.sources")
 
     def SetTimeManually(self, date):
         # Double-check authentication
