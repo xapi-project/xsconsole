@@ -3,7 +3,7 @@
 name = "XSConsole"
 dynamic = ["version"]
 description = "Xenserver Status Report"
-requires-python = "2.7"
+requires-python = ">=2.7, <3.12"
 license = "GPL-2.0-or-later"
 keywords = ["xenserver", "xen-project"]
 authors = [
@@ -19,7 +19,6 @@ readme = "README.md"
 classifiers = [
     "Environment :: Console",
     "Development Status :: 5 - Production/Stable",
-    "License :: OSI Approved :: GNU General Public License v2 (GPLv2) or later",
     "Operating System :: POSIX :: Linux :: XenServer/XCP-ng Dom0",
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.6",
