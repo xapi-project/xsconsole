@@ -164,7 +164,7 @@ class XSFeatureRemoteShell:
             'REMOTE_SHELL', # Key of this plugin for replacement, etc.
             {
                 'menuname' : 'MENU_REMOTE',
-                'menupriority' : 100,
+                'menupriority' : 50,
                 'menutext' : Lang('Enable/Disable/Auto Remote Shell') ,
                 'statusupdatehandler' : self.StatusUpdateHandler,
                 'activatehandler' : self.ActivateHandler
