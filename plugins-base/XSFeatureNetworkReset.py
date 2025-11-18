@@ -216,6 +216,9 @@ class NetworkResetDialogue(Dialogue):
 				if self.device == "":
 					pane.InputIndexSet(None)
 					Layout.Inst().PushDialogue(InfoDialogue(Lang('Invalid device name')))
+				elif not os.path.isdir('/sys/class/net/' + self.device):
+					pane.InputIndexSet(None)
+					Layout.Inst().PushDialogue(InfoDialogue(Lang('Device does not exist')))
 				elif (self.vlan != '') and not valid_vlan(self.vlan):
 					pane.InputIndexSet(None)
 					Layout.Inst().PushDialogue(InfoDialogue(Lang('VLAN tag must be between 0 and 4094')))
