@@ -570,100 +570,27 @@ class Data:
             if file is not None: file.close()
             self.UpdateFromSysconfig()
 
-    def SaveToNTPConf(self):
-        # Double-check authentication
+    def SetNTPMode(self, inMode):
         Auth.Inst().AssertAuthenticated()
+        self.RequireSession()
+        self.session.xenapi.host.set_ntp_mode(self.host.opaqueref(), inMode)
 
-        try:
-            with open("/etc/chrony.conf", "w") as confFile:
-                for other in self.ntp.othercontents([]):
-                    confFile.write(other + "\n")
-                for server in self.ntp.servers([]):
-                    confFile.write("server " + server + " iburst\n")
-        finally:
-            self.UpdateFromNTPConf()
-
-        # Force chronyd to update the time
-        if self.data['ntp']['method'] != "Disabled":
-            # Prompt chrony to update the time immediately
-            getoutput("chronyc makestep")
-            # Write the system time (set by the single shot NTP) to the HW clock
-            getoutput("hwclock -w")
-
-    def AddDHCPNTP(self):
-        # Double-check authentication
+    def SetNTPManualServers(self, inServers):
         Auth.Inst().AssertAuthenticated()
-
-        oldPermissions = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
-        newPermissions = oldPermissions | (stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-        os.chmod("/etc/dhcp/dhclient.d/chrony.sh", newPermissions)
-
-        interfaces = self.GetDHClientInterfaces()
-        for interface in interfaces:
-            ntpServer = self.GetDHCPNTPServer(interface)
-
-            with open("/run/chrony-dhcp/%s.sources" % interface, "w") as chronyFile:
-                chronyFile.write("server %s iburst prefer\n" % ntpServer)
-
-        # Ensure chrony is enabled
-        self.EnableService("chronyd")
-        self.EnableService("chrony-wait")
+        self.RequireSession()
+        self.session.xenapi.host.set_ntp_custom_servers(self.host.opaqueref(), inServers)
 
     def ResetDefaultNTPServers(self):
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
         Data.Inst().NTPServersSet(DEFAULT_NTP_SERVERS)
 
-    def GetDHClientInterfaces(self):
-        try:
-            leases = [filename for filename in os.listdir("/var/lib/xcp") if "leases" in filename]
-        except OSError:
-            return []
-
-        pattern = "dhclient-(.*).leases"
-        interfaces = []
-        for dhclientFile in leases:
-            match = re.match(pattern, dhclientFile)
-            if match:
-                interfaces.append(match.group(1))
-
-        return interfaces
-
-    def GetDHCPNTPServer(self, interface):
-        expectedLeaseFile = "/var/lib/xcp/dhclient-%s.leases" % interface
-        if not os.path.isfile(expectedLeaseFile):
-            return None
-
-        with open(expectedLeaseFile, "r") as leaseFile:
-            data = leaseFile.read().splitlines()
-
-        ntpServerLines = [line for line in data if "ntp-servers" in line]
-
-        # Extract <ip-addr> from "  option ntp-servers <ip-addr>;"
-        try:
-            ntpServer = ntpServerLines[-1].split()[-1][:-1]
-        except:
-            ntpServer = None
-
-        return ntpServer
-
-    def RemoveDHCPNTP(self):
-        # Double-check authentication
-        Auth.Inst().AssertAuthenticated()
-
-        oldPermissions = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
-        newPermissions = oldPermissions & ~(stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-        os.chmod("/etc/dhcp/dhclient.d/chrony.sh", newPermissions)
-
-        getstatusoutput("rm -f /run/chrony-dhcp/*.sources")
-
     def SetTimeManually(self, date):
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
 
         self.NTPServersSet([])
-        self.RemoveDHCPNTP()
-        self.SaveToNTPConf()
+        self.SetNTPMode('Disabled')
 
         self.DisableService("chrony-wait")
         self.DisableService("chronyd")
@@ -923,22 +850,9 @@ class Data:
             file.close()
 
     def TimezoneSet(self, inTimezone):
-        localtimeFile = '/etc/localtime'
-        if os.path.isfile(localtimeFile):
-            os.remove(localtimeFile)
-        os.symlink(self.timezones.cities({})[inTimezone], localtimeFile)
-
-        file = open('/etc/timezone', 'w')
-        file.write(inTimezone+"\n")
-        file.close()
-
-        if os.path.exists('/etc/sysconfig/clock'):
-            cfg = SimpleConfigFile()
-            cfg.read('/etc/sysconfig/clock')
-            cfg.info["ZONE"] = inTimezone
-            cfg.write('/etc/sysconfig/clock')
-
-        time.tzset()
+        Auth.Inst().AssertAuthenticated()
+        self.RequireSession()
+        self.session.xenapi.host.set_timezone(self.host.opaqueref(), inTimezone)
 
     def CurrentTimeString(self):
         return getoutput('/bin/date -R')
@@ -1099,10 +1013,12 @@ class Data:
             self.session = Auth.Inst().CloseSession(self.session)
 
     def AdjustNTPForStaticNetwork(self):
-        self.RemoveDHCPNTP()
         if not self.data['ntp']['servers']: # No NTP servers after removing DHCP
             self.ResetDefaultNTPServers()
-            self.SaveToNTPConf()
+            self.SetNTPMode('Factory')
+        else:
+            self.SetNTPManualServers(self.data['ntp']['servers'])
+            self.SetNTPMode('Custom')
 
     def LocalHostEnable(self):
         Auth.Inst().AssertAuthenticatedOrPasswordUnset()
