@@ -232,15 +232,13 @@ class NTPDialogue(Dialogue):
                 Layout.Inst().PopDialogue()
                 Layout.Inst().TransientBanner(Lang("Enabling DHCP NTP Server..."))
                 data.NTPServersSet([])
-                data.AddDHCPNTP()
-                self.Commit(Lang("DHCP NTP Time Synchronization Enabled"))
+                self.Commit(Lang("DHCP NTP Time Synchronization Enabled"), inChoice)
 
             elif inChoice == "DEFAULT":
                 Layout.Inst().PopDialogue()
                 Layout.Inst().TransientBanner(Lang("Enabling Default NTP Servers..."))
                 data.ResetDefaultNTPServers()
-                data.RemoveDHCPNTP()
-                self.Commit(Lang("Default NTP Time Synchronization Enabled"))
+                self.Commit(Lang("Default NTP Time Synchronization Enabled"), inChoice)
 
             elif inChoice == "MANUAL":
                 self.ChangeState("MANUAL")
@@ -269,7 +267,7 @@ class NTPDialogue(Dialogue):
                 Layout.Inst().PopDialogue()
                 Layout.Inst().TransientBanner(Lang("Removing All NTP Servers..."))
                 data.NTPServersSet([])
-                self.Commit(Lang("All server entries deleted"))
+                self.Commit(Lang("All server entries deleted"), "MANUAL")
 
         except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Operation Failed"), Lang(e)))
@@ -291,7 +289,7 @@ class NTPDialogue(Dialogue):
 
         del servers[inChoice]
         data.NTPServersSet(servers)
-        self.Commit(Lang("NTP server %s deleted" % thisServer))
+        self.Commit(Lang("NTP server %s deleted" % thisServer), "MANUAL")
         data.Update()
 
     def HandleKey(self, inKey):
@@ -343,10 +341,9 @@ class NTPDialogue(Dialogue):
 
                 Layout.Inst().TransientBanner(Lang("Setting Time..."))
                 data = Data.Inst()
-                data.RemoveDHCPNTP()
                 data.SetTimeManually(date)
 
-                self.Commit(Lang("Time Set Manually"), restartChronyd=False)
+                self.Commit(Lang("Time Set Manually"), "NONE")
             except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
 
@@ -377,12 +374,11 @@ class NTPDialogue(Dialogue):
                 IPUtils.AssertValidNetworkName(inputValues['name'])
 
                 data=Data.Inst()
-                data.RemoveDHCPNTP()
 
                 servers = data.ntp.servers([])
                 servers.append(inputValues['name'])
                 data.NTPServersSet(servers)
-                self.Commit(Lang("NTP server")+" "+inputValues['name']+" "+Lang("added"))
+                self.Commit(Lang("NTP server")+" "+inputValues['name']+" "+Lang("added"), "MANUAL")
             except Exception as e:
                 Layout.Inst().PushDialogue(InfoDialogue(Lang(e)))
 
@@ -395,13 +391,22 @@ class NTPDialogue(Dialogue):
     def HandleKeyREMOVE(self, inKey):
         return self.removeMenu.HandleKey(inKey)
 
-    def Commit(self, inMessage, restartChronyd=True):
+    def Commit(self, inMessage, inChoice):
         data=Data.Inst()
         try:
-            data.SaveToNTPConf()
-            if restartChronyd:
-                Layout.Inst().TransientBanner(Lang("Restarting NTP daemon with new configuration..."))
-                data.RestartService('chronyd')
+            ntpmode_map = {
+                "DHCP": "DHCP",
+                "DEFAULT": "Factory",
+                "MANUAL": "Custom",
+                "NONE": "Disabled"
+            }
+            mode = ntpmode_map.get(inChoice)
+            if mode is None:
+                raise ValueError("Unknown NTP choice: {}".format(inChoice))
+            if inChoice == "MANUAL":
+                data.SetNTPManualServers(data.ntp.servers([]))
+
+            data.SetNTPMode(mode)
             Layout.Inst().PushDialogue(InfoDialogue( inMessage))
         except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Update failed: ")+Lang(e)))
