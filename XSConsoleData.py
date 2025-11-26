@@ -844,15 +844,20 @@ class Data:
                     self.data['timezones']['cities'][localPath] = filePath
 
     def UpdateFromTimezone(self):
-        if os.path.isfile('/etc/timezone'):
-            file = open('/etc/timezone')
-            self.data['timezones']['current'] = file.readline().rstrip()
-            file.close()
+        # Read timezone from /etc/localtime symlink
+        if os.path.islink('/etc/localtime'):
+            target = os.readlink('/etc/localtime')
+            zonePath = '/usr/share/zoneinfo/'
+            parts = target.split(zonePath, 1)
+            if len(parts) == 2:
+                self.data['timezones']['current'] = parts[1]
 
     def TimezoneSet(self, inTimezone):
         Auth.Inst().AssertAuthenticated()
         self.RequireSession()
         self.session.xenapi.host.set_timezone(self.host.opaqueref(), inTimezone)
+        time.tzset()
+        self.UpdateFromTimezone()
 
     def CurrentTimeString(self):
         return getoutput('/bin/date -R')
