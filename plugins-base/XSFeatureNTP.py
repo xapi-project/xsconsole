@@ -100,7 +100,6 @@ class NTPDialogue(Dialogue):
         The options are:
         - Add New Server
         - Remove Server (only shown if servers are already configured)
-        - Remove All Servers (only shown if servers are already configured)
         """
         choiceDefs = [
             ChoiceDef(Lang("Add New Server"), lambda: self.HandleManualChoice("ADD"))
@@ -114,12 +113,6 @@ class NTPDialogue(Dialogue):
             choiceDefs.append(
                 ChoiceDef(
                     Lang("Remove Server"), lambda: self.HandleManualChoice("REMOVE")
-                )
-            )
-            choiceDefs.append(
-                ChoiceDef(
-                    Lang("Remove All Servers"),
-                    lambda: self.HandleManualChoice("REMOVEALL"),
                 )
             )
 
@@ -255,7 +248,7 @@ class NTPDialogue(Dialogue):
         Handle the user's choice of within the manual NTP configuration method.
 
         param: inChoice: The user's choice of NTP configuration method.
-        inChoice is one of "ADD", "REMOVE", or "REMOVEALL".
+        inChoice is one of "ADD", "REMOVE".
         """
         data = Data.Inst()
         try:
@@ -263,11 +256,6 @@ class NTPDialogue(Dialogue):
                 self.ChangeState("ADD")
             elif inChoice == "REMOVE":
                 self.ChangeState("REMOVE")
-            elif inChoice == "REMOVEALL":
-                Layout.Inst().PopDialogue()
-                Layout.Inst().TransientBanner(Lang("Removing All NTP Servers..."))
-                data.NTPServersSet([])
-                self.Commit(Lang("All server entries deleted"), "MANUAL")
 
         except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Operation Failed"), Lang(e)))
