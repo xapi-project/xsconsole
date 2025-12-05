@@ -672,6 +672,19 @@ class Data:
         getstatusoutput("date --set='%s'" % timestring)
         getstatusoutput("hwclock --utc --systohc")
 
+    def GetNTPServersFromChronyc(self):
+        servers =[]
+        (status, output) = getstatusoutput("chronyc -c sources")
+        # output is csv format: ^,*,10.79.16.11,5,7,377,13,-0.000067081,-0.000084192,0.172569677
+        if status == 0:
+            for line in output.split("\n"):
+                fields = line.split(",")
+                if len(fields) >= 3:
+                    server = fields[2].strip()
+                    if server != "":
+                        servers.append(server)
+        return servers
+
     def SaveToResolveConf(self):
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
