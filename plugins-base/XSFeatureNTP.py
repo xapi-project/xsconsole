@@ -428,11 +428,7 @@ class XSFeatureNTP:
 
             servers = data.ntp.servers([])
             if ntpMethod == "DHCP":
-                gateway = data.ManagementGateway()
-                if gateway is None:
-                    gateway = "Refreshing..."
-
-                servers = [Lang(str(gateway) + " (DHCP)")]
+                servers = data.GetNTPServersFromChronyc()
 
             inPane.NewLine()
 
