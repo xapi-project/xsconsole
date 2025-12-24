@@ -366,6 +366,7 @@ class Data:
         self.UpdateFromKeymap()
 
         self.data['chkconfig'] = {}
+        self.data['service_active'] = {}
         self.ScanService('sshd')
         self.ScanService('chronyd')
 
@@ -767,6 +768,9 @@ class Data:
     def ScanService(self, service):
         (status, output) = getstatusoutput("systemctl is-enabled %s" % (service,))
         self.data['chkconfig'][service] = status == 0
+
+        (status, output) = getstatusoutput("systemctl is-active %s" % (service,))
+        self.data['service_active'][service] = status == 0
 
     def ScanResolvConf(self, inLines):
         self.data['dns'] = {
