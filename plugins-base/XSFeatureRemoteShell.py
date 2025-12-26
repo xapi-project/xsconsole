@@ -68,7 +68,7 @@ class DisableOptionsDialogue(Dialogue):
                     "Command Shell to terminate them.")
             if inChoice == self.SSH_MODE_AUTO:
                 data.SetSSHAutoMode(True)
-                message = Lang("SSH auto-mode has been configured. For security,"
+                message = Lang("SSH auto-mode has been configured. For security, "
                         "SSH is normally disabled and will only be enabled in case of emergency.")
 
             Layout.Inst().PushDialogue(InfoDialogue(message))
@@ -139,16 +139,18 @@ class XSFeatureRemoteShell:
         data = Data.Inst()
         inPane.AddTitleField(Lang("Remote Shell (ssh)"))
 
-        if data.chkconfig.sshd() is None:
-            message = Lang('unknown.  To enable or disable')
-        elif data.chkconfig.sshd():
-            message = Lang('enabled.  To disable')
+        is_running = data.service_active.sshd()
+
+        if is_running is None:
+            message = Lang('unknown. To configure')
+        elif is_running:
+            message = Lang('running. To stop and disable')
         else:
-            message = Lang('disabled.  To enable')
+            message = Lang('stopped. To start and enable')
 
         inPane.AddWrappedTextField(Lang(
-            "This server can accept a remote login via ssh.  Currently remote login is ") +
-            message + Lang(" this feature, press <Enter>."))
+            "This server can accept a remote login via ssh.  Currently SSH service is ") +
+            message + Lang(" SSH service, press <Enter>."))
 
         inPane.AddKeyHelpField( {
             Lang("<Enter>") : Lang("Configure Remote Shell")
