@@ -15,7 +15,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-import imp, os, re, sys, traceback
+import importlib.util, os, re, sys, traceback
 
 from XSConsoleLog import *
 from XSConsoleMenus import *
@@ -46,8 +46,10 @@ class Importer:
                         try:
                             try:
                                 # Import using variable as module name
-                                (fileObj, pathName, description) = imp.find_module(importName, [root])
-                                imp.load_module(importName, fileObj, pathName, description)
+                                spec = importlib.util.spec_from_file_location(
+                                    importName, os.path.join(root, filename))
+                                module = importlib.util.module_from_spec(spec)
+                                spec.loader.exec_module(module)
                             except Exception as e:
                                 try: XSLogError(*traceback.format_tb(sys.exc_info()[2]))
                                 except: pass
