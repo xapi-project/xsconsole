@@ -88,6 +88,12 @@ class NetworkResetDialogue(Dialogue):
 		except:
 			self.vlan = ''
 
+		self.renameMgmt = True
+		self.renameMenu = Menu(self, None, Lang("Choose to rename/keep the Management Interface name"), [
+			ChoiceDef(Lang("Rename"), lambda: self.HandleRenameChoice('RENAME') ),
+			ChoiceDef(Lang("Keep name"), lambda: self.HandleRenameChoice('KEEP') )
+			])
+
 		self.modeMenu = Menu(self, None, Lang("Select IP Address Configuration Mode"), [
 			ChoiceDef(Lang("DHCP"), lambda: self.HandleModeChoice('DHCP') ),
 			ChoiceDef(Lang("Static"), lambda: self.HandleModeChoice('STATIC') )
@@ -132,6 +138,14 @@ class NetworkResetDialogue(Dialogue):
 		if pane.InputIndex() is None:
 			pane.InputIndexSet(0) # Activate first field for input
 
+	def UpdateFieldsRENAME(self):
+		pane = self.Pane()
+		pane.ResetFields()
+
+		pane.AddTitleField(Lang("Choose to rename/keep the Management Interface name"))
+		pane.AddMenuField(self.renameMenu)
+		pane.AddKeyHelpField( { Lang("<Enter>") : Lang("OK"), Lang("<Esc>") : Lang("Cancel") } )
+
 	def UpdateFieldsMODE(self):
 		pane = self.Pane()
 		pane.ResetFields()
@@ -174,6 +188,10 @@ class NetworkResetDialogue(Dialogue):
 
 		pane.AddWrappedTextField(Lang("The Primary Management Interface will be reconfigured with the following settings:"))
 		pane.AddStatusField(Lang("NIC",  16),  self.device)
+		if self.renameMgmt:
+			pane.AddStatusField(Lang("Rename NIC:", 16),  "Yes")
+		else:
+			pane.AddStatusField(Lang("Rename NIC:", 16),  "No")
 		if self.vlan != '':
 			pane.AddStatusField(Lang("VLAN",  16),  self.vlan)
 		pane.AddStatusField(Lang("IP Mode",  16),  self.mode)
@@ -223,7 +241,7 @@ class NetworkResetDialogue(Dialogue):
 					pane.InputIndexSet(None)
 					Layout.Inst().PushDialogue(InfoDialogue(Lang('VLAN tag must be between 0 and 4094')))
 				else:
-					self.ChangeState('MODE')
+					self.ChangeState('RENAME')
 			else:
 				pane.ActivateNextInput()
 		elif inKey == 'KEY_TAB':
@@ -235,6 +253,9 @@ class NetworkResetDialogue(Dialogue):
 		else:
 			handled = False
 		return handled
+
+	def HandleKeyRENAME(self, inKey):
+		return self.renameMenu.HandleKey(inKey)
 
 	def HandleKeyMODE(self, inKey):
 		return self.modeMenu.HandleKey(inKey)
@@ -324,6 +345,12 @@ class NetworkResetDialogue(Dialogue):
 
 		return handled
 
+	def HandleRenameChoice(self,  inChoice):
+		if inChoice == 'KEEP':
+			self.renameMgmt = False
+
+		self.ChangeState('MODE')
+
 	def HandleModeChoice(self,  inChoice):
 		if inChoice == 'DHCP':
 			self.mode = 'dhcp'
@@ -404,9 +431,13 @@ class NetworkResetDialogue(Dialogue):
 
 		# Reset the domain 0 network interface naming configuration
 		# back to a fresh-install state for the currently-installed
-		# hardware.
-		if rename_script_exists:
+		# hardware (unless prevented by the user).
+		if rename_script_exists and self.renameMgmt:
+			XSLog('Will rename the Management Interface')
 			os.system("/etc/sysconfig/network-scripts/interface-rename.py --reset-to-install")
+		else:
+			XSLog('Will NOT rename the Management Interface')
+
 		# Else, networkd will do the reset during starting up
 
 class XSFeatureNetworkReset:
