@@ -310,15 +310,26 @@ class HotData:
     def FetchHost(self, inOpaqueRef):
         def LocalConverter(inHost):
             return HotData.ConvertOpaqueRefs(inHost,
+                certificates = 'certificate',
+                control_domain = 'vm',
+                crashdumps = 'host_crashdump',
                 crash_dump_sr = 'sr',
                 consoles = 'console',
                 current_operations = 'task',
+                features = 'feature',
                 host_CPUs = 'host_cpu',
+                local_cache_sr = 'sr',
                 metrics = 'host::metrics',
+                patches = 'host_patch',
                 PBDs = 'pbd',
+                PCIs = 'pci',
+                PGPUs = 'pgpu',
                 PIFs='pif',
+                PUSBs = 'pusb',
                 resident_VMs = 'vm',
                 suspend_image_sr = 'sr',
+                updates = 'pool_update',
+                updates_requiring_reboot = 'pool_update',
                 VBDs = 'vbd',
                 VIFs = 'vif'
                 )
@@ -369,7 +380,12 @@ class HotData:
                 crash_dump_SR='sr',
                 default_SR='sr',
                 master='host',
-                suspend_image_SR='sr'
+                metadata_VDIs='vdi',
+                redo_log_vdi='vdi',
+                repositories='repository',
+                repository_proxy_password='secret',
+                suspend_image_SR='sr',
+                telemetry_uuid='secret'
             )
 
         if inOpaqueRef is not None:
@@ -387,6 +403,7 @@ class HotData:
         def LocalConverter(inSR):
             return HotData.ConvertOpaqueRefs(inSR,
                 current_operations = 'task',
+                introduced_by = 'dr_task',
                 PBDs = 'pbd',
                 VDIs = 'vdi')
 
@@ -424,16 +441,30 @@ class HotData:
         def LocalConverter(inVM):
             return HotData.ConvertOpaqueRefs(inVM,
                 affinity='host',
+                appliance='vm_appliance',
+                attached_PCIs='pci',
+                children='vm',
                 consoles='console',
+                crash_dumps='crashdump',
                 current_operations = 'task',
+                groups='vm_group',
                 guest_metrics='guest_metrics',
                 metrics='vm::metrics',
+                parent='vm',
                 PIFs='pif',
+                protection_policy='vmpp',
                 resident_on='host',
-                suspend_VDI='vdi',
+                scheduled_to_be_resident_on='host',
+                snapshots='vm',
                 snapshot_of='snapshot',
+                snapshot_schedule='vmss',
+                suspend_SR='sr',
+                suspend_VDI='vdi',
                 VBDs = 'vbd',
-                VIFs = 'vif')
+                VGPUs='vgpu',
+                VIFs = 'vif',
+                VTPMs='vtpm',
+                VUSBs='vusb')
 
         if inOpaqueRef is not None:
             vm = self.Session().xenapi.VM.get_record(inOpaqueRef.OpaqueRef())
