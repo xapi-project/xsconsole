@@ -35,6 +35,11 @@ else:
 class Auth:
     instance = None
 
+    # Seconds to wait before retrying to connect to xapi after a connection
+    # timeout, so that a long-lived xsconsole recovers once xapi is responsive
+    # again, e.g. after an HA pool master failover.
+    CONNECTION_RETRY_SECONDS = 60
+
     def __init__(self):
         self.isAuthenticated = False
         self.loggedInUsername = ''
@@ -43,6 +48,7 @@ class Auth:
         self.testingHost = None
         self.authTimestampSeconds = None
         self.masterConnectionBroken = False
+        self.connectionBrokenTimestamp = None
         socket.setdefaulttimeout(15)
 
         self.testMode = False
@@ -107,8 +113,7 @@ class Auth:
                     session.logout()
                 except socket.timeout:
                     session = None
-                    self.masterConnectionBroken = True
-                    self.error = 'The master connection has timed out.'
+                    self.ConnectionTimedOut()
             finally:
                 session.close()
 
@@ -158,43 +163,59 @@ class Auth:
         self.isAuthenticated = False
         self.loggedInUsername = None
 
+    def ConnectionTimedOut(self):
+        self.masterConnectionBroken = True
+        self.connectionBrokenTimestamp = getTimeStamp()
+        self.error = 'The master connection has timed out.'
+        XSLog('XenAPI connection timed out - retrying in ' + str(self.CONNECTION_RETRY_SECONDS) + ' seconds at most')
+
     def OpenSession(self):
         session = None
 
-        if not self.masterConnectionBroken:
-            try:
-                # Try the local Unix domain socket first
-                session = XenAPI.xapi_local()
-                if not session is None:
-                    session.login_with_password('root','','','XSConsole')
-                    if session._session is None:
-                        session = None
-            except socket.timeout:
-                session = None
-                self.masterConnectionBroken = True
-                self.error = 'The master connection has timed out.'
-            except Exception as e:
-                session = None
-                # pylint: disable-next=redefined-variable-type  # ToString may handle it
-                self.error = e
+        if self.masterConnectionBroken:
+            if getTimeStamp() - self.connectionBrokenTimestamp < self.CONNECTION_RETRY_SECONDS:
+                # Don't hammer an unresponsive xapi with blocking connection attempts
+                return None
+            # Restart the cooldown before retrying, so a failure of any kind below
+            # doesn't lead to a retry on every call
+            self.connectionBrokenTimestamp = getTimeStamp()
 
-            if session is None and self.testingHost is not None:
-                # Local session couldn't connect, so try remote.
-                session = XenAPI.Session("https://"+self.testingHost)
-                try:
-                    session.login_with_password('root', self.defaultPassword,'','XSConsole')
-
-                except XenAPI.Failure as e:
-                    if e.details[0] != 'HOST_IS_SLAVE': # Ignore slave errors when testing
-                        session = None
-                        self.error = e
-                except socket.timeout:
+        try:
+            # Try the local Unix domain socket first
+            session = XenAPI.xapi_local()
+            if not session is None:
+                session.login_with_password('root', '', '', 'XSConsole')
+                if session._session is None:
                     session = None
-                    self.masterConnectionBroken = True
-                    self.error = 'The master connection has timed out.'
-                except Exception as e:
+        except socket.timeout:
+            session = None
+            self.ConnectionTimedOut()
+        except Exception as e:
+            session = None
+            # pylint: disable-next=redefined-variable-type  # ToString may handle it
+            self.error = e
+
+        if session is None and self.testingHost is not None:
+            # Local session couldn't connect, so try remote.
+            session = XenAPI.Session("https://" + self.testingHost)
+            try:
+                session.login_with_password('root', self.defaultPassword, '', 'XSConsole')
+
+            except XenAPI.Failure as e:
+                if e.details[0] != 'HOST_IS_SLAVE':  # Ignore slave errors when testing
                     session = None
                     self.error = e
+            except socket.timeout:
+                session = None
+                self.ConnectionTimedOut()
+            except Exception as e:
+                session = None
+                self.error = e
+
+        if session is not None and self.masterConnectionBroken:
+            XSLog('XenAPI connection recovered')
+            self.masterConnectionBroken = False
+
         return session
 
     def NewSession(self):
