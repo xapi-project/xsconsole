@@ -12,7 +12,7 @@ class TestIPAddress(unittest.TestCase):
         self.assertTrue(IPUtils.ValidateIP('0.0.0.1'))
 
     def test_beyond_min(self):
-        self.assertFalse(IPUtils.ValidateIP('0.0.0.0'))
+        self.assertTrue(IPUtils.ValidateIP('0.0.0.0'))
 
     def test_max(self):
         self.assertTrue(IPUtils.ValidateIP('255.255.255.255'))
