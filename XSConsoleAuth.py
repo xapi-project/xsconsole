@@ -166,7 +166,6 @@ class Auth:
     def ConnectionTimedOut(self):
         self.masterConnectionBroken = True
         self.connectionBrokenTimestamp = getTimeStamp()
-        self.error = 'The master connection has timed out.'
         XSLog('XenAPI connection timed out - retrying in ' + str(self.CONNECTION_RETRY_SECONDS) + ' seconds at most')
 
     def OpenSession(self):
@@ -190,10 +189,8 @@ class Auth:
         except socket.timeout:
             session = None
             self.ConnectionTimedOut()
-        except Exception as e:
+        except Exception:
             session = None
-            # pylint: disable-next=redefined-variable-type  # ToString may handle it
-            self.error = e
 
         if session is None and self.testingHost is not None:
             # Local session couldn't connect, so try remote.
@@ -204,13 +201,11 @@ class Auth:
             except XenAPI.Failure as e:
                 if e.details[0] != 'HOST_IS_SLAVE':  # Ignore slave errors when testing
                     session = None
-                    self.error = e
             except socket.timeout:
                 session = None
                 self.ConnectionTimedOut()
-            except Exception as e:
+            except Exception:
                 session = None
-                self.error = e
 
         if session is not None and self.masterConnectionBroken:
             XSLog('XenAPI connection recovered')
