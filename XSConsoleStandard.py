@@ -18,7 +18,6 @@
 from XSConsoleAuth import *
 from XSConsoleBases import *
 from XSConsoleConfig import *
-from XSConsoleConstants import *
 from XSConsoleData import *
 from XSConsoleDataUtils import *
 from XSConsoleDialogueBases import *

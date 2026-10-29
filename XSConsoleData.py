@@ -16,7 +16,7 @@
 import XenAPI
 import datetime
 import time
-import subprocess, re, shutil, sys, tempfile, socket, os, stat
+import subprocess, re, shutil, sys, tempfile, socket, os
 from pprint import pprint
 from simpleconfig import SimpleConfigFile
 
@@ -333,6 +333,8 @@ class Data:
                 for id, pool in pools.items():
                    self.data['pools'][id] = convertPool(id, pool)
 
+                self.UpdateNTP()
+
             except socket.timeout:
                 self.session = None
             except Exception as e:
@@ -361,16 +363,24 @@ class Data:
         self.UpdateFromResolveConf()
         self.UpdateFromSysconfig()
         self.UpdateFromHostname()
-        self.UpdateFromNTPConf()
         self.UpdateFromTimezone()
         self.UpdateFromKeymap()
 
         self.data['chkconfig'] = {}
         self.data['service_active'] = {}
         self.ScanService('sshd')
-        self.ScanService('chronyd')
 
         self.DeriveData()
+
+    def UpdateNTP(self):
+        self.data['ntp'] = {}
+        self.RequireSession()
+        if self.session is not None:
+            try:
+                self.data['ntp']['method'] = self.session.xenapi.host.get_ntp_mode(self.data['host']['opaqueref'])
+                self.data['ntp']['servers'] = self.session.xenapi.host.get_ntp_custom_servers(self.data['host']['opaqueref'])
+            except Exception as e:
+                XSLogError('NTP update failed: ', e)
 
     def UpdateHostCPUs(self):
         convertCPU = lambda cpu: self.session.xenapi.host_cpu.get_record(cpu)
@@ -509,34 +519,6 @@ class Data:
         if status == 0:
             self.ScanHostname(output.split("\n"))
 
-    def UpdateFromNTPConf(self):
-        if not 'ntp' in self.data:
-            self.data['ntp'] = {}
-
-        if os.path.isfile("/etc/chrony.conf"):
-            with open("/etc/chrony.conf", "r") as confFile:
-                self.ScanNTPConf(confFile.read().splitlines())
-
-        self.data['ntp']['method'] = ""
-        chronyPerm = os.stat("/etc/dhcp/dhclient.d/chrony.sh").st_mode
-        if (
-            chronyPerm & stat.S_IXUSR
-            and chronyPerm & stat.S_IXGRP
-            and chronyPerm & stat.S_IXOTH
-        ):
-            self.data['ntp']['method'] = "DHCP"
-        elif self.data['ntp']['servers']:
-            self.data['ntp']['method'] = "Manual"
-
-            servers = self.data['ntp']['servers']
-            if len(servers) == NUM_DEFAULT_NTP_SERVERS and all(
-                inDefaultNTPDomains(server)
-                for server in self.data['ntp']['servers']
-            ):
-                self.data['ntp']['method'] = "Default"
-        else:
-            self.data['ntp']['method'] = "Disabled"
-
     def StringToBool(self, inString):
         return inString.lower().startswith('true')
 
@@ -581,11 +563,6 @@ class Data:
         self.RequireSession()
         self.session.xenapi.host.set_ntp_custom_servers(self.host.opaqueref(), inServers)
 
-    def ResetDefaultNTPServers(self):
-        # Double-check authentication
-        Auth.Inst().AssertAuthenticated()
-        Data.Inst().NTPServersSet(DEFAULT_NTP_SERVERS)
-
     def SetTimeManually(self, date):
         # Double-check authentication
         Auth.Inst().AssertAuthenticated()
@@ -593,25 +570,18 @@ class Data:
         self.NTPServersSet([])
         self.SetNTPMode('Disabled')
 
-        self.DisableService("chrony-wait")
-        self.DisableService("chronyd")
-
         timestring = date.strftime("%Y-%m-%d %H:%M:00")
         getstatusoutput("date --set='%s'" % timestring)
         getstatusoutput("hwclock --utc --systohc")
 
-    def GetNTPServersFromChronyc(self):
-        servers =[]
-        (status, output) = getstatusoutput("chronyc -c sources")
-        # output is csv format: ^,*,10.79.16.11,5,7,377,13,-0.000067081,-0.000084192,0.172569677
-        if status == 0:
-            for line in output.split("\n"):
-                fields = line.split(",")
-                if len(fields) >= 3:
-                    server = fields[2].strip()
-                    if server != "":
-                        servers.append(server)
-        return servers
+    def GetNTPServers(self):
+        if self.RequireSession():
+            try:
+                return self.session.xenapi.host.get_ntp_servers_status(self.host.opaqueref()).keys()
+            except Exception as e:
+                XSLogError('host.get_ntp_servers_status failed: ', e)
+
+        return []
 
     def SaveToResolveConf(self):
         # Double-check authentication
@@ -799,17 +769,6 @@ class Data:
 
     def ScanHostname(self, inLines):
         self.data['sysconfig']['network']['hostname'] = inLines[0]
-
-    def ScanNTPConf(self, inLines):
-        self.data['ntp']['servers'] = []
-        self.data['ntp']['othercontents'] = []
-
-        for line in inLines:
-            match = re.match(r'server\s+(\S+)', line)
-            if match and not match.group(1).startswith('127.127.'):
-                self.data['ntp']['servers'].append(match.group(1))
-            else:
-                self.data['ntp']['othercontents'].append(line)
 
     def ScanInventory(self, inLines):
         self.data['inventory'] = {}
@@ -1022,12 +981,16 @@ class Data:
             self.session = Auth.Inst().CloseSession(self.session)
 
     def AdjustNTPForStaticNetwork(self):
-        if not self.data['ntp']['servers']: # No NTP servers after removing DHCP
-            self.ResetDefaultNTPServers()
-            self.SetNTPMode('Factory')
-        else:
-            self.SetNTPManualServers(self.data['ntp']['servers'])
-            self.SetNTPMode('Custom')
+        method = self.data.ntp.method('?')
+        if method in ['DHCP', 'Disabled']:
+            servers = self.data.ntp.servers([])
+            if servers:
+                # XAPI has previously saved custom servers, use them
+                self.SetNTPManualServers(servers)
+                self.SetNTPMode('Custom')
+            else:
+                # no custom servers, use factory ones
+                self.SetNTPMode('Factory')
 
     def LocalHostEnable(self):
         Auth.Inst().AssertAuthenticatedOrPasswordUnset()
