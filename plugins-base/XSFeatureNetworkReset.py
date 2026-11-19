@@ -354,10 +354,10 @@ class NetworkResetDialogue(Dialogue):
 				f.close()
 
 		# Ensure xapi is not running
-		os.system('service xapi stop >/dev/null 2>/dev/null')
+		os.system('systemctl stop xapi >/dev/null 2>/dev/null')
 
 		# Reconfigure new management interface
-		os.system('service xcp-networkd stop >/dev/null 2>/dev/null')
+		os.system('systemctl stop xcp-networkd >/dev/null 2>/dev/null')
 		try: os.remove('/var/xapi/networkd.db')
 		except: pass
 

@@ -1189,11 +1189,11 @@ class Data:
         if self.IsXAPIRunning():
             State.Inst().WeStoppedXAPISet(True)
             State.Inst().SaveIfRequired()
-            ShellPipe('/etc/init.d/xapi', 'stop').Call()
+            ShellPipe('systemctl', 'stop', 'xapi').Call()
 
     def StartXAPI(self):
         if not self.IsXAPIRunning():
-            ShellPipe('/etc/init.d/xapi', 'start').Call()
+            ShellPipe('systemctl', 'start', 'xapi').Call()
             State.Inst().WeStoppedXAPISet(False)
             State.Inst().SaveIfRequired()
 
