@@ -101,7 +101,7 @@ class ResetDialogue(Dialogue):
         Data.Inst().CloseSession()
         try:
             Layout.Inst().TransientBanner(Lang('Stopping Virtual Machines...'))
-            ShellPipe('service', 'xapi-domains', 'stop').Call()
+            ShellPipe('systemctl', 'stop', 'xapi-domains').Call()
         except Exception as e:
             Layout.Inst().TransientBanner(Lang('Could not stop Virtual Machines: ' + Lang(e)))
             time.sleep(3.0)
