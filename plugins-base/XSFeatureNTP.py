@@ -106,7 +106,7 @@ class NTPDialogue(Dialogue):
         ]
 
         data = Data.Inst()
-        data.UpdateFromNTPConf()
+        data.UpdateNTP()
 
         servers = data.ntp.servers([])
         if len(servers) > 0:
@@ -230,7 +230,7 @@ class NTPDialogue(Dialogue):
             elif inChoice == "DEFAULT":
                 Layout.Inst().PopDialogue()
                 Layout.Inst().TransientBanner(Lang("Enabling Default NTP Servers..."))
-                data.ResetDefaultNTPServers()
+                data.NTPServersSet([])
                 self.Commit(Lang("Default NTP Time Synchronization Enabled"), inChoice)
 
             elif inChoice == "MANUAL":
@@ -395,6 +395,7 @@ class NTPDialogue(Dialogue):
                 data.SetNTPManualServers(data.ntp.servers([]))
 
             data.SetNTPMode(mode)
+
             Layout.Inst().PushDialogue(InfoDialogue( inMessage))
         except Exception as e:
             Layout.Inst().PushDialogue(InfoDialogue( Lang("Update failed: ")+Lang(e)))
@@ -406,7 +407,7 @@ class XSFeatureNTP:
     @classmethod
     def StatusUpdateHandler(cls, inPane):
         data = Data.Inst()
-        data.UpdateFromNTPConf()
+        data.UpdateNTP()
 
         inPane.AddTitleField(Lang("Network Time (NTP)"))
 
@@ -418,12 +419,9 @@ class XSFeatureNTP:
             inPane.AddWrappedTextField(Lang("Currently NTP is disabled."))
         else:
             inPane.AddWrappedTextField(Lang("Currently NTP is enabled, and the following servers are configured."))
-
-            servers = data.ntp.servers([])
-            if ntpMethod == "DHCP":
-                servers = data.GetNTPServersFromChronyc()
-
             inPane.NewLine()
+
+            servers = data.GetNTPServers()
 
             if len(servers) == 0:
                 inPane.AddWrappedTextField(Lang("<No servers configured>"))
